@@ -1561,10 +1561,11 @@ var App={
   _tkPreload:function(ep){
     var s=this.tk;if(!s||ep<1||ep>s.total||this.tkCache[ep])return;
     if(this.src==='goodshort'){
-      var chap=null;for(var i=0;i<this.chaps.length;i++){if(this.chaps[i].num==ep){chap=this.chaps[i];break}}
-      if(chap&&chap.directUrl){App.tkCache[ep]=chap.directUrl}
-      else if(chap&&chap.streamId){GS.play(s.d.id,chap.streamId,'720p').then(function(r){var u=r.m3u8||r.url||extractVideoUrl(r);if(u)App.tkCache[ep]=u}).catch(function(){})}
-      else if(chap&&chap.streamId){GS.play(s.d.id,chap.streamId,'720p').then(function(r){var u=r.m3u8||r.url||extractVideoUrl(r);if(u)App.tkCache[ep]=u}).catch(function(){})}
+      // Pakai _gsUrlCache (persistent, tidak expired)
+      var _bid=s.d.id;
+      if(App._gsUrlCache[_bid]&&App._gsUrlCache[_bid][ep]){
+        App.tkCache[ep]=App._gsUrlCache[_bid][ep];
+      }
     }else if(this.src==='freereels'){FR.play(s.d.id,ep).then(function(r){var u=extractVideoUrl(r.data||r)||extractVideoUrl(r)||'';if(u)App.tkCache[ep]=u}).catch(function(){})}
     else if(this.src==='dramabite'){DB2.episode(s.d.id,ep).then(function(r){var u=extractVideoUrl(r.data||r)||extractVideoUrl(r)||'';if(u)App.tkCache[ep]=u}).catch(function(){})}
     else if(this.src==='netshort'){NS.episode(s.d.id,ep).then(function(r){var u='';if(r.data&&r.data.videos&&r.data.videos.length)u=r.data.videos[0].url||'';if(!u&&r.data)u=r.data.video_url||r.data.url||'';if(u)App.tkCache[ep]=u}).catch(function(){})}
