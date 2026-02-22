@@ -1495,6 +1495,7 @@ var App={
       var gsFetchFreshUrl=function(){
         // Coba /unlock dulu - return semua URL sekaligus tanpa expiry
         var gsBookId=s.d.id;
+        console.log('[GS DEBUG] bookId=',gsBookId,'ep=',ep,'cache=',JSON.stringify(App._gsUrlCache[gsBookId]?Object.keys(App._gsUrlCache[gsBookId]):'EMPTY'));
         // Cek persistent cache dulu
         if(App._gsUrlCache[gsBookId]&&App._gsUrlCache[gsBookId][ep]){
           self._tkPlayUrl(App._gsUrlCache[gsBookId][ep]);return;
