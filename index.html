@@ -1556,14 +1556,15 @@ var App={
     if(App._hls){App._hls.destroy();App._hls=null;}
     var isHLS=url.indexOf('.m3u8')>-1;
     vid.onerror=null;vid.oncanplay=null;
-    App._tkShowErr(false);// Sembunyikan error dulu, tampilkan lagi kalau benar-benar gagal
+    App._tkShowErr(false);
+    App._hlsPlaying=false;// flag: HLS berhasil, block error dari async calls lain
     if(isHLS&&typeof Hls!=='undefined'&&Hls.isSupported()){
       var hls=new Hls({enableWorker:false,maxBufferLength:30});
       App._hls=hls;
       hls.loadSource(url);
       hls.attachMedia(vid);
-      hls.on(Hls.Events.MANIFEST_PARSED,function(){vid.play().catch(function(){});App._tkShowLoad(false);});
-      hls.on(Hls.Events.ERROR,function(e,data){if(data.fatal){App._tkShowLoad(false);App._tkShowErr(true);}});
+      hls.on(Hls.Events.MANIFEST_PARSED,function(){App._hlsPlaying=true;vid.play().catch(function(){});App._tkShowLoad(false);App._tkShowErr(false);});
+      hls.on(Hls.Events.ERROR,function(e,data){if(data.fatal&&!App._hlsPlaying){App._tkShowLoad(false);App._tkShowErr(true);}});
     }else if(isHLS&&vid.canPlayType('application/vnd.apple.mpegurl')){
       vid.src=url;vid.load();
       vid.oncanplay=function(){vid.play().catch(function(){});App._tkShowLoad(false)};
@@ -1605,7 +1606,8 @@ var App={
     else{vid.pause();if(pp){pp.querySelector('i').className='fas fa-pause';pp.classList.add('show');setTimeout(function(){pp.classList.remove('show')},400)}}
   },
   _tkShowLoad:function(v){var e=document.getElementById('tkLoad');if(e)e.style.display=v?'flex':'none'},
-  _tkShowErr:function(v){var e=document.getElementById('tkErr');if(e)e.classList.toggle('show',v)},
+  _tkShowErr:function(v){if(v&&App._hlsPlaying)return;// Block error kalau HLS sedang main
+    var e=document.getElementById('tkErr');if(e)e.classList.toggle('show',v)},
   tkToggleEps:function(){var p=document.getElementById('tkEpanel'),o=document.getElementById('tkOverlay');if(p){var open=p.classList.toggle('open');if(o)o.classList.toggle('show',open)}},
   tkClose:function(){
     var vid=document.getElementById('tkVid');
