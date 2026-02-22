@@ -1474,23 +1474,30 @@ var App={
       };
       // Always re-fetch chapters to get fresh non-expired URL
       var gsFetchFreshUrl=function(){
-        GS.chapters(s.d.id).then(function(cres){
-          var clist=[];
-          if(cres.data&&cres.data.list&&Array.isArray(cres.data.list))clist=cres.data.list;
-          else if(cres.data&&Array.isArray(cres.data))clist=cres.data;
-          var epData=clist[ep-1]||clist.find(function(x){return x.index===(ep-1)||x.chapterName===String(ep)});
+        // Gunakan /unlock endpoint - return semua episode dengan URL langsung tanpa expiry
+        GS.unlock(s.d.id,'720p').then(function(ures){
           var u='';
-          if(epData){
-            if(epData.cdnList&&epData.cdnList.length)u=epData.cdnList[0].videoPath||'';
-            if(!u&&epData.multiVideos&&epData.multiVideos.length){for(var i=0;i<epData.multiVideos.length;i++){if(epData.multiVideos[i].type==='720p'){u=epData.multiVideos[i].filePath||'';break;}}if(!u)u=epData.multiVideos[0].filePath||'';}
-            if(!u&&epData.cdn)u=epData.cdn;
+          // Format: { success:true, videos:[{id, name, url}] }
+          if(ures.success&&ures.videos&&Array.isArray(ures.videos)){
+            var epNum=String(ep).padStart(3,'0');
+            var vid=ures.videos.find(function(v){
+              return v.name===epNum||v.name===String(ep)||parseInt(v.name)===ep;
+            });
+            if(!vid&&ures.videos[ep-1])vid=ures.videos[ep-1];
+            if(vid)u=vid.url||'';
+            // Cache semua episode sekaligus untuk performa
+            ures.videos.forEach(function(v,i){
+              var epIdx=parseInt(v.name)||i+1;
+              if(v.url&&!self.tkCache[epIdx])self.tkCache[epIdx]=v.url;
+            });
           }
-          if(u){self.tkCache[ep]=u;self._tkPlayUrl(u);}
+          if(u){self._tkPlayUrl(u);}
           else{self._tkShowLoad(false);self._tkShowErr(true);}
         }).catch(function(){self._tkShowLoad(false);self._tkShowErr(true);});
       };
-      // Use cached url only if fresh (not expired), otherwise always re-fetch
-      gsFetchFreshUrl();
+      // Cek cache dulu, kalau tidak ada fetch dari unlock endpoint
+      if(self.tkCache[ep]){self._tkPlayUrl(self.tkCache[ep]);}
+      else{gsFetchFreshUrl();}
 
     }else if(this.src==='dramawave'){
       DW.play(s.d.id,ep).then(function(res){var u=res.m3u8||res.url||res.stream_url||(res.data&&(res.data.m3u8||res.data.url||res.data.stream_url))||extractVideoUrl(res)||'';if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}}).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)});
