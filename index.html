@@ -1500,20 +1500,22 @@ var App={
         if(App._gsUrlCache[gsBookId]&&App._gsUrlCache[gsBookId][ep]){
           self._tkPlayUrl(App._gsUrlCache[gsBookId][ep]);return;
         }
-        GS.unlock(gsBookId,'720p').then(function(ures){
-          var u='';
-          if(ures.success&&ures.videos&&Array.isArray(ures.videos)&&ures.videos.length){
-            // Cache semua episode ke _gsUrlCache (persistent)
-            if(!App._gsUrlCache[gsBookId])App._gsUrlCache[gsBookId]={};
-            ures.videos.forEach(function(v,i){
-              var idx=parseInt(v.name)||i+1;
-              if(v.url)App._gsUrlCache[gsBookId][idx]=v.url;
-            });
-            u=App._gsUrlCache[gsBookId][ep]||'';
-          }
-          if(u){self.tkCache[ep]=u;self._tkPlayUrl(u);}
-          else{gsPlayFromChapters();}
-        }).catch(gsPlayFromChapters);
+        (function(bid,epNum){
+          GS.unlock(bid,'720p').then(function(ures){
+            var u='';
+            if(ures.success&&ures.videos&&Array.isArray(ures.videos)&&ures.videos.length){
+              if(!App._gsUrlCache[bid])App._gsUrlCache[bid]={};
+              ures.videos.forEach(function(v,i){
+                var idx=parseInt(v.name)||i+1;
+                if(v.url)App._gsUrlCache[bid][idx]=v.url;
+              });
+              console.log('[GS] unlock cached',Object.keys(App._gsUrlCache[bid]).length,'eps, ep'+epNum+'=',App._gsUrlCache[bid][epNum]?'OK':'MISSING');
+              u=App._gsUrlCache[bid][epNum]||'';
+            }
+            if(u){self.tkCache[epNum]=u;self._tkPlayUrl(u);}
+            else{gsPlayFromChapters();}
+          }).catch(gsPlayFromChapters);
+        })(gsBookId,ep);
       };
       // Cek persistent GS cache dulu
       var _gsBid=s.d.id;
