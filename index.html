@@ -715,7 +715,22 @@ var Auth={
       var name=user.displayName||user.email||'User';
       var initials=name.charAt(0).toUpperCase();
       if(photo){
-        wrap.innerHTML='<img class="user-avatar" src="'+photo+'" alt="'+initials+'" onclick="Auth.toggleMenu()" title="'+name+'" onerror="this.outerHTML=\'<button class=\\\"login-btn\\\" onclick=\\\"Auth.toggleMenu()\\\"><span style=\\\"width:22px;height:22px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#fff;font-weight:700\\\">'+initials+'</span></button>\'">';
+        var avatarEl=document.createElement('img');
+        avatarEl.className='user-avatar';
+        avatarEl.src=photo;
+        avatarEl.alt=initials;
+        avatarEl.title=name;
+        avatarEl.onclick=function(){Auth.toggleMenu()};
+        avatarEl.onerror=function(){
+          var btn=document.createElement('button');
+          btn.className='login-btn';
+          btn.style.cssText='gap:6px;padding:4px';
+          btn.onclick=function(){Auth.toggleMenu()};
+          btn.innerHTML='<span style="width:28px;height:28px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#fff;font-weight:700">'+initials+'</span>';
+          this.parentNode&&this.parentNode.replaceChild(btn,this);
+        };
+        wrap.innerHTML='';
+        wrap.appendChild(avatarEl);
       }else{
         wrap.innerHTML='<button class="login-btn" onclick="Auth.toggleMenu()" style="gap:6px"><span style="width:22px;height:22px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#fff;font-weight:700">'+initials+'</span></button>';
       }
