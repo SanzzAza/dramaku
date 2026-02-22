@@ -1407,6 +1407,7 @@ var App={
     this.curD=d;var total=this.chaps.length||d.eps||0;
     this.tk={dKey:dKey,ep:ep,total:total,d:d};this.tkCache={};this._tkRender();this._tkLoadEp(ep,'none');
   },
+  _gsUrlCache:{},  // Persistent GoodShort URL cache (tidak di-reset saat ganti ep)
   _tkRender:function(){
     var s=this.tk,d=s.d;var isSaved=Store.wlHas(d.id,this.src);
     var h='<div class="tk-vc" id="tkVC"><video id="tkVid" playsinline webkit-playsinline></video><div class="tk-grad-top"></div><div class="tk-grad-bot"></div>'+
@@ -1493,25 +1494,33 @@ var App={
       };
       var gsFetchFreshUrl=function(){
         // Coba /unlock dulu - return semua URL sekaligus tanpa expiry
-        GS.unlock(s.d.id,'720p').then(function(ures){
+        var gsBookId=s.d.id;
+        // Cek persistent cache dulu
+        if(App._gsUrlCache[gsBookId]&&App._gsUrlCache[gsBookId][ep]){
+          self._tkPlayUrl(App._gsUrlCache[gsBookId][ep]);return;
+        }
+        GS.unlock(gsBookId,'720p').then(function(ures){
           var u='';
           if(ures.success&&ures.videos&&Array.isArray(ures.videos)&&ures.videos.length){
-            var epNum=String(ep).padStart(3,'0');
-            var vid=ures.videos.find(function(v){return v.name===epNum||parseInt(v.name)===ep;});
-            if(!vid)vid=ures.videos[ep-1];
-            if(vid)u=vid.url||'';
-            // Cache semua episode sekaligus
+            // Cache semua episode ke _gsUrlCache (persistent)
+            if(!App._gsUrlCache[gsBookId])App._gsUrlCache[gsBookId]={};
             ures.videos.forEach(function(v,i){
               var idx=parseInt(v.name)||i+1;
-              if(v.url&&!self.tkCache[idx])self.tkCache[idx]=v.url;
+              if(v.url)App._gsUrlCache[gsBookId][idx]=v.url;
             });
+            u=App._gsUrlCache[gsBookId][ep]||'';
           }
-          if(u){self._tkPlayUrl(u);}
-          else{gsPlayFromChapters();}  // Fallback ke chapters kalau unlock gagal
+          if(u){self.tkCache[ep]=u;self._tkPlayUrl(u);}
+          else{gsPlayFromChapters();}
         }).catch(gsPlayFromChapters);
       };
-      if(self.tkCache[ep]){self._tkPlayUrl(self.tkCache[ep]);}
-      else{gsFetchFreshUrl();}
+      // Cek persistent GS cache dulu
+      var _gsBid=s.d.id;
+      if(App._gsUrlCache[_gsBid]&&App._gsUrlCache[_gsBid][ep]){
+        self._tkPlayUrl(App._gsUrlCache[_gsBid][ep]);
+      }else if(self.tkCache[ep]){
+        self._tkPlayUrl(self.tkCache[ep]);
+      }else{gsFetchFreshUrl();}
 
     }else if(this.src==='dramawave'){
       DW.play(s.d.id,ep).then(function(res){var u=res.m3u8||res.url||res.stream_url||(res.data&&(res.data.m3u8||res.data.url||res.data.stream_url))||extractVideoUrl(res)||'';if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}}).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)});
