@@ -1,0 +1,2097 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>DramaFeed - Nonton Drama Sub Indo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --bg:#0a0a12;--bg2:#111120;--bg3:#1a1a2e;--bg4:#222240;
+            --accent:#e50914;--accent-glow:rgba(229,9,20,.2);
+            --accent-b:#6c3bff;--accent-b-glow:rgba(108,59,255,.2);
+            --accent-m:#10b981;--accent-m-glow:rgba(16,185,129,.2);
+            --accent-g:#f59e0b;--accent-g-glow:rgba(245,158,11,.2);
+            --accent-dw:#06b6d4;--accent-dw-glow:rgba(6,182,212,.2);
+            --accent-sm:#f43f5e;--accent-sm-glow:rgba(244,63,94,.2);
+            --accent-ns:#8b5cf6;--accent-ns-glow:rgba(139,92,246,.2);
+            --accent-vl:#f97316;--accent-vl-glow:rgba(249,115,22,.2);
+            --accent-fx:#0ea5e9;--accent-fx-glow:rgba(14,165,233,.2);
+            --gold:#ffd700;--text:#f0f0f5;--text2:#8e8ea0;--text3:#5a5a6e;
+            --border:#2a2a40;--radius:14px;--rs:10px;
+            --shadow:0 8px 32px rgba(0,0,0,.45);--glass:rgba(16,16,28,.88);
+            --tr:.3s cubic-bezier(.4,0,.2,1)
+        }
+        html{scroll-behavior:smooth}
+        body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+        body.noscroll{overflow:hidden}
+        button{border:none;outline:none;cursor:pointer;font-family:inherit}
+        input{font-family:inherit;outline:none;border:none}
+        a{text-decoration:none;color:inherit}
+        ::-webkit-scrollbar{width:5px;height:5px}
+        ::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+        .hdr{position:sticky;top:0;z-index:100;background:var(--glass);backdrop-filter:blur(24px);border-bottom:1px solid var(--border)}
+        .hdr-in{max-width:1440px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;gap:10px}
+        .logo{display:flex;align-items:center;gap:8px;font-size:1.3rem;font-weight:800;cursor:pointer;flex-shrink:0}
+        .logo i{color:var(--accent);font-size:1.4rem}
+        .logo span{background:linear-gradient(135deg,var(--accent),#ff6b6b);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        body.fr .logo i{color:var(--accent-b)}
+        body.fr .logo span{background:linear-gradient(135deg,var(--accent-b),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        body.ml .logo i{color:var(--accent-m)}
+        body.ml .logo span{background:linear-gradient(135deg,var(--accent-m),#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        body.gs .logo i{color:var(--accent-g)}
+        body.gs .logo span{background:linear-gradient(135deg,var(--accent-g),#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        body.dw .logo i{color:var(--accent-dw)}
+        body.dw .logo span{background:linear-gradient(135deg,var(--accent-dw),#67e8f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        body.sm .logo i{color:var(--accent-sm)}
+        body.sm .logo span{background:linear-gradient(135deg,var(--accent-sm),#fb7185);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        body.ns .logo i{color:var(--accent-ns)}
+        body.db2 .logo i{color:var(--accent-vl)}
+        body.ns .logo span{background:linear-gradient(135deg,var(--accent-ns),#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        body.db2 .logo span{background:linear-gradient(135deg,var(--accent-vl),#fdba74);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        body.fx .logo i{color:var(--accent-fx)}
+        body.fx .logo span{background:linear-gradient(135deg,var(--accent-fx),#7dd3fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+        .plat-btn{display:flex;align-items:center;gap:7px;padding:7px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:50px;font-size:.78rem;font-weight:700;color:var(--text);cursor:pointer;transition:var(--tr);flex-shrink:0;white-space:nowrap}
+        .plat-btn:hover{background:var(--bg4);border-color:var(--text3)}
+        .plat-btn .pdot{width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;transition:var(--tr)}
+        body.fr .plat-btn .pdot{background:var(--accent-b)}
+        body.ml .plat-btn .pdot{background:var(--accent-m)}
+        body.gs .plat-btn .pdot{background:var(--accent-g)}
+        body.dw .plat-btn .pdot{background:var(--accent-dw)}
+        body.sm .plat-btn .pdot{background:var(--accent-sm)}
+        body.ns .plat-btn .pdot{background:var(--accent-ns)}
+        body.db2 .plat-btn .pdot{background:var(--accent-vl)}
+        body.fx .plat-btn .pdot{background:var(--accent-fx)}
+
+        .plat-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);padding:20px}
+        .plat-modal-bg.open{display:flex}
+        .plat-modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:100%;max-width:300px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.6);animation:modalIn .22s cubic-bezier(.34,1.56,.64,1)}
+        @keyframes modalIn{from{opacity:0;transform:scale(.9) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+        .plat-modal-hdr{padding:12px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+        .plat-modal-hdr h2{font-size:.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+        .plat-close{width:26px;height:26px;border-radius:50%;background:var(--bg3);color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:.7rem;transition:var(--tr)}
+        .plat-close:hover{background:var(--bg4);color:var(--text)}
+        .plat-grid{display:flex;flex-direction:column;padding:4px 0 6px;max-height:70vh;overflow-y:auto}
+        .plat-card{position:relative;display:flex;align-items:center;gap:12px;padding:9px 16px;cursor:pointer;transition:background .12s;background:none}
+        .plat-card:hover{background:var(--bg3)}
+        .plat-card-ico{width:38px;height:38px;border-radius:9px;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1rem}
+        .ico-db{background:linear-gradient(135deg,#e50914,#ff6b6b);color:#fff}
+        .ico-fr{background:linear-gradient(135deg,#6c3bff,#a78bfa);color:#fff}
+        .ico-ml{background:linear-gradient(135deg,#10b981,#34d399);color:#fff}
+        .ico-gs{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#fff}
+        .ico-dw{background:linear-gradient(135deg,#06b6d4,#67e8f9);color:#fff}
+        .ico-sm{background:linear-gradient(135deg,#f43f5e,#fb7185);color:#fff}
+        .ico-ns{background:linear-gradient(135deg,#8b5cf6,#c4b5fd);color:#fff}
+        .ico-db2{background:linear-gradient(135deg,#f97316,#fdba74);color:#fff}
+        .ico-fx{background:linear-gradient(135deg,#0ea5e9,#7dd3fc);color:#fff}
+        .plat-card-body{flex:1;min-width:0}
+        .plat-card-name{font-size:.85rem;font-weight:600;color:var(--text)}
+        .plat-card-desc{display:none}
+        .plat-check{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.55rem;flex-shrink:0;opacity:0;transition:var(--tr)}
+        .plat-card.active-db .plat-check{background:var(--accent);color:#fff;opacity:1}
+        .plat-card.active-fr .plat-check{background:var(--accent-b);color:#fff;opacity:1}
+        .plat-card.active-ml .plat-check{background:var(--accent-m);color:#fff;opacity:1}
+        .plat-card.active-gs .plat-check{background:var(--accent-g);color:#fff;opacity:1}
+        .plat-card.active-dw .plat-check{background:var(--accent-dw);color:#fff;opacity:1}
+        .plat-card.active-sm .plat-check{background:var(--accent-sm);color:#fff;opacity:1}
+        .plat-card.active-ns .plat-check{background:var(--accent-ns);color:#fff;opacity:1}
+        .plat-card.active-db2 .plat-check{background:var(--accent-vl);color:#fff;opacity:1}
+        .plat-card.active-fx .plat-check{background:var(--accent-fx);color:#fff;opacity:1}
+        .plat-badge-new{font-size:.5rem;font-weight:800;padding:1px 5px;border-radius:4px;letter-spacing:.3px;flex-shrink:0;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#000}
+
+        .nav{display:flex;gap:2px;flex-shrink:0;overflow-x:auto;max-width:400px}
+        .nav::-webkit-scrollbar{display:none}
+        .nb{padding:7px 12px;border-radius:var(--rs);font-size:.78rem;font-weight:500;color:var(--text2);cursor:pointer;transition:var(--tr);white-space:nowrap;background:none}
+        .nb:hover{color:var(--text);background:var(--bg3)}
+        .nb.on{font-weight:700}
+        .nb.on[data-src="dramabox"]{color:var(--accent);background:var(--accent-glow)}
+        .nb.on[data-src="freereels"]{color:var(--accent-b);background:var(--accent-b-glow)}
+        .nb.on[data-src="melolo"]{color:var(--accent-m);background:var(--accent-m-glow)}
+        .nb.on[data-src="goodshort"]{color:var(--accent-g);background:var(--accent-g-glow)}
+        .nb.on[data-src="dramawave"]{color:var(--accent-dw);background:var(--accent-dw-glow)}
+        .nb.on[data-src="shortmax"]{color:var(--accent-sm);background:var(--accent-sm-glow)}
+        .nb.on[data-src="netshort"]{color:var(--accent-ns);background:var(--accent-ns-glow)}
+        .nb.on[data-src="dramabite"]{color:var(--accent-vl);background:var(--accent-vl-glow)}
+        .nb.on[data-src="flextv"]{color:var(--accent-fx);background:var(--accent-fx-glow)}
+
+        .swrap{flex:1;max-width:340px;margin-left:auto;position:relative}
+        .sbox{position:relative;display:flex;align-items:center}
+        .sbox i.si{position:absolute;left:13px;color:var(--text3);font-size:.8rem}
+        .sbox input{width:100%;padding:8px 65px 8px 36px;background:var(--bg3);border:1px solid var(--border);border-radius:50px;color:var(--text);font-size:.8rem;transition:var(--tr)}
+        .sbox input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+        .sbox input::placeholder{color:var(--text3)}
+        .sgo{position:absolute;right:4px;padding:5px 13px;background:var(--accent);color:#fff;border-radius:50px;font-size:.72rem;font-weight:700}
+        body.fr .sgo{background:var(--accent-b)}
+        body.fr .sbox input:focus{border-color:var(--accent-b);box-shadow:0 0 0 3px var(--accent-b-glow)}
+        body.ml .sgo{background:var(--accent-m)}
+        body.ml .sbox input:focus{border-color:var(--accent-m);box-shadow:0 0 0 3px var(--accent-m-glow)}
+        body.gs .sgo{background:var(--accent-g)}
+        body.gs .sbox input:focus{border-color:var(--accent-g);box-shadow:0 0 0 3px var(--accent-g-glow)}
+        body.dw .sgo{background:var(--accent-dw)}
+        body.dw .sbox input:focus{border-color:var(--accent-dw);box-shadow:0 0 0 3px var(--accent-dw-glow)}
+        body.sm .sgo{background:var(--accent-sm)}
+        body.sm .sbox input:focus{border-color:var(--accent-sm);box-shadow:0 0 0 3px var(--accent-sm-glow)}
+        body.ns .sgo{background:var(--accent-ns)}
+        body.db2 .sgo{background:var(--accent-vl)}
+        body.ns .sbox input:focus{border-color:var(--accent-ns);box-shadow:0 0 0 3px var(--accent-ns-glow)}
+        body.db2 .sbox input:focus{border-color:var(--accent-vl);box-shadow:0 0 0 3px var(--accent-vl-glow)}
+        body.fx .sgo{background:var(--accent-fx)}
+        body.fx .sbox input:focus{border-color:var(--accent-fx);box-shadow:0 0 0 3px var(--accent-fx-glow)}
+        .sugbox{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);display:none;box-shadow:var(--shadow);z-index:200;max-height:360px;overflow-y:auto}
+        .sugbox.show{display:block}
+        .sugi{padding:10px 15px;cursor:pointer;transition:var(--tr);display:flex;align-items:center;gap:9px;font-size:.8rem}
+        .sugi:hover{background:var(--bg3)}
+
+        .mbar{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--glass);backdrop-filter:blur(24px);border-top:1px solid var(--border);z-index:100;padding:4px 0}
+        .mbar-in{display:flex;justify-content:space-around}
+        .mb{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 8px;color:var(--text3);font-size:.55rem;font-weight:500;cursor:pointer;background:none;border-radius:8px;white-space:nowrap;flex-shrink:0}
+        .mb i{font-size:.95rem}
+        .mb.on{color:var(--accent)}
+        body.fr .mb.on{color:var(--accent-b)}
+        body.ml .mb.on{color:var(--accent-m)}
+        body.gs .mb.on{color:var(--accent-g)}
+        body.dw .mb.on{color:var(--accent-dw)}
+        body.sm .mb.on{color:var(--accent-sm)}
+        body.ns .mb.on{color:var(--accent-ns)}
+        body.db2 .mb.on{color:var(--accent-vl)}
+        body.fx .mb.on{color:var(--accent-fx)}
+
+        .main{max-width:1440px;margin:0 auto;padding:20px;min-height:calc(100vh - 130px)}
+        .stitle{font-size:1.15rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:9px}
+        .stitle i{color:var(--accent)}
+        body.fr .stitle i{color:var(--accent-b)}
+        body.ml .stitle i{color:var(--accent-m)}
+        body.gs .stitle i{color:var(--accent-g)}
+        body.dw .stitle i{color:var(--accent-dw)}
+        body.sm .stitle i{color:var(--accent-sm)}
+        body.ns .stitle i{color:var(--accent-ns)}
+        body.db2 .stitle i{color:var(--accent-vl)}
+        body.fx .stitle i{color:var(--accent-fx)}
+
+        .src-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.65rem;font-weight:700;margin-bottom:14px}
+        .src-badge.db{background:var(--accent-glow);color:var(--accent)}
+        .src-badge.fr{background:var(--accent-b-glow);color:var(--accent-b)}
+        .src-badge.ml{background:var(--accent-m-glow);color:var(--accent-m)}
+        .src-badge.gs{background:var(--accent-g-glow);color:var(--accent-g)}
+        .src-badge.dw{background:var(--accent-dw-glow);color:var(--accent-dw)}
+        .src-badge.sm{background:var(--accent-sm-glow);color:var(--accent-sm)}
+        .src-badge.ns{background:var(--accent-ns-glow);color:var(--accent-ns)}
+        .src-badge.db2{background:var(--accent-vl-glow);color:var(--accent-vl)}
+        .src-badge.fx{background:var(--accent-fx-glow);color:var(--accent-fx)}
+
+        .fbar{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+        .flabel{font-size:.8rem;color:var(--text2);margin-right:4px;font-weight:500}
+        .fbtn{padding:6px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;font-size:.75rem;color:var(--text2);cursor:pointer;transition:var(--tr);display:flex;align-items:center;gap:5px}
+        .fbtn:hover{border-color:var(--text3);color:var(--text)}
+        .fbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+        body.fr .fbtn.on{background:var(--accent-b);border-color:var(--accent-b)}
+        body.ml .fbtn.on{background:var(--accent-m);border-color:var(--accent-m)}
+        body.gs .fbtn.on{background:var(--accent-g);border-color:var(--accent-g);color:#000}
+        body.dw .fbtn.on{background:var(--accent-dw);border-color:var(--accent-dw);color:#fff}
+        body.sm .fbtn.on{background:var(--accent-sm);border-color:var(--accent-sm);color:#fff}
+        body.ns .fbtn.on{background:var(--accent-ns);border-color:var(--accent-ns);color:#fff}
+        body.db2 .fbtn.on{background:var(--accent-vl);border-color:var(--accent-vl);color:#fff}
+        body.fx .fbtn.on{background:var(--accent-fx);border-color:var(--accent-fx);color:#fff}
+
+        .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:16px}
+        .card{position:relative;border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:var(--tr);background:var(--bg2)}
+        .card:hover{transform:translateY(-5px);box-shadow:0 12px 36px rgba(0,0,0,.3)}
+        .cimg{position:relative;aspect-ratio:3/4;overflow:hidden;background:var(--bg3)}
+        .cimg img{width:100%;height:100%;object-fit:cover;transition:var(--tr)}
+        .card:hover .cimg img{transform:scale(1.06)}
+        .chov{position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.8) 0%,transparent 55%);opacity:0;transition:var(--tr);display:flex;align-items:center;justify-content:center}
+        .card:hover .chov{opacity:1}
+        .cplay{width:42px;height:42px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.95rem;transform:scale(.7);transition:var(--tr)}
+        body.fr .cplay{background:var(--accent-b)}
+        body.ml .cplay{background:var(--accent-m)}
+        body.gs .cplay{background:var(--accent-g)}
+        body.dw .cplay{background:var(--accent-dw)}
+        body.sm .cplay{background:var(--accent-sm)}
+        body.ns .cplay{background:var(--accent-ns)}
+        body.db2 .cplay{background:var(--accent-vl)}
+        body.fx .cplay{background:var(--accent-fx)}
+        .card:hover .cplay{transform:scale(1)}
+        .cbadge{position:absolute;top:6px;left:6px;background:var(--accent);color:#fff;padding:2px 7px;border-radius:5px;font-size:.62rem;font-weight:700}
+        body.fr .cbadge{background:var(--accent-b)}
+        body.ml .cbadge{background:var(--accent-m)}
+        body.gs .cbadge{background:var(--accent-g);color:#000}
+        body.dw .cbadge{background:var(--accent-dw);color:#fff}
+        body.sm .cbadge{background:var(--accent-sm);color:#fff}
+        body.ns .cbadge{background:var(--accent-ns);color:#fff}
+        body.db2 .cbadge{background:var(--accent-vl);color:#fff}
+        body.fx .cbadge{background:var(--accent-fx);color:#fff}
+        .cscore{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.65);color:var(--gold);padding:2px 7px;border-radius:5px;font-size:.62rem;font-weight:700;display:flex;align-items:center;gap:3px}
+        .cbody{padding:9px 10px}
+        .cname{font-size:.8rem;font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:3px}
+        .csub{font-size:.68rem;color:var(--text2);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+        .noimg{width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:2rem}
+
+        /* ========== WATCHLIST BUTTON ON CARD ========== */
+        .card-fav-btn{position:absolute;bottom:6px;right:6px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:.75rem;z-index:5;border:1px solid rgba(255,255,255,.1);opacity:0;transition:var(--tr)}
+        .card:hover .card-fav-btn{opacity:1}
+        .card-fav-btn.saved{opacity:1;color:var(--gold);background:rgba(0,0,0,.75)}
+        .card-fav-btn:hover{transform:scale(1.15)}
+
+        /* ========== CONTINUE WATCHING SECTION ========== */
+        .cw-section{margin-bottom:24px}
+        .cw-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+        .cw-title{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px;color:var(--text)}
+        .cw-title i{color:var(--accent)}
+        body.fr .cw-title i{color:var(--accent-b)}
+        body.ml .cw-title i{color:var(--accent-m)}
+        body.gs .cw-title i{color:var(--accent-g)}
+        body.dw .cw-title i{color:var(--accent-dw)}
+        body.sm .cw-title i{color:var(--accent-sm)}
+        body.ns .cw-title i{color:var(--accent-ns)}
+        body.db2 .cw-title i{color:var(--accent-vl)}
+        body.fx .cw-title i{color:var(--accent-fx)}
+        .cw-clear{font-size:.72rem;color:var(--text3);padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;cursor:pointer;transition:var(--tr)}
+        .cw-clear:hover{color:var(--accent);border-color:var(--accent)}
+        .cw-scroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
+        .cw-scroll::-webkit-scrollbar{display:none}
+        .cw-card{flex-shrink:0;width:140px;background:var(--bg2);border-radius:12px;overflow:hidden;cursor:pointer;border:1px solid var(--border);transition:var(--tr);position:relative}
+        .cw-card:hover{transform:translateY(-3px);border-color:var(--accent)}
+        body.fr .cw-card:hover{border-color:var(--accent-b)}
+        body.ml .cw-card:hover{border-color:var(--accent-m)}
+        body.gs .cw-card:hover{border-color:var(--accent-g)}
+        body.dw .cw-card:hover{border-color:var(--accent-dw)}
+        body.sm .cw-card:hover{border-color:var(--accent-sm)}
+        body.ns .cw-card:hover{border-color:var(--accent-ns)}
+        body.db2 .cw-card:hover{border-color:var(--accent-vl)}
+        body.fx .cw-card:hover{border-color:var(--accent-fx)}
+        .cw-thumb{position:relative;aspect-ratio:3/4;overflow:hidden;background:var(--bg3)}
+        .cw-thumb img{width:100%;height:100%;object-fit:cover}
+        .cw-thumb-noimg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:1.5rem}
+        .cw-play-icon{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;opacity:0;transition:var(--tr)}
+        .cw-card:hover .cw-play-icon{opacity:1}
+        .cw-play-icon i{font-size:1.4rem;color:#fff;background:var(--accent);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+        body.fr .cw-play-icon i{background:var(--accent-b)}
+        body.ml .cw-play-icon i{background:var(--accent-m)}
+        body.gs .cw-play-icon i{background:var(--accent-g)}
+        body.dw .cw-play-icon i{background:var(--accent-dw)}
+        body.sm .cw-play-icon i{background:var(--accent-sm)}
+        body.ns .cw-play-icon i{background:var(--accent-ns)}
+        body.db2 .cw-play-icon i{background:var(--accent-vl)}
+        body.fx .cw-play-icon i{background:var(--accent-fx)}
+        .cw-prog-bar{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.15)}
+        .cw-prog-fill{height:100%;background:var(--accent);transition:width .3s}
+        body.fr .cw-prog-fill{background:var(--accent-b)}
+        body.ml .cw-prog-fill{background:var(--accent-m)}
+        body.gs .cw-prog-fill{background:var(--accent-g)}
+        body.dw .cw-prog-fill{background:var(--accent-dw)}
+        body.sm .cw-prog-fill{background:var(--accent-sm)}
+        body.ns .cw-prog-fill{background:var(--accent-ns)}
+        body.db2 .cw-prog-fill{background:var(--accent-vl)}
+        body.fx .cw-prog-fill{background:var(--accent-fx)}
+        .cw-info{padding:7px 8px}
+        .cw-name{font-size:.72rem;font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:3px}
+        .cw-ep{font-size:.65rem;color:var(--text2)}
+        .cw-del{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.7);color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:.6rem;opacity:0;transition:var(--tr);z-index:5}
+        .cw-card:hover .cw-del{opacity:1}
+        .cw-del:hover{background:var(--accent);color:#fff}
+
+        /* ========== WATCHLIST PAGE ========== */
+        .wl-empty{text-align:center;padding:60px 20px;color:var(--text3)}
+        .wl-empty i{font-size:3rem;margin-bottom:14px;display:block;color:var(--text3)}
+        .wl-empty p{font-size:.9rem;margin-bottom:6px}
+        .wl-empty small{font-size:.78rem}
+        .wl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:16px}
+        .wl-src-label{position:absolute;bottom:40px;left:0;right:0;padding:2px 6px;font-size:.58rem;font-weight:700;text-align:center;letter-spacing:.3px}
+
+        .load-more{display:flex;justify-content:center;margin-top:28px}
+        .lmbtn{padding:12px 32px;background:var(--bg3);border:1px solid var(--border);border-radius:50px;color:var(--text);font-size:.85rem;font-weight:600;display:flex;align-items:center;gap:8px;transition:var(--tr)}
+        .lmbtn:hover{background:var(--bg4);border-color:var(--accent);transform:translateY(-2px)}
+        body.fr .lmbtn:hover{border-color:var(--accent-b)}
+        body.ml .lmbtn:hover{border-color:var(--accent-m)}
+        body.gs .lmbtn:hover{border-color:var(--accent-g)}
+        body.dw .lmbtn:hover{border-color:var(--accent-dw)}
+        body.sm .lmbtn:hover{border-color:var(--accent-sm)}
+        body.ns .lmbtn:hover{border-color:var(--accent-ns)}
+        body.db2 .lmbtn:hover{border-color:var(--accent-vl)}
+        body.fx .lmbtn:hover{border-color:var(--accent-fx)}
+        .lmbtn.loading{pointer-events:none;opacity:.6}
+        .lmbtn .spinner{width:16px;height:16px;border:2px solid var(--bg4);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;display:none}
+        body.fr .lmbtn .spinner{border-top-color:var(--accent-b)}
+        body.ml .lmbtn .spinner{border-top-color:var(--accent-m)}
+        body.gs .lmbtn .spinner{border-top-color:var(--accent-g)}
+        body.dw .lmbtn .spinner{border-top-color:var(--accent-dw)}
+        body.sm .lmbtn .spinner{border-top-color:var(--accent-sm)}
+        body.ns .lmbtn .spinner{border-top-color:var(--accent-ns)}
+        body.db2 .lmbtn .spinner{border-top-color:var(--accent-vl)}
+        body.fx .lmbtn .spinner{border-top-color:var(--accent-fx)}
+        .lmbtn.loading .spinner{display:block}
+        .lmbtn.loading .lmtext{display:none}
+        .end-msg{text-align:center;padding:20px;color:var(--text3);font-size:.85rem}
+
+        .dhero{position:relative;border-radius:var(--radius);overflow:hidden;margin-bottom:22px;background:var(--bg2)}
+        .dbg{position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(30px) brightness(.25);transform:scale(1.2)}
+        .din{position:relative;display:flex;gap:26px;padding:28px;z-index:1}
+        .dposter{width:190px;flex-shrink:0;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);background:var(--bg3)}
+        .dposter img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+        .dinfo{flex:1;display:flex;flex-direction:column;justify-content:center}
+        .dttl{font-size:1.5rem;font-weight:800;margin-bottom:7px;line-height:1.3}
+        .dtags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+        .dtag{padding:3px 9px;background:var(--bg4);border-radius:20px;font-size:.7rem;color:var(--text2);border:1px solid var(--border)}
+        .dsts{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap}
+        .ds{display:flex;align-items:center;gap:5px;font-size:.8rem;color:var(--text2)}
+        .ds i{color:var(--accent);font-size:.75rem}
+        body.fr .ds i{color:var(--accent-b)}
+        body.ml .ds i{color:var(--accent-m)}
+        body.gs .ds i{color:var(--accent-g)}
+        body.dw .ds i{color:var(--accent-dw)}
+        body.sm .ds i{color:var(--accent-sm)}
+        body.ns .ds i{color:var(--accent-ns)}
+        body.db2 .ds i{color:var(--accent-vl)}
+        body.fx .ds i{color:var(--accent-fx)}
+        .ddesc{font-size:.83rem;color:var(--text2);line-height:1.7;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:10px}
+        .ddesc.open{-webkit-line-clamp:unset}
+        .bmore{background:none;color:var(--accent);font-size:.75rem;font-weight:600;cursor:pointer;padding:0;margin-bottom:12px}
+        body.fr .bmore{color:var(--accent-b)}
+        body.ml .bmore{color:var(--accent-m)}
+        body.gs .bmore{color:var(--accent-g)}
+        body.dw .bmore{color:var(--accent-dw)}
+        body.sm .bmore{color:var(--accent-sm)}
+        body.ns .bmore{color:var(--accent-ns)}
+        body.db2 .bmore{color:var(--accent-vl)}
+        body.fx .bmore{color:var(--accent-fx)}
+        .bwatch{padding:10px 24px;background:var(--accent);color:#fff;border-radius:50px;font-size:.83rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;transition:var(--tr)}
+        body.fr .bwatch{background:var(--accent-b)}
+        body.ml .bwatch{background:var(--accent-m)}
+        body.gs .bwatch{background:var(--accent-g);color:#000}
+        body.dw .bwatch{background:var(--accent-dw);color:#fff}
+        body.sm .bwatch{background:var(--accent-sm);color:#fff}
+        body.ns .bwatch{background:var(--accent-ns);color:#fff}
+        body.db2 .bwatch{background:var(--accent-vl);color:#fff}
+        body.fx .bwatch{background:var(--accent-fx);color:#fff}
+        .bwatch:hover{transform:translateY(-2px);filter:brightness(1.15)}
+        /* Watchlist/Favorit button di detail */
+        .bfav{padding:10px 20px;background:var(--bg3);color:var(--text);border-radius:50px;font-size:.83rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;transition:var(--tr);border:1px solid var(--border)}
+        .bfav:hover{border-color:var(--gold);color:var(--gold)}
+        .bfav.saved{background:rgba(255,215,0,.12);color:var(--gold);border-color:var(--gold)}
+        .epgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:7px;margin-top:6px}
+        .epc{padding:9px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;text-align:center;cursor:pointer;font-size:.8rem;font-weight:500;transition:var(--tr)}
+        .epc:hover{background:var(--bg4);border-color:var(--accent)}
+        .epc.cw-ep-active{background:var(--accent);color:#fff;border-color:var(--accent)}
+        body.fr .epc:hover,.epc.cw-ep-active body.fr{border-color:var(--accent-b)}
+        body.ml .epc:hover{border-color:var(--accent-m)}
+        body.gs .epc:hover{border-color:var(--accent-g)}
+        body.dw .epc:hover{border-color:var(--accent-dw)}
+        body.sm .epc:hover{border-color:var(--accent-sm)}
+        body.ns .epc:hover{border-color:var(--accent-ns)}
+        body.db2 .epc:hover{border-color:var(--accent-vl)}
+        body.fx .epc:hover{border-color:var(--accent-fx)}
+        /* Continue watching banner di halaman detail */
+        .cw-resume-banner{background:linear-gradient(135deg,rgba(229,9,20,.15),rgba(229,9,20,.05));border:1px solid rgba(229,9,20,.3);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:16px;cursor:pointer;transition:var(--tr)}
+        .cw-resume-banner:hover{background:linear-gradient(135deg,rgba(229,9,20,.25),rgba(229,9,20,.1))}
+        body.fr .cw-resume-banner{background:linear-gradient(135deg,rgba(108,59,255,.15),rgba(108,59,255,.05));border-color:rgba(108,59,255,.3)}
+        body.fr .cw-resume-banner:hover{background:linear-gradient(135deg,rgba(108,59,255,.25),rgba(108,59,255,.1))}
+        body.ml .cw-resume-banner{background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(16,185,129,.05));border-color:rgba(16,185,129,.3)}
+        body.ml .cw-resume-banner:hover{background:linear-gradient(135deg,rgba(16,185,129,.25),rgba(16,185,129,.1))}
+        .cw-resume-icon{width:38px;height:38px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.9rem;flex-shrink:0}
+        body.fr .cw-resume-icon{background:var(--accent-b)}
+        body.ml .cw-resume-icon{background:var(--accent-m)}
+        body.gs .cw-resume-icon{background:var(--accent-g)}
+        body.dw .cw-resume-icon{background:var(--accent-dw)}
+        body.sm .cw-resume-icon{background:var(--accent-sm)}
+        body.ns .cw-resume-icon{background:var(--accent-ns)}
+        body.db2 .cw-resume-icon{background:var(--accent-vl)}
+        body.fx .cw-resume-icon{background:var(--accent-fx)}
+        .cw-resume-text{flex:1}
+        .cw-resume-text strong{font-size:.85rem;display:block;margin-bottom:2px}
+        .cw-resume-text span{font-size:.75rem;color:var(--text2)}
+        .cw-resume-prog{height:3px;background:var(--bg4);border-radius:2px;margin-top:6px;overflow:hidden}
+        .cw-resume-prog-fill{height:100%;background:var(--accent);border-radius:2px}
+        body.fr .cw-resume-prog-fill{background:var(--accent-b)}
+        body.ml .cw-resume-prog-fill{background:var(--accent-m)}
+        body.gs .cw-resume-prog-fill{background:var(--accent-g)}
+        body.dw .cw-resume-prog-fill{background:var(--accent-dw)}
+        body.sm .cw-resume-prog-fill{background:var(--accent-sm)}
+        body.ns .cw-resume-prog-fill{background:var(--accent-ns)}
+        body.db2 .cw-resume-prog-fill{background:var(--accent-vl)}
+        body.fx .cw-resume-prog-fill{background:var(--accent-fx)}
+
+        .ld{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:12px}
+        .sp{width:34px;height:34px;border:3px solid var(--bg4);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+        body.fr .sp{border-top-color:var(--accent-b)}
+        body.ml .sp{border-top-color:var(--accent-m)}
+        body.gs .sp{border-top-color:var(--accent-g)}
+        body.dw .sp{border-top-color:var(--accent-dw)}
+        body.sm .sp{border-top-color:var(--accent-sm)}
+        body.ns .sp{border-top-color:var(--accent-ns)}
+        body.db2 .sp{border-top-color:var(--accent-vl)}
+        body.fx .sp{border-top-color:var(--accent-fx)}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .lt{color:var(--text2);font-size:.83rem}
+        .ebox{text-align:center;padding:50px 20px}
+        .ebox i{font-size:2.2rem;color:var(--accent);margin-bottom:12px}
+        .bret{padding:8px 20px;background:var(--accent);color:#fff;border-radius:50px;font-size:.8rem;font-weight:600}
+        body.fr .bret{background:var(--accent-b)}
+        body.ml .bret{background:var(--accent-m)}
+        body.gs .bret{background:var(--accent-g);color:#000}
+        body.dw .bret{background:var(--accent-dw);color:#fff}
+        body.sm .bret{background:var(--accent-sm);color:#fff}
+        body.ns .bret{background:var(--accent-ns);color:#fff}
+        body.db2 .bret{background:var(--accent-vl);color:#fff}
+        body.fx .bret{background:var(--accent-fx);color:#fff}
+        .empty{text-align:center;padding:45px 20px;color:var(--text3)}
+        .back{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--bg3);color:var(--text);border-radius:50px;font-size:.8rem;font-weight:500;cursor:pointer;margin-bottom:16px;border:1px solid var(--border)}
+
+        .foot{border-top:1px solid var(--border);padding:18px;text-align:center;color:var(--text3);font-size:.72rem;margin-top:36px}
+
+        .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--bg4);color:var(--text);padding:12px 24px;border-radius:50px;font-size:.85rem;z-index:1000;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+        .toast.show{opacity:1}
+
+        .tkp{position:fixed;inset:0;z-index:600;background:#000;display:none;flex-direction:column;user-select:none}
+        .tkp.open{display:flex}
+        .tk-vc{flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+        .tk-vc video{width:100%;height:100%;object-fit:contain;background:#000}
+        .tk-grad-top{position:absolute;top:0;left:0;right:0;height:120px;background:linear-gradient(180deg,rgba(0,0,0,.6) 0%,transparent 100%);pointer-events:none;z-index:2}
+        .tk-grad-bot{position:absolute;bottom:0;left:0;right:0;height:200px;background:linear-gradient(0deg,rgba(0,0,0,.7) 0%,transparent 100%);pointer-events:none;z-index:2}
+        .tk-close{position:absolute;top:max(16px,env(safe-area-inset-top));left:16px;z-index:10;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.08)}
+        .tk-close:active{transform:scale(.9)}
+        .tk-epc{position:absolute;top:max(20px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:10;background:rgba(255,255,255,.12);color:#fff;padding:6px 16px;border-radius:20px;font-size:.78rem;font-weight:700;backdrop-filter:blur(12px)}
+        .tk-side{position:absolute;right:12px;bottom:160px;z-index:10;display:flex;flex-direction:column;gap:20px;align-items:center}
+        .tk-sb{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;color:#fff;font-size:.55rem;font-weight:500}
+        .tk-sb i{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:1.15rem;backdrop-filter:blur(10px);transition:var(--tr);border:1px solid rgba(255,255,255,.05)}
+        .tk-sb:active i{background:rgba(255,255,255,.25);transform:scale(.88)}
+        .tk-sb.wl-active i{background:rgba(255,215,0,.25);border-color:rgba(255,215,0,.4)}
+        .tk-bottom{position:absolute;bottom:max(24px,env(safe-area-inset-bottom));left:16px;right:80px;z-index:10}
+        .tk-dname{font-size:1rem;font-weight:700;color:#fff;margin-bottom:4px;text-shadow:0 2px 8px rgba(0,0,0,.7);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+        .tk-epsub{font-size:.82rem;color:rgba(255,255,255,.8);text-shadow:0 1px 4px rgba(0,0,0,.6);margin-bottom:8px}
+        .tk-hint{font-size:.68rem;color:rgba(255,255,255,.35);display:flex;align-items:center;gap:5px}
+        .tk-hint i{animation:tkBounce 1.8s infinite ease-in-out}
+        @keyframes tkBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+        .tk-prog{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.12);z-index:11}
+        .tk-prog-bar{height:100%;background:var(--accent);width:0%;transition:width .15s linear}
+        body.fr .tk-prog-bar{background:var(--accent-b)}
+        body.ml .tk-prog-bar{background:var(--accent-m)}
+        body.gs .tk-prog-bar{background:var(--accent-g)}
+        body.dw .tk-prog-bar{background:var(--accent-dw)}
+        body.sm .tk-prog-bar{background:var(--accent-sm)}
+        body.ns .tk-prog-bar{background:var(--accent-ns)}
+        body.db2 .tk-prog-bar{background:var(--accent-vl)}
+        body.fx .tk-prog-bar{background:var(--accent-fx)}
+        .tk-load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:8;background:rgba(0,0,0,.4)}
+        .tk-load .sp{width:42px;height:42px;border-width:3px;border-color:rgba(255,255,255,.15);border-top-color:#fff}
+        .tk-pp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:6;pointer-events:none}
+        .tk-pp i{width:72px;height:72px;border-radius:50%;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#fff;opacity:0;transform:scale(1.8);transition:all .2s ease-out;backdrop-filter:blur(4px)}
+        .tk-pp.show i{opacity:1;transform:scale(1)}
+        .tk-seek{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:6;pointer-events:none}
+        .tk-seek-ind{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.5);padding:12px 20px;border-radius:12px;opacity:0;transform:scale(.8);transition:all .2s ease-out;backdrop-filter:blur(8px)}
+        .tk-seek-ind.show{opacity:1;transform:scale(1)}
+        .tk-seek-ind i{font-size:1.2rem;color:#fff}
+        .tk-seek-ind span{font-size:1rem;font-weight:700;color:#fff}
+        .tk-err{position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:7;color:rgba(255,255,255,.7);font-size:.85rem;display:none}
+        .tk-err.show{display:flex}
+        .tk-err i{font-size:2.5rem;color:var(--accent)}
+        .tk-err button{padding:8px 20px;border-radius:50px;background:var(--accent);color:#fff;font-size:.8rem;font-weight:600}
+        .tk-epanel{position:absolute;bottom:0;left:0;right:0;max-height:55vh;background:rgba(16,16,28,.95);backdrop-filter:blur(24px);border-radius:18px 18px 0 0;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);z-index:20;display:flex;flex-direction:column;border-top:1px solid rgba(255,255,255,.08)}
+        .tk-epanel.open{transform:translateY(0)}
+        .tk-eph{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);font-weight:600;font-size:.9rem;color:#fff}
+        .tk-eph button{background:none;color:var(--text2);font-size:1.2rem;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+        .tk-epl{overflow-y:auto;padding:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(65px,1fr));gap:6px}
+        .tk-epb{padding:10px 5px;border-radius:8px;background:var(--bg3);color:var(--text2);text-align:center;font-size:.78rem;font-weight:500;border:1px solid var(--border);transition:var(--tr)}
+        .tk-epb.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+        body.fr .tk-epb.on{background:var(--accent-b);border-color:var(--accent-b)}
+        body.ml .tk-epb.on{background:var(--accent-m);border-color:var(--accent-m)}
+        body.gs .tk-epb.on{background:var(--accent-g);border-color:var(--accent-g);color:#000}
+        body.dw .tk-epb.on{background:var(--accent-dw);border-color:var(--accent-dw);color:#fff}
+        body.sm .tk-epb.on{background:var(--accent-sm);border-color:var(--accent-sm);color:#fff}
+        body.ns .tk-epb.on{background:var(--accent-ns);border-color:var(--accent-ns);color:#fff}
+        body.db2 .tk-epb.on{background:var(--accent-vl);border-color:var(--accent-vl);color:#fff}
+        body.fx .tk-epb.on{background:var(--accent-fx);border-color:var(--accent-fx);color:#fff}
+        .tk-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:15;display:none}
+        .tk-overlay.show{display:block}
+        .tk-anim-up{animation:tkUp .3s ease}
+        .tk-anim-down{animation:tkDn .3s ease}
+        @keyframes tkUp{from{transform:translateY(25%);opacity:.3}to{transform:translateY(0);opacity:1}}
+        @keyframes tkDn{from{transform:translateY(-25%);opacity:.3}to{transform:translateY(0);opacity:1}}
+
+        @media(max-width:1024px){.dposter{width:160px}}
+        @media(max-width:768px){
+            .hdr-in{padding:0 10px;height:54px;gap:6px}.nav{display:none}.mbar{display:block}
+            .main{padding:12px;padding-bottom:72px}
+            .grid{grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:10px}
+            .din{flex-direction:column;padding:16px;align-items:center;text-align:center}
+            .dposter{width:140px}.dinfo{align-items:center}.dsts{justify-content:center}
+            .epgrid{grid-template-columns:repeat(auto-fill,minmax(65px,1fr))}
+            .swrap{max-width:none;flex:1}.logo span{display:none}
+            .plat-btn span.plat-name{display:none}
+            .fbar{gap:4px}.fbtn{padding:5px 10px;font-size:.7rem}
+            .plat-grid{grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px 18px}
+            .plat-card{padding:14px 12px}
+            .cw-card{width:120px}
+        }
+        @media(max-width:480px){.grid{grid-template-columns:repeat(3,1fr);gap:7px}.cbody{padding:6px 7px}.cname{font-size:.72rem}}
+
+        /* ========== SAWERIA DONATION ========== */
+        .saw-fab{position:fixed;bottom:90px;right:18px;z-index:300;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+        .saw-fab-btn{display:flex;align-items:center;gap:9px;padding:11px 18px;background:linear-gradient(135deg,#f97316,#fb923c);color:#fff;border-radius:50px;font-size:.82rem;font-weight:700;box-shadow:0 4px 20px rgba(249,115,22,.45);transition:var(--tr);border:none;cursor:pointer;white-space:nowrap}
+        .saw-fab-btn:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 8px 28px rgba(249,115,22,.6)}
+        .saw-fab-btn:active{transform:scale(.96)}
+        .saw-fab-btn i{font-size:1rem}
+        .saw-fab-pulse{position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:#fbbf24;animation:sawPulse 2s infinite}
+        @keyframes sawPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.5}}
+
+        /* Modal donasi */
+        .saw-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:400;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px);padding:0}
+        .saw-modal-bg.open{display:flex}
+        .saw-modal{background:var(--bg2);border:1px solid var(--border);border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:0 0 32px;animation:sawSlideUp .3s cubic-bezier(.34,1.56,.64,1);overflow:hidden}
+        @keyframes sawSlideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+        .saw-modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0}
+        .saw-modal-hero{background:linear-gradient(135deg,#f97316,#fb923c);padding:24px 24px 20px;text-align:center;position:relative;overflow:hidden}
+        .saw-modal-hero::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.1)}
+        .saw-modal-hero::after{content:'';position:absolute;bottom:-20px;left:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.08)}
+        .saw-modal-ico{font-size:2.2rem;margin-bottom:8px;display:block;position:relative;z-index:1}
+        .saw-modal-ttl{font-size:1.15rem;font-weight:800;color:#fff;margin-bottom:4px;position:relative;z-index:1}
+        .saw-modal-sub{font-size:.78rem;color:rgba(255,255,255,.85);position:relative;z-index:1;line-height:1.5}
+        .saw-modal-body{padding:20px 20px 0}
+        .saw-amounts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+        .saw-amt{padding:10px 6px;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;text-align:center;font-size:.78rem;font-weight:700;color:var(--text2);cursor:pointer;transition:var(--tr)}
+        .saw-amt:hover{border-color:#f97316;color:#f97316;background:rgba(249,115,22,.08)}
+        .saw-amt.on{border-color:#f97316;color:#fff;background:linear-gradient(135deg,#f97316,#fb923c)}
+        .saw-goto{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:linear-gradient(135deg,#f97316,#fb923c);color:#fff;border-radius:14px;font-size:.9rem;font-weight:700;cursor:pointer;transition:var(--tr);border:none;margin-top:4px}
+        .saw-goto:hover{filter:brightness(1.1);transform:translateY(-2px)}
+        .saw-goto:active{transform:scale(.97)}
+        .saw-note{text-align:center;font-size:.68rem;color:var(--text3);margin-top:10px;line-height:1.5}
+        .saw-close{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;cursor:pointer;z-index:2;border:none}
+
+        @media(max-width:768px){
+            .saw-fab{bottom:76px;right:14px}
+            .saw-fab-btn{padding:10px 14px;font-size:.78rem}
+            .saw-modal{max-width:100%}
+        }
+    </style>
+</head>
+<body>
+<header class="hdr">
+    <div class="hdr-in">
+        <div class="logo" onclick="App.goHome()"><i class="fas fa-play-circle"></i><span>DramaFeed</span></div>
+        <button class="plat-btn" onclick="App.openPlatModal()">
+            <span class="pdot"></span>
+            <span class="plat-name" id="platBtnName">DramaFeed</span>
+            <i class="fas fa-chevron-down" style="font-size:.65rem;color:var(--text3)"></i>
+        </button>
+        <nav class="nav" id="navDesktop"></nav>
+        <div class="swrap">
+            <div class="sbox">
+                <i class="fas fa-search si"></i>
+                <input type="text" id="qInp" placeholder="Cari drama..." autocomplete="off">
+                <button class="sgo" onclick="App.doSearch()">Cari</button>
+            </div>
+            <div id="sugBox" class="sugbox"></div>
+        </div>
+    </div>
+</header>
+
+<div class="plat-modal-bg" id="platModalBg" onclick="App._closePlatModalBg(event)">
+    <div class="plat-modal">
+        <div class="plat-modal-hdr">
+            <h2>Switch Platform</h2>
+            <button class="plat-close" onclick="App.closePlatModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="plat-grid">
+            <div class="plat-card" id="pc-db" onclick="App.setSource('dramabox')">
+                <div class="plat-card-ico ico-db" style="padding:0;overflow:hidden"><img src="https://i.ibb.co.com/QFC6BSdM/images-5.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:9px" onerror="this.style.display='none'"></div>
+                <div class="plat-card-body"><div class="plat-card-name">DramaBox</div></div>
+                <div class="plat-check"><i class="fas fa-check"></i></div>
+            </div>
+            <div class="plat-card" id="pc-fr" onclick="App.setSource('freereels')">
+                <div class="plat-card-ico ico-fr" style="padding:0;overflow:hidden"><img src="https://i.ibb.co.com/nH248Pd/unnamed.png" style="width:100%;height:100%;object-fit:cover;border-radius:9px" onerror="this.style.display='none'"></div>
+                <div class="plat-card-body"><div class="plat-card-name">FreeReels</div></div>
+                <div class="plat-check"><i class="fas fa-check"></i></div>
+            </div>
+            <div class="plat-card" id="pc-ml" onclick="App.setSource('melolo')">
+                <div class="plat-card-ico ico-ml" style="padding:0;overflow:hidden"><img src="https://i.ibb.co.com/k6x2zvBL/images-6.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:9px" onerror="this.style.display='none'"></div>
+                <div class="plat-card-body"><div class="plat-card-name">MeloLo</div></div>
+                <div class="plat-check"><i class="fas fa-check"></i></div>
+            </div>
+            <div class="plat-card" id="pc-gs" onclick="App.setSource('goodshort')">
+                <div class="plat-card-ico ico-gs" style="padding:0;overflow:hidden"><img src="https://i.ibb.co.com/FbrKcHdw/images-8.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:9px" onerror="this.style.display='none'"></div>
+                <div class="plat-card-body"><div class="plat-card-name">GoodShort</div></div>
+                <div class="plat-badge-new">NEW</div>
+                <div class="plat-check"><i class="fas fa-check"></i></div>
+            </div>
+            <div class="plat-card" id="pc-dw" onclick="App.setSource('dramawave')">
+                <div class="plat-card-ico ico-dw" style="padding:0;overflow:hidden"><img src="https://i.ibb.co.com/x87TDkkW/images-9.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:9px" onerror="this.style.display='none'"></div>
+                <div class="plat-card-body"><div class="plat-card-name">DramaWave</div></div>
+                <div class="plat-badge-new">NEW</div>
+                <div class="plat-check"><i class="fas fa-check"></i></div>
+            </div>
+            <div class="plat-card" id="pc-sm" onclick="App.setSource('shortmax')">
+                <div class="plat-card-ico ico-sm" style="padding:0;overflow:hidden"><img src="https://i.ibb.co.com/8LZ4s6mc/images-1.png" style="width:100%;height:100%;object-fit:cover;border-radius:9px" onerror="this.style.display='none'"></div>
+                <div class="plat-card-body"><div class="plat-card-name">ShortMax</div></div>
+                <div class="plat-badge-new">NEW</div>
+                <div class="plat-check"><i class="fas fa-check"></i></div>
+            </div>
+            <div class="plat-card" id="pc-ns" onclick="App.setSource('netshort')">
+                <div class="plat-card-ico ico-ns" style="padding:0;overflow:hidden"><img src="https://i.ibb.co.com/Mx6tGKcJ/images-10.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:9px" onerror="this.style.display='none'"></div>
+                <div class="plat-card-body"><div class="plat-card-name">NetShort</div></div>
+                <div class="plat-badge-new">NEW</div>
+                <div class="plat-check"><i class="fas fa-check"></i></div>
+            </div>
+            <div class="plat-card" id="pc-db2" onclick="App.setSource('dramabite')">
+                <div class="plat-card-ico ico-db2" style="padding:0;overflow:hidden"><img src="https://i.ibb.co.com/tPB7fjFZ/images-12.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:9px" onerror="this.style.display='none'"></div>
+                <div class="plat-card-body"><div class="plat-card-name">DramaBite</div></div>
+                <div class="plat-badge-new">NEW</div>
+                <div class="plat-check"><i class="fas fa-check"></i></div>
+            </div>
+            <div class="plat-card" id="pc-fx" onclick="App.setSource('flextv')">
+                <div class="plat-card-ico ico-fx" style="padding:0;overflow:hidden"><img src="https://i.ibb.co.com/RkKRFqMY/images-2.png" style="width:100%;height:100%;object-fit:cover;border-radius:9px" onerror="this.style.display='none'"></div>
+                <div class="plat-card-body"><div class="plat-card-name">FlexTV</div></div>
+                <div class="plat-badge-new">NEW</div>
+                <div class="plat-check"><i class="fas fa-check"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mbar"><div class="mbar-in" id="navMobile"></div></div>
+<main id="root" class="main"><div class="ld"><div class="sp"></div><div class="lt">Memuat drama...</div></div></main>
+<div id="toast" class="toast"></div>
+<div id="tkPlayer" class="tkp"></div>
+<footer class="foot">🎬 DramaFeed — DramaBox · FreeReels · MeloLo · GoodShort · DramaWave · ShortMax · NetShort · DramaBite · FlexTV © 2024
+<br><span style="margin-top:6px;display:inline-block">☕ Dukung pengembangan DramaFeed di <a href="https://saweria.co/DramaFeed" target="_blank" style="color:#f97316;font-weight:700">saweria.co/DramaFeed</a></span>
+</footer>
+
+<!-- Saweria FAB -->
+<div class="saw-fab">
+    <button class="saw-fab-btn" onclick="Saw.open()">
+        <span class="saw-fab-pulse"></span>
+        <img src="https://i.ibb.co.com/G3BCxv0J/unnamed.jpg" style="width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">
+        <span>Dukung Kami</span>
+    </button>
+</div>
+
+<!-- Saweria Modal -->
+<div class="saw-modal-bg" id="sawModalBg" onclick="Saw._closeBg(event)">
+    <div class="saw-modal">
+        <div class="saw-modal-handle"></div>
+        <div class="saw-modal-hero">
+            <button class="saw-close" onclick="Saw.close()"><i class="fas fa-times"></i></button>
+            <span class="saw-modal-ico"><img src="https://i.ibb.co.com/G3BCxv0J/unnamed.jpg" style="width:60px;height:60px;border-radius:50%;object-fit:cover;box-shadow:0 4px 16px rgba(0,0,0,.3)" onerror="this.outerHTML='☕'"></span>
+            <div class="saw-modal-ttl">Dukung DramaFeed</div>
+            <div class="saw-modal-sub">DramaFeed gratis untuk semua! Kalau suka,<br>traktir kami kopi biar makin semangat! ☕🎬</div>
+        </div>
+        <div class="saw-modal-body">
+            <div class="saw-amounts" id="sawAmounts">
+                <div class="saw-amt" onclick="Saw.pick(this,5000)">Rp 5.000</div>
+                <div class="saw-amt on" onclick="Saw.pick(this,10000)">Rp 10.000</div>
+                <div class="saw-amt" onclick="Saw.pick(this,20000)">Rp 20.000</div>
+                <div class="saw-amt" onclick="Saw.pick(this,50000)">Rp 50.000</div>
+                <div class="saw-amt" onclick="Saw.pick(this,100000)">Rp 100.000</div>
+                <div class="saw-amt" onclick="Saw.pick(this,0)">Lainnya</div>
+            </div>
+            <button class="saw-goto" onclick="Saw.go()">
+                <i class="fas fa-heart"></i>
+                <span id="sawGotoTxt">Donasi Rp 10.000 via Saweria</span>
+            </button>
+            <div class="saw-note">🔒 Pembayaran aman via Saweria · QRIS, Transfer Bank, dll<br>Terima kasih sudah mendukung DramaFeed! 🙏</div>
+        </div>
+    </div>
+</div>
+
+<script>
+var TOKEN='53d25de32c37b0fcd2b14a9f834050493cc044d5039b5aff3283da73a8ef761b';
+var DB_BASE='https://captain.sapimu.au/dramabox/api/v1';
+var FR_BASE='https://api.sonzaix.indevs.in/freereels';
+var ML_BASE='https://api.sonzaix.indevs.in/melolo';
+var GS_BASE='https://captain.sapimu.au/goodshort/api/v1';
+var DW_BASE='https://captain.sapimu.au/dramawave/api/v1';
+var DW_LANG='id-ID';
+var SM_BASE='https://captain.sapimu.au/shortmax/api/v1';
+var SM_LANG='id';
+var NS_BASE='https://captain.sapimu.au/netshort/api/v1';
+var DB2_BASE='https://captain.sapimu.au/dramabite/api/v1';
+var FX_BASE='https://captain.sapimu.au/flextv/api/v1';
+var FX_LANG='id';
+var GS_CHANNEL=562;
+
+var TABS={
+    dramabox:[{id:'foryou',icon:'fa-heart',label:'Untuk Kamu'},{id:'new',icon:'fa-bolt',label:'Terbaru'},{id:'rank',icon:'fa-trophy',label:'Peringkat'},{id:'classify',icon:'fa-th-large',label:'Semua'}],
+    freereels:[{id:'foryou',icon:'fa-heart',label:'Untuk Kamu'},{id:'explore',icon:'fa-compass',label:'Jelajahi'}],
+    melolo:[{id:'home',icon:'fa-home',label:'Home'},{id:'populer',icon:'fa-fire',label:'Populer'},{id:'new',icon:'fa-bolt',label:'Terbaru'}],
+    goodshort:[{id:'home',icon:'fa-home',label:'Home'},{id:'new',icon:'fa-bolt',label:'Terbaru'},{id:'popular',icon:'fa-fire',label:'Populer'}],
+    dramawave:[{id:'popular',icon:'fa-fire',label:'Populer'},{id:'new',icon:'fa-bolt',label:'Terbaru'}],
+    shortmax:[{id:'foryou',icon:'fa-heart',label:'Untuk Kamu'},{id:'recommend',icon:'fa-thumbs-up',label:'Rekomendasi'},{id:'new',icon:'fa-bolt',label:'Terbaru'},{id:'ranked',icon:'fa-trophy',label:'Peringkat'},{id:'romance',icon:'fa-heart-pulse',label:'Romance'},{id:'epic',icon:'fa-dragon',label:'Epic'},{id:'war',icon:'fa-shield',label:'Perang'},{id:'vip',icon:'fa-crown',label:'VIP'}],
+    netshort:[{id:'feed',icon:'fa-heart',label:'Untuk Kamu'},{id:'explore',icon:'fa-compass',label:'Jelajahi'},{id:'new',icon:'fa-bolt',label:'Terbaru'},{id:'dubbing',icon:'fa-microphone',label:'Dubbing'},{id:'vip',icon:'fa-crown',label:'VIP'}],
+    dramabite:[{id:'foryou',icon:'fa-heart',label:'Untuk Kamu'},{id:'hot',icon:'fa-fire',label:'Hot'},{id:'recommend',icon:'fa-thumbs-up',label:'Rekomendasi'},{id:'new',icon:'fa-bolt',label:'Terbaru'}],
+    flextv:[{id:'popular',icon:'fa-fire',label:'Populer'},{id:'new',icon:'fa-bolt',label:'Terbaru'}]
+};
+var FR_FILTERS=[{id:'populer',icon:'fa-fire',label:'Populer'},{id:'new',icon:'fa-bolt',label:'Terbaru'},{id:'dubbing',icon:'fa-microphone',label:'Dubbing'}];
+var DB_SORTS=[{id:1,label:'Terpopuler'},{id:2,label:'Terbaru'},{id:3,label:'Rating'}];
+var GS_PLAT_NAMES={dramabox:'DramaFeed',freereels:'FreeReels',melolo:'MeloLo',goodshort:'GoodShort',dramawave:'DramaWave',shortmax:'ShortMax',netshort:'NetShort',dramabite:'DramaBite',flextv:'FlexTV'};
+var lastRaw=null,currentVideoUrl='';
+
+// ============================================================
+// STORAGE — Continue Watching & Watchlist (localStorage)
+// ============================================================
+var Store={
+    _k:function(ns){return'df_'+ns},
+    get:function(ns){try{return JSON.parse(localStorage.getItem(this._k(ns)))||[]}catch(e){return[]}},
+    set:function(ns,v){try{localStorage.setItem(this._k(ns),JSON.stringify(v))}catch(e){}},
+
+    // ---- CONTINUE WATCHING ----
+    // item: {id, name, img, src, ep, total, progress, ts}
+    cwGet:function(){return this.get('cw')},
+    cwSave:function(item){
+        var list=this.cwGet();
+        var idx=list.findIndex(function(x){return x.id===item.id&&x.src===item.src});
+        if(idx>-1)list.splice(idx,1);
+        list.unshift(item);
+        if(list.length>30)list=list.slice(0,30);
+        this.set('cw',list);
+    },
+    cwRemove:function(id,src){
+        var list=this.cwGet().filter(function(x){return!(x.id===id&&x.src===src)});
+        this.set('cw',list);
+    },
+    cwClear:function(){this.set('cw',[])},
+    cwFind:function(id,src){return this.cwGet().find(function(x){return x.id===id&&x.src===src})||null},
+
+    // ---- WATCHLIST ----
+    // item: {id, name, img, src, eps, score, tag, ts}
+    wlGet:function(){return this.get('wl')},
+    wlAdd:function(item){
+        var list=this.wlGet();
+        if(list.find(function(x){return x.id===item.id&&x.src===item.src}))return false;
+        list.unshift(item);
+        this.set('wl',list);
+        return true;
+    },
+    wlRemove:function(id,src){
+        var list=this.wlGet().filter(function(x){return!(x.id===id&&x.src===src)});
+        this.set('wl',list);
+    },
+    wlHas:function(id,src){return!!this.wlGet().find(function(x){return x.id===id&&x.src===src})},
+    wlToggle:function(item){
+        if(this.wlHas(item.id,item.src)){this.wlRemove(item.id,item.src);return false}
+        else{this.wlAdd(item);return true}
+    }
+};
+
+function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2500)}
+function copyUrl(){if(currentVideoUrl){navigator.clipboard.writeText(currentVideoUrl).then(function(){showToast('✅ URL disalin!')}).catch(function(){showToast('❌ Gagal')})}}
+
+function apiFetch(b,p){return fetch(b+p,{headers:{'Authorization':'Bearer '+TOKEN,'Accept':'application/json'}}).then(function(r){return r.json()}).then(function(j){lastRaw=j;return j})}
+function frFetch(p){return fetch(FR_BASE+p,{headers:{'Accept':'application/json'}}).then(function(r){return r.json()}).then(function(j){lastRaw=j;return j})}
+function mlFetch(p){return fetch(ML_BASE+p,{headers:{'Accept':'application/json'}}).then(function(r){return r.json()}).then(function(j){lastRaw=j;return j})}
+function gsFetch(p){return fetch(GS_BASE+p,{headers:{'Authorization':'Bearer '+TOKEN,'Accept':'application/json'}}).then(function(r){return r.json()}).then(function(j){lastRaw=j;return j})}
+
+var DB={
+    foryou:function(p){return apiFetch(DB_BASE,'/foryou/'+p+'?lang=in')},
+    newest:function(p){return apiFetch(DB_BASE,'/new/'+p+'?lang=in')},
+    rank:function(p){return apiFetch(DB_BASE,'/rank/'+p+'?lang=in')},
+    classify:function(p,s){return apiFetch(DB_BASE,'/classify?lang=in&pageNo='+p+'&pageSize=20&sort='+s)},
+    search:function(q,p){return apiFetch(DB_BASE,'/search/'+encodeURIComponent(q)+'/'+p+'?lang=in&pageSize=20')},
+    suggest:function(q){return apiFetch(DB_BASE,'/suggest/'+encodeURIComponent(q)+'?lang=in')},
+    chapters:function(id){return apiFetch(DB_BASE,'/chapters/'+id+'?lang=in')},
+    watch:function(id,ep){return apiFetch(DB_BASE,'/watch/'+id+'/'+ep+'?lang=in&direction=1')},
+    batch:function(id){return apiFetch(DB_BASE,'/batch/watch?bookId='+id+'&lang=in')}
+};
+var FR={
+    home:function(){return frFetch('/home')},
+    populer:function(){return frFetch('/populer')},
+    newest:function(){return frFetch('/new')},
+    dubbing:function(p){return frFetch('/dubbing?page='+p)},
+    search:function(q,p){return frFetch('/search?q='+encodeURIComponent(q)+'&page='+p)},
+    detail:function(id){return frFetch('/detail?dramaId='+encodeURIComponent(id))},
+    stream:function(id,ep){return frFetch('/stream?dramaId='+encodeURIComponent(id)+'&episode='+ep)},
+    streamUrl:function(id,ep){return FR_BASE+'/stream?dramaId='+encodeURIComponent(id)+'&episode='+ep}
+};
+var ML={
+    home:function(p){return mlFetch('/home?page='+p)},
+    populer:function(p){return mlFetch('/populer?page='+p)},
+    newest:function(p){return mlFetch('/new?page='+p)},
+    search:function(q,p){return mlFetch('/search?q='+encodeURIComponent(q)+'&result=10&page='+p)},
+    detail:function(id){return mlFetch('/detail/'+encodeURIComponent(id))},
+    stream:function(epId){return mlFetch('/stream/'+encodeURIComponent(epId))}
+};
+var SM={
+    search:function(q,p){return apiFetch(SM_BASE,'/search?q='+encodeURIComponent(q)+'&lang='+SM_LANG+'&page='+(p||1))},
+    home:function(tab,p){return apiFetch(SM_BASE,'/home?tab='+(tab||1)+'&lang='+SM_LANG+(p?'&page='+p:''))},
+    recommend:function(p){return apiFetch(SM_BASE,'/feed/recommend?lang='+SM_LANG+(p?'&page='+p:''))},
+    vip:function(p){return apiFetch(SM_BASE,'/feed/vip?lang='+SM_LANG+(p?'&page='+p:''))},
+    newest:function(p){return apiFetch(SM_BASE,'/feed/new?lang='+SM_LANG+(p?'&page='+p:''))},
+    ranked:function(p){return apiFetch(SM_BASE,'/feed/ranked?lang='+SM_LANG+(p?'&page='+p:''))},
+    war:function(p){return apiFetch(SM_BASE,'/feed/war?lang='+SM_LANG+(p?'&page='+p:''))},
+    epic:function(p){return apiFetch(SM_BASE,'/feed/epic?lang='+SM_LANG+(p?'&page='+p:''))},
+    romance:function(p){return apiFetch(SM_BASE,'/feed/romance?lang='+SM_LANG+(p?'&page='+p:''))},
+    foryou:function(p){return apiFetch(SM_BASE,'/foryou?page='+(p||1)+'&lang='+SM_LANG)},
+    detail:function(id){return apiFetch(SM_BASE,'/detail/'+id+'?lang='+SM_LANG)},
+    play:function(id,ep){return apiFetch(SM_BASE,'/play/'+id+'?ep='+ep+'&lang='+SM_LANG)},
+    languages:function(){return apiFetch(SM_BASE,'/languages')}
+};
+var DW={
+    popular:function(p){return apiFetch(DW_BASE,'/feed/popular?page='+(p||1)+'&lang='+DW_LANG)},
+    search:function(q,p){return apiFetch(DW_BASE,'/search?q='+encodeURIComponent(q)+'&lang='+DW_LANG+(p?'&page='+p:''))},
+    hot:function(){return apiFetch(DW_BASE,'/search/hot?lang='+DW_LANG)},
+    keywords:function(q){return apiFetch(DW_BASE,'/search/keywords?q='+encodeURIComponent(q)+'&lang='+DW_LANG)},
+    detail:function(id){return apiFetch(DW_BASE,'/dramas/'+id+'?lang='+DW_LANG)},
+    play:function(id,ep){return apiFetch(DW_BASE,'/dramas/'+id+'/play/'+ep+'?lang='+DW_LANG)},
+    languages:function(){return apiFetch(DW_BASE,'/languages')}
+};
+var DB2={
+    languages:function(){return apiFetch(DB2_BASE,'/languages')},
+    dramas:function(p){return apiFetch(DB2_BASE,'/dramas?lang=id&page='+(p||0))},
+    foryou:function(p){return apiFetch(DB2_BASE,'/foryou?lang=id&page='+(p||0))},
+    hot:function(p){return apiFetch(DB2_BASE,'/hot?lang=id&page='+(p||0))},
+    recommend:function(p){return apiFetch(DB2_BASE,'/recommend?lang=id&page='+(p||0))},
+    detail:function(id){return apiFetch(DB2_BASE,'/drama/'+id+'?lang=id')},
+    likes:function(id){return apiFetch(DB2_BASE,'/drama/'+id+'/likes?lang=id')},
+    episode:function(id,ep,q){return apiFetch(DB2_BASE,'/drama/'+id+'/episode/'+ep+'?lang=id&quality='+(q||'default'))},
+    search:function(q,p,limit){return apiFetch(DB2_BASE,'/search?q='+encodeURIComponent(q)+'&lang=id&limit='+(limit||20)+'&page='+(p||0))}
+};
+var NS={
+    feed:function(p){return apiFetch(NS_BASE,'/feed/'+(p||1))},
+    explore:function(p){return apiFetch(NS_BASE,'/explore/'+(p||1))},
+    newest:function(p){return apiFetch(NS_BASE,'/new/'+(p||1))},
+    dubbing:function(p){return apiFetch(NS_BASE,'/dubbing/'+(p||1))},
+    vip:function(p){return apiFetch(NS_BASE,'/vip/'+(p||1))},
+    search:function(q,p){return apiFetch(NS_BASE,'/search/'+encodeURIComponent(q)+'/'+(p||1))},
+    hint:function(q){return apiFetch(NS_BASE,'/search-hint'+(q?'?q='+encodeURIComponent(q):''))},
+    categories:function(){return apiFetch(NS_BASE,'/categories')},
+    category:function(id,p,region,audio,tagId){var qs='?region='+(region||0)+'&audio='+(audio||0)+(tagId?'&tagId='+tagId:'');return apiFetch(NS_BASE,'/category/'+id+qs)},
+    detail:function(id){return apiFetch(NS_BASE,'/detail/'+id)},
+    similar:function(id){return apiFetch(NS_BASE,'/similar/'+id)},
+    episodes:function(id){return apiFetch(NS_BASE,'/episodes/'+id)},
+    episode:function(id,ep){return apiFetch(NS_BASE,'/episode/'+id+'/'+ep)},
+    languages:function(){return apiFetch(NS_BASE,'/languages')}
+};
+var GS={
+    home:function(p,ps){return gsFetch('/home?channelId='+GS_CHANNEL+'&page='+(p||1)+'&pageSize='+(ps||12))},
+    search:function(q,p){return gsFetch('/search?q='+encodeURIComponent(q)+(p?'&page='+p:''))},
+    book:function(id){return gsFetch('/book/'+id)},
+    chapters:function(id){return gsFetch('/chapters/'+id)},
+    play:function(bookId,chapterId,q){return gsFetch('/play/'+bookId+'/'+chapterId+'?q='+(q||'720p'))},
+    unlock:function(bookId,q){return gsFetch('/unlock/'+bookId+'?q='+(q||'720p'))}
+};
+var FX={
+    languages:function(){return apiFetch(FX_BASE,'/languages')},
+    tabs:function(){return apiFetch(FX_BASE,'/tabs?lang='+FX_LANG)},
+    popular:function(p){return apiFetch(FX_BASE,'/tabs/popular?page='+(p||1)+'&lang='+FX_LANG)},
+    newest:function(p){return apiFetch(FX_BASE,'/tabs/new?page='+(p||1)+'&lang='+FX_LANG)},
+    search:function(q,p){return apiFetch(FX_BASE,'/search?q='+encodeURIComponent(q)+'&page='+(p||1)+'&lang='+FX_LANG)},
+    detail:function(id){return apiFetch(FX_BASE,'/series/'+id+'?lang='+FX_LANG)},
+    episodes:function(id){return apiFetch(FX_BASE,'/series/'+id+'/episodes?lang='+FX_LANG)},
+    play:function(seriesId,episodeId){return apiFetch(FX_BASE,'/play/'+seriesId+'/'+episodeId+'?lang='+FX_LANG)},
+    allDramas:function(){
+        return apiFetch(FX_BASE,'/tabs?lang='+FX_LANG).then(function(res){
+            var list=fxToList(res);
+            if(list.length)return res;
+            return apiFetch(FX_BASE,'/tabs/popular?page=1&lang='+FX_LANG);
+        });
+    }
+};
+
+function flattenObj(o,p,d){var r={};if(!o||typeof o!=='object'||d>4)return r;p=p||'';d=d||0;Object.keys(o).forEach(function(k){var v=o[k],f=p?p+'.'+k:k;if(v===null||v===undefined)return;if(typeof v==='string'||typeof v==='number'||typeof v==='boolean'){r[f]=v;r[k]=v}else if(Array.isArray(v)){r[f]=v;r[k]=v}else if(typeof v==='object'){var n=flattenObj(v,f,d+1);Object.keys(n).forEach(function(nk){r[nk]=n[nk]})}});return r}
+function smartGet(f,c){for(var i=0;i<c.length;i++){var v=f[c[i]];if(v!==undefined&&v!==null&&v!=='')return v}return null}
+
+function toList(res){
+    if(!res)return[];
+    if(Array.isArray(res))return res;
+    if(res.episode_list&&Array.isArray(res.episode_list))return res.episode_list;
+    if(res.episodes&&Array.isArray(res.episodes))return res.episodes;
+    if(res.video_list&&Array.isArray(res.video_list))return res.video_list;
+    if(res.data&&Array.isArray(res.data)&&res.data.length>0){
+        var first=res.data[0];
+        if(first&&typeof first==='object'&&!Array.isArray(first)){
+            var nestedKeys=['books','items','dramas','list','videos','series'];
+            for(var ki=0;ki<nestedKeys.length;ki++){
+                var key=nestedKeys[ki];
+                if(first[key]&&Array.isArray(first[key])&&first[key].length>0){
+                    var combined=[];
+                    res.data.forEach(function(item){if(item&&item[key]&&Array.isArray(item[key]))combined=combined.concat(item[key])});
+                    if(combined.length>0)return combined;
+                }
+            }
+            if(first.id||first.dramaId||first.bookId||first.drama_id||first.key||first.slug||first.seriesId)return res.data;
+        }
+        if(Array.isArray(first))return first;
+        return res.data;
+    }
+    if(res.items&&Array.isArray(res.items)){
+        if(res.items.length&&typeof res.items[0]==='object'&&res.items[0].items){
+            var out=[];res.items.forEach(function(m){if(m&&Array.isArray(m.items))out=out.concat(m.items)});return out;
+        }
+        return res.items;
+    }
+    if(res.result&&Array.isArray(res.result))return res.result;
+    if(res.books&&Array.isArray(res.books))return res.books;
+    if(res.list&&Array.isArray(res.list))return res.list;
+    if(res.series&&Array.isArray(res.series))return res.series;
+    if(res.dramas&&Array.isArray(res.dramas))return res.dramas;
+    if(res.content&&Array.isArray(res.content))return res.content;
+    var found=[];
+    (function walk(x,depth){
+        if(!x||depth>5)return;
+        if(Array.isArray(x)){x.forEach(function(i){walk(i,depth+1)});return}
+        if(typeof x!=='object')return;
+        var hasId=x.key||x.id||x.bookId||x.slug||x.dramaId||x.drama_id||x.seriesId||x.series_id;
+        var hasTitle=x.title||x.name||x.bookName||x.dramaName||x.drama_name||x.seriesName;
+        if(hasId&&hasTitle){found.push(x);return}
+        Object.keys(x).forEach(function(k){
+            if('page_info author contact message type status'.indexOf(k)>-1)return;
+            walk(x[k],depth+1);
+        });
+    })(res,0);
+    return found;
+}
+
+function hasMore(r,l,src){
+    if(r.page_info&&r.page_info.has_next!==undefined)return!!r.page_info.has_next;
+    if(r.hasMore!==undefined)return!!r.hasMore;
+    if(r.has_next!==undefined)return!!r.has_next;
+    var d=r.data||r;
+    if(d&&d.hasMore!==undefined)return!!d.hasMore;
+    if(d&&d.has_next!==undefined)return!!d.has_next;
+    if(src==='melolo'||src==='goodshort')return l.length>0;
+    if(src==='flextv')return l.length>=8;
+    return l.length>=10;
+}
+
+function fixImageUrl(url){
+    if(!url||typeof url!=='string')return'';
+    if(url.includes('.heic')||url.includes('fizzopic.org'))return'https://wsrv.nl/?url='+encodeURIComponent(url)+'&output=webp&q=80';
+    return url;
+}
+function getCover(r){
+    if(!r)return'';
+    var c=r.cover||r.thumb_url||r.thumbUrl||r.thumb||r.coverUrl||r.cover_url||r.coverWap||r.coverWapUrl||r.image||r.img||r.poster||r.thumbnail||r.pic||r.picture||r.photo||r.banner||r.backdrop||r.drama_cover||r.image_url||r.imageUrl||r.poster_url||r.cover_image||r.coverImage||r.series_cover||r.seriesCover||'';
+    if(c&&typeof c==='string')return fixImageUrl(c);
+    if(c&&typeof c==='object'&&c.url)return fixImageUrl(c.url);
+    return'';
+}
+
+function normD(r){
+    if(!r||typeof r==='string')return null;
+    var id=r.code||r.drama_id||r.dramaId||r.bookId||r.book_id||r.series_id||r.seriesId||r.id||r.key||r.slug;
+    var nm=r.drama_name||r.dramaName||r.bookName||r.book_name||r.series_name||r.seriesName||r.title||r.name;
+    var img=getCover(r);
+    var desc=r.description||r.introduction||r.desc||r.synopsis||r.summary||'';
+    var eps=r.episode_count||r.episodeCount||r.chapterCount||r.chapter_count||r.totalEpisodes||r.total_episodes||r.epCount||r.ep_count||r.episodesCount||r.total||r.episodes||0;
+    var tag=r.tags||r.label||r.tag||r.genre||r.genres||r.categories||r.category||r.classify_name||'';
+    var sc=r.score||r.rating||0;
+    var vw=r.watch_value||r.watchValue||r.playCount||r.play_count||r.view_count||r.viewCount||r.views||0;
+    if(typeof eps==='string')eps=parseInt(eps)||0;
+    if(typeof eps==='object')eps=Array.isArray(eps)?eps.length:0;
+    if(Array.isArray(tag))tag=tag.join(', ');
+    if(!id||!nm)return null;
+    return{id:String(id),name:nm,img:img,desc:desc,eps:eps,tag:tag,score:sc,views:vw,raw:r};
+}
+
+function normChap(r,i){
+    if(typeof r==='number')return{num:r,title:'Episode '+r,streamId:''};
+    if(typeof r==='string')return{num:i+1,title:r,streamId:''};
+    var n=r.chapterNo||r.episode||r.ep||r.number||r.index||r.episodeNumber||r.episode_number||r.sort||r.no||(i+1);
+    var t=r.chapterName||r.title||r.name||r.episodeTitle||('Episode '+n);
+    var sid=r.video_id||r.id||r.episodeId||r.episode_id||r.stream_id||r.videoId||r.chapterId||r.item_id||'';
+    return{num:parseInt(n)||(i+1),title:t,streamId:String(sid||'')}
+}
+function fmtV(n){if(!n)return'0';if(typeof n==='string'&&(n.includes('M')||n.includes('K')))return n;n=parseInt(String(n).replace(/[^\d]/g,''))||0;if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return String(n)}
+function esc(s){if(!s)return'';var d=document.createElement('div');d.textContent=String(s);return d.innerHTML}
+
+function extractFromQualities(qualities){
+    if(!qualities||!Array.isArray(qualities)||!qualities.length)return'';
+    var sorted=qualities.slice().sort(function(a,b){
+        var hA=parseInt(String(a.label||a.height||0).replace(/[^0-9]/g,''))||0;
+        var hB=parseInt(String(b.label||b.height||0).replace(/[^0-9]/g,''))||0;
+        return hB-hA;
+    });
+    for(var i=0;i<sorted.length;i++){
+        var q=sorted[i];
+        var url=q.url||q.play_url||q.video_url||q.stream_url||q.src||q.source||q.link||q.file||'';
+        if(!url&&q.play_addr){
+            if(typeof q.play_addr==='string')url=q.play_addr;
+            else if(q.play_addr.url_list&&q.play_addr.url_list.length)url=q.play_addr.url_list[0];
+        }
+        if(!url&&q.url_list&&q.url_list.length)url=q.url_list[0];
+        if(url)return url;
+    }
+    return'';
+}
+function extractVideoUrl(d){
+    if(!d)return'';
+    if(typeof d==='string')return d;
+    if(d.qualities&&Array.isArray(d.qualities)&&d.qualities.length){var qUrl=extractFromQualities(d.qualities);if(qUrl)return qUrl}
+    if(d.data&&d.data.qualities){var qUrl2=extractFromQualities(d.data.qualities);if(qUrl2)return qUrl2}
+    var u=d.m3u8||d.video_url||d.videoUrl||d.stream_url||d.streamUrl||d.url||d.video||d.m3u8_url||d.playUrl||d.hlsUrl||d.mp4_url||d.mp4||d.src||d.source||d.link||d.stream||d.play_url||'';
+    if(u)return u;
+    if(d.data)return extractVideoUrl(d.data);
+    if(d.result)return extractVideoUrl(d.result);
+    var f=flattenObj(d,'',0);
+    return smartGet(f,['video_url','videoUrl','stream_url','streamUrl','url','video','playUrl','m3u8_url','m3u8','mp4_url','mp4','src','source','link','stream','play_url'])||'';
+}
+
+var DS={};function storeD(d){var k='D_'+d.id;DS[k]=d;return k}function getD(k){return DS[k]||null}
+if(!Promise.allSettled){Promise.allSettled=function(a){return Promise.all(a.map(function(p){return Promise.resolve(p).then(function(v){return{status:'fulfilled',value:v}},function(e){return{status:'rejected',reason:e}})}))}}
+
+function db2ToList(res){
+    if(!res)return[];
+    var candidates=[res.data,res.dramas,res.content,res.list,res.items,res.result,res.videos,res.books];
+    for(var ci=0;ci<candidates.length;ci++){
+        var c=candidates[ci];
+        if(Array.isArray(c)&&c.length>0)return c;
+        if(c&&typeof c==='object'&&!Array.isArray(c)){
+            var innerKeys=['dramas','content','list','items','videos','books','data'];
+            for(var ik=0;ik<innerKeys.length;ik++){
+                if(c[innerKeys[ik]]&&Array.isArray(c[innerKeys[ik]])&&c[innerKeys[ik]].length>0)
+                    return c[innerKeys[ik]];
+            }
+        }
+    }
+    return toList(res);
+}
+
+function fxToList(res){
+    if(!res)return[];
+    var data=res.data||res;
+    if(data.floor&&Array.isArray(data.floor)){
+        var out=[];var seen={};
+        data.floor.forEach(function(floor){
+            var sl=floor.series_list||floor.seriesList||floor.list||floor.items||[];
+            if(!Array.isArray(sl))return;
+            sl.forEach(function(s){
+                var uid=String(s.series_id||s.id||'');
+                if(uid&&!seen[uid]){seen[uid]=true;out.push(s)}
+            });
+        });
+        if(out.length)return out;
+    }
+    if(data.list&&Array.isArray(data.list)&&data.list.length)return data.list;
+    if(data.series&&Array.isArray(data.series)&&data.series.length)return data.series;
+    if(data.items&&Array.isArray(data.items)&&data.items.length)return data.items;
+    if(data.result&&Array.isArray(data.result)&&data.result.length)return data.result;
+    if(data.results&&Array.isArray(data.results)&&data.results.length)return data.results;
+    if(data.content&&Array.isArray(data.content)&&data.content.length)return data.content;
+    if(data.dramas&&Array.isArray(data.dramas)&&data.dramas.length)return data.dramas;
+    if(data.books&&Array.isArray(data.books)&&data.books.length)return data.books;
+    if(Array.isArray(res)&&res.length)return res;
+    if(data.classify_info&&Array.isArray(data.classify_info))return[];
+    return toList(res);
+}
+
+var App={
+    el:null,src:'dramabox',tab:'foryou',pg:1,sort:1,filter:'populer',
+    qry:'',chaps:[],batch:[],curD:null,sTimer:null,
+    currentList:[],hasMoreData:true,isLoading:false,
+    viewMode:'list',lastSearchQuery:'',
+    tk:null,tkCache:{},tkCD:false,tkBound:false,
+    _curView:'home', // 'home'|'watchlist'
+
+    init:function(){this.el=document.getElementById('root');this._bindSearch();this._buildNav();this.switchTab('foryou');this._updatePlatModal()},
+
+    openPlatModal:function(){document.getElementById('platModalBg').classList.add('open')},
+    closePlatModal:function(){document.getElementById('platModalBg').classList.remove('open')},
+    _closePlatModalBg:function(e){if(e.target===document.getElementById('platModalBg'))this.closePlatModal()},
+    _updatePlatModal:function(){
+        var s=this.src;
+        ['db','fr','ml','gs','dw','sm','ns','db2','fx'].forEach(function(x){
+            var el=document.getElementById('pc-'+x);
+            if(el){el.className='plat-card';
+                if((x==='db'&&s==='dramabox')||(x==='fr'&&s==='freereels')||(x==='ml'&&s==='melolo')||
+                   (x==='gs'&&s==='goodshort')||(x==='dw'&&s==='dramawave')||(x==='sm'&&s==='shortmax')||
+                   (x==='ns'&&s==='netshort')||(x==='db2'&&s==='dramabite')||(x==='fx'&&s==='flextv'))
+                    el.classList.add('active-'+x)
+            }
+        });
+        document.getElementById('platBtnName').textContent=GS_PLAT_NAMES[s]||'DramaBox';
+    },
+
+    setSource:function(s){
+        if(this.src===s){this.closePlatModal();return}
+        this.src=s;this.tab=TABS[s][0].id;this.pg=1;this.filter='populer';this.currentList=[];this.hasMoreData=true;
+        document.body.classList.remove('fr','ml','gs','dw','sm','ns','db2','fx');
+        if(s==='freereels')document.body.classList.add('fr');
+        else if(s==='melolo')document.body.classList.add('ml');
+        else if(s==='goodshort')document.body.classList.add('gs');
+        else if(s==='dramawave')document.body.classList.add('dw');
+        else if(s==='shortmax')document.body.classList.add('sm');
+        else if(s==='netshort')document.body.classList.add('ns');
+        else if(s==='dramabite')document.body.classList.add('db2');
+        else if(s==='flextv')document.body.classList.add('fx');
+        this._updatePlatModal();
+        this.closePlatModal();
+        this._buildNav();
+        this.switchTab(this.tab);
+    },
+
+    _buildNav:function(){
+        var self=this,tabs=TABS[this.src],src=this.src;
+        document.getElementById('navDesktop').innerHTML=tabs.map(function(t){return'<button class="nb'+(t.id===self.tab?' on':'')+'" data-t="'+t.id+'" data-src="'+src+'" onclick="App.switchTab(\''+t.id+'\')"><i class="fas '+t.icon+'"></i> '+t.label+'</button>'}).join('');
+        document.getElementById('navMobile').innerHTML=tabs.map(function(t){return'<button class="mb'+(t.id===self.tab?' on':'')+'" data-t="'+t.id+'" onclick="App.switchTab(\''+t.id+'\')"><i class="fas '+t.icon+'"></i>'+t.label+'</button>'}).join('')+
+        '<button class="mb'+(self._curView==='watchlist'?' on':'')+'" onclick="App.openWatchlist()"><i class="fas fa-bookmark"></i>Favorit</button>'+
+        '<button class="mb" onclick="document.getElementById(\'qInp\').focus()"><i class="fas fa-search"></i>Cari</button>'
+    },
+
+    _bindSearch:function(){
+        var self=this,inp=document.getElementById('qInp'),box=document.getElementById('sugBox');
+        inp.addEventListener('input',function(){
+            clearTimeout(self.sTimer);var q=inp.value.trim();
+            if(q.length<2){box.classList.remove('show');return}
+            self.sTimer=setTimeout(function(){
+                var prom;
+                if(self.src==='freereels')prom=FR.search(q,1);
+                else if(self.src==='melolo')prom=ML.search(q,1);
+                else if(self.src==='goodshort')prom=GS.search(q,1);
+                else if(self.src==='dramawave')prom=DW.keywords(q);
+                else if(self.src==='shortmax')prom=SM.search(q,1);
+                else if(self.src==='netshort')prom=NS.hint(q);
+                else if(self.src==='dramabite')prom=DB2.search(q,1);
+                else if(self.src==='flextv')prom=FX.search(q,1);
+                else prom=DB.suggest(q);
+                prom.then(function(res){
+                    var list=self.src==='flextv'?fxToList(res):toList(res);
+                    if(!list.length){box.classList.remove('show');return}
+                    var h='';
+                    list.slice(0,6).forEach(function(it){
+                        if(typeof it==='string'){h+='<div class="sugi" onclick="App._sugPick(\''+esc(it).replace(/'/g,"\\'")+'\')"><i class="fas fa-search"></i><span>'+esc(it)+'</span></div>';return}
+                        var nd=normD(it);if(nd)h+='<div class="sugi" onclick="App.openDetail(getD(\''+storeD(nd)+'\'))"><i class="fas fa-film"></i><span>'+esc(nd.name)+'</span></div>'
+                    });
+                    if(h){box.innerHTML=h;box.classList.add('show')}else box.classList.remove('show')
+                }).catch(function(){box.classList.remove('show')})
+            },400)
+        });
+        inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();self.doSearch()}});
+        document.addEventListener('click',function(e){if(!e.target.closest('.swrap'))box.classList.remove('show')})
+    },
+    _sugPick:function(q){document.getElementById('sugBox').classList.remove('show');document.getElementById('qInp').value=q;this.doSearch()},
+    doSearch:function(){
+        var q=document.getElementById('qInp').value.trim();if(!q)return;
+        document.getElementById('sugBox').classList.remove('show');
+        this.qry=q;this.lastSearchQuery=q;this.currentList=[];this.pg=1;this.hasMoreData=true;this._search(q,1,false)
+    },
+    _search:function(q,p,append){
+        var self=this;this._setNav(null);if(!append)this._loading();
+        var prom;
+        if(self.src==='freereels')prom=FR.search(q,p);
+        else if(self.src==='melolo')prom=ML.search(q,p);
+        else if(self.src==='goodshort')prom=GS.search(q,p);
+        else if(self.src==='dramawave')prom=DW.search(q,p);
+        else if(self.src==='shortmax')prom=SM.search(q,p);
+        else if(self.src==='netshort')prom=NS.search(q,p);
+        else if(self.src==='dramabite')prom=DB2.search(q,p);
+        else if(self.src==='flextv')prom=FX.search(q,p);
+        else prom=DB.search(q,p);
+        prom.then(function(res){
+            var list=(self.src==='flextv'?fxToList(res):toList(res)).map(normD).filter(Boolean);
+            self.hasMoreData=list.length>0?hasMore(res,list,self.src):false;
+            if(append)self.currentList=self.currentList.concat(list);else self.currentList=list;
+            self.pg=p;
+            var h='<button class="back" onclick="App.goToList()"><i class="fas fa-arrow-left"></i> Kembali</button>'+self._srcBadge()+'<div class="stitle"><i class="fas fa-search"></i> Hasil: "'+esc(q)+'" ('+self.currentList.length+')</div>';
+            if(!self.currentList.length)h+='<div class="empty"><i class="fas fa-film"></i><p>Tidak ditemukan</p></div>';
+            else{h+=self._grid(self.currentList);h+=self._lmBtn('search',q)}
+            self.el.innerHTML=h;self.isLoading=false
+        }).catch(function(){self._error('Gagal mencari',function(){self._search(q,p,false)})})
+    },
+
+    switchTab:function(tab){this._curView='home';this.tab=tab;this.pg=1;this.currentList=[];this.hasMoreData=true;this.viewMode='list';this._setNav(tab);this._loadTab(tab,1,false)},
+    _setNav:function(tab){document.querySelectorAll('.nb,.mb').forEach(function(el){el.classList.toggle('on',el.getAttribute('data-t')===tab)})},
+
+    _loadTab:function(tab,p,append){
+        var self=this;this.pg=p;
+        if(!append)this._loading();
+        var prom;
+
+        if(self.src==='dramabox'){
+            prom=tab==='foryou'?DB.foryou(p):tab==='new'?DB.newest(p):tab==='rank'?DB.rank(p):tab==='classify'?DB.classify(p,self.sort):DB.foryou(p);
+        }else if(self.src==='freereels'){
+            prom=tab==='foryou'?FR.home():tab==='explore'?self._frLoad(self.filter,p):FR.home();
+        }else if(self.src==='melolo'){
+            prom=tab==='home'?ML.home(p):tab==='populer'?ML.populer(p):tab==='new'?ML.newest(p):ML.home(p);
+        }else if(self.src==='goodshort'){
+            prom=GS.home(p,12);
+        }else if(self.src==='dramawave'){
+            prom=tab==='popular'?DW.popular(p):DW.popular(p);
+        }else if(self.src==='shortmax'){
+            if(tab==='foryou')prom=SM.foryou(p);
+            else if(tab==='recommend')prom=SM.recommend(p);
+            else if(tab==='new')prom=SM.newest(p);
+            else if(tab==='ranked')prom=SM.ranked(p);
+            else if(tab==='romance')prom=SM.romance(p);
+            else if(tab==='epic')prom=SM.epic(p);
+            else if(tab==='war')prom=SM.war(p);
+            else if(tab==='vip')prom=SM.vip(p);
+            else prom=SM.foryou(p);
+        }else if(self.src==='netshort'){
+            if(tab==='feed')prom=NS.feed(p);
+            else if(tab==='explore')prom=NS.explore(p);
+            else if(tab==='new')prom=NS.newest(p);
+            else if(tab==='dubbing')prom=NS.dubbing(p);
+            else if(tab==='vip')prom=NS.vip(p);
+            else prom=NS.feed(p);
+        }else if(self.src==='dramabite'){
+            if(tab==='foryou')prom=DB2.foryou(p);
+            else if(tab==='hot')prom=DB2.hot(p);
+            else if(tab==='recommend')prom=DB2.recommend(p);
+            else if(tab==='new')prom=DB2.dramas(p);
+            else prom=DB2.foryou(p);
+        }else if(self.src==='flextv'){
+            if(tab==='popular')prom=FX.popular(p);
+            else if(tab==='new')prom=FX.newest(p);
+            else prom=FX.popular(p);
+        }
+
+        if(self.src==='dramabite'){
+            prom.then(function(res){
+                var list=db2ToList(res).map(normD).filter(Boolean);
+                if(!list.length&&tab!=='foryou'){
+                    return DB2.foryou(p).then(function(res2){return db2ToList(res2).map(normD).filter(Boolean)});
+                }
+                return list;
+            }).then(function(list){
+                self.hasMoreData=list.length>0?hasMore({},list,self.src):false;
+                if(append){
+                    var existingIds={};self.currentList.forEach(function(d){existingIds[d.id]=true});
+                    var newItems=list.filter(function(d){return!existingIds[d.id]});
+                    if(newItems.length===0)self.hasMoreData=false;
+                    else self.currentList=self.currentList.concat(newItems);
+                }else{self.currentList=list}
+                self._renderList();self.isLoading=false;
+            }).catch(function(e){console.error(e);self._error('Gagal memuat',function(){self._loadTab(tab,p,false)})});
+        }else if(self.src==='flextv'){
+            prom.then(function(res){
+                var list=fxToList(res).map(normD).filter(Boolean);
+                self.hasMoreData=list.length>=8;
+                if(append){
+                    var existingIds={};self.currentList.forEach(function(d){existingIds[d.id]=true});
+                    var newItems=list.filter(function(d){return!existingIds[d.id]});
+                    if(newItems.length===0)self.hasMoreData=false;
+                    else self.currentList=self.currentList.concat(newItems);
+                }else{self.currentList=list}
+                self._renderList();self.isLoading=false;
+            }).catch(function(e){console.error(e);self._error('Gagal memuat',function(){self._loadTab(tab,p,false)})});
+        }else{
+            prom.then(function(res){
+                var list=toList(res).map(normD).filter(Boolean);
+                self.hasMoreData=list.length>0?hasMore(res,list,self.src):false;
+                if(append){
+                    var existingIds={};self.currentList.forEach(function(d){existingIds[d.id]=true});
+                    var newItems=list.filter(function(d){return!existingIds[d.id]});
+                    if(newItems.length===0)self.hasMoreData=false;
+                    else self.currentList=self.currentList.concat(newItems);
+                }else{self.currentList=list}
+                self._renderList();self.isLoading=false;
+            }).catch(function(e){console.error(e);self._error('Gagal memuat',function(){self._loadTab(tab,p,false)})});
+        }
+    },
+
+    _renderList:function(){
+        var self=this;self._setNav(self.tab);
+        var ic={};TABS[self.src].forEach(function(t){ic[t.id]=t});
+        var info=ic[self.tab]||{icon:'fa-film',label:'Drama'};
+        var h=self._srcBadge();
+
+        // Continue Watching section — tampil di tab pertama
+        var firstTab=TABS[self.src][0].id;
+        if(self.tab===firstTab){
+            h+=self._cwSection();
+        }
+
+        h+='<div class="stitle"><i class="fas '+info.icon+'"></i> '+info.label+' ('+self.currentList.length+')</div>';
+        if(self.src==='dramabox'&&self.tab==='classify')h+=self._dbSortBar();
+        if(self.src==='freereels'&&self.tab==='explore')h+=self._frFilterBar();
+        if(!self.currentList.length)h+='<div class="empty"><i class="fas fa-film"></i><p>Belum ada drama</p></div>';
+        else{h+=self._grid(self.currentList);h+=self._lmBtn('tab',self.tab)}
+        self.el.innerHTML=h
+    },
+
+    // ---- CONTINUE WATCHING SECTION ----
+    _cwSection:function(){
+        var list=Store.cwGet();
+        if(!list.length)return'';
+        var h='<div class="cw-section"><div class="cw-header"><div class="cw-title"><i class="fas fa-history"></i> Lanjut Nonton</div><button class="cw-clear" onclick="App._cwClearAll()"><i class="fas fa-trash"></i> Hapus Semua</button></div><div class="cw-scroll">';
+        list.forEach(function(item){
+            var prog=item.progress||0;
+            var pct=Math.round(prog*100);
+            var ep=item.ep||1;
+            h+='<div class="cw-card" onclick="App._cwResume(\''+esc(item.id)+'\',\''+esc(item.src)+'\','+ep+')">'+
+               '<div class="cw-thumb">'+(item.img?'<img src="'+esc(item.img)+'" loading="lazy" onerror="this.style.display=\'none\'">':'<div class="cw-thumb-noimg"><i class="fas fa-film"></i></div>')+
+               '<div class="cw-play-icon"><i class="fas fa-play"></i></div>'+
+               '<div class="cw-prog-bar"><div class="cw-prog-fill" style="width:'+pct+'%"></div></div>'+
+               '</div>'+
+               '<div class="cw-info"><div class="cw-name">'+esc(item.name)+'</div><div class="cw-ep"><i class="fas fa-play-circle" style="font-size:.6rem;margin-right:2px"></i>Ep '+ep+' · '+esc(GS_PLAT_NAMES[item.src]||item.src)+'</div></div>'+
+               '<button class="cw-del" onclick="event.stopPropagation();App._cwRemoveItem(\''+esc(item.id)+'\',\''+esc(item.src)+'\')"><i class="fas fa-times"></i></button>'+
+               '</div>';
+        });
+        h+='</div></div>';
+        return h;
+    },
+    _cwClearAll:function(){Store.cwClear();this._renderList();showToast('🗑 Riwayat dihapus')},
+    _cwRemoveItem:function(id,src){
+        Store.cwRemove(id,src);
+        // rebuild only CW section
+        var sec=document.querySelector('.cw-section');
+        if(sec){
+            var list=Store.cwGet();
+            if(!list.length){sec.remove();return}
+            var tmp=document.createElement('div');tmp.innerHTML=this._cwSection();
+            sec.replaceWith(tmp.firstChild);
+        }
+    },
+    _cwResume:function(id,src){
+        // Cari drama di DS store atau buat stub lalu buka detail
+        var cwItem=Store.cwFind(id,src);
+        if(!cwItem)return;
+        // Jika source berbeda, switch dulu
+        if(this.src!==src){this.setSource(src)}
+        var dKey='D_'+id;
+        if(getD(dKey)){
+            this.openDetail(getD(dKey));
+        }else{
+            // Buat stub drama dari cw data
+            var stub={id:id,name:cwItem.name,img:cwItem.img,desc:'',eps:cwItem.total||0,tag:'',score:0,views:0,raw:{}};
+            storeD(stub);
+            this.openDetail(stub);
+        }
+    },
+    // Simpan progress ke CW store dipanggil dari player
+    _cwSave:function(d,ep,total,progress){
+        Store.cwSave({id:d.id,name:d.name,img:d.img,src:this.src,ep:ep,total:total,progress:progress,ts:Date.now()});
+    },
+
+    // ---- WATCHLIST / FAVORIT ----
+    toggleWatchlist:function(d,btn){
+        var item={id:d.id,name:d.name,img:d.img,src:this.src,eps:d.eps,score:d.score,tag:d.tag,ts:Date.now()};
+        var added=Store.wlToggle(item);
+        if(btn){
+            btn.classList.toggle('saved',added);
+            btn.innerHTML=added?'<i class="fas fa-bookmark"></i>':'<i class="far fa-bookmark"></i>';
+        }
+        showToast(added?'⭐ Ditambah ke Favorit':'🗑 Dihapus dari Favorit');
+    },
+    openWatchlist:function(){
+        this._curView='watchlist';
+        this._setNav(null);
+        this._buildNav();
+        var list=Store.wlGet();
+        var h='<div class="stitle"><i class="fas fa-bookmark"></i> Favorit / Watchlist ('+list.length+')</div>';
+        if(!list.length){
+            h+='<div class="wl-empty"><i class="fas fa-bookmark"></i><p>Belum ada drama favorit</p><small>Klik ikon ⭐ pada drama untuk menyimpannya di sini</small></div>';
+        }else{
+            h+='<div class="grid">';
+            list.forEach(function(item){
+                var dKey='D_'+item.id;
+                var isSaved=Store.wlHas(item.id,item.src);
+                var stub={id:item.id,name:item.name,img:item.img,desc:'',eps:item.eps||0,tag:item.tag||'',score:item.score||0,views:0,raw:{}};
+                if(!getD(dKey))storeD(stub);
+                // Switch source saat buka dari watchlist
+                h+='<div class="card" onclick="App._wlOpen(\''+esc(item.id)+'\',\''+esc(item.src)+'\')">'+
+                   '<div class="cimg">'+(item.img?'<img src="'+esc(item.img)+'" loading="lazy" onerror="this.onerror=null;this.parentElement.innerHTML=\'<div class=noimg><i class=fas\\ fa-film></i></div>\'">':'<div class="noimg"><i class="fas fa-film"></i></div>')+
+                   '<div class="chov"><div class="cplay"><i class="fas fa-play"></i></div></div>'+
+                   (item.eps?'<div class="cbadge">'+item.eps+' Ep</div>':'')+
+                   (item.score?'<div class="cscore"><i class="fas fa-star"></i> '+item.score+'</div>':'')+
+                   '</div>'+
+                   '<div class="cbody">'+
+                   '<div class="cname">'+esc(item.name)+'</div>'+
+                   '<div class="csub"><span style="opacity:.6;font-size:.6rem">'+esc(GS_PLAT_NAMES[item.src]||item.src)+'</span></div>'+
+                   '</div>'+
+                   '<button class="card-fav-btn saved" onclick="event.stopPropagation();App._wlRemoveRefresh(\''+esc(item.id)+'\',\''+esc(item.src)+'\')"><i class="fas fa-bookmark"></i></button>'+
+                   '</div>';
+            });
+            h+='</div>';
+        }
+        this.el.innerHTML=h;
+    },
+    _wlOpen:function(id,src){
+        if(this.src!==src)this.setSource(src);
+        var d=getD('D_'+id);
+        if(d)this.openDetail(d);
+    },
+    _wlRemoveRefresh:function(id,src){
+        Store.wlRemove(id,src);
+        this.openWatchlist();
+        showToast('🗑 Dihapus dari Favorit');
+    },
+
+    _frLoad:function(f,p){return f==='populer'?FR.populer():f==='new'?FR.newest():f==='dubbing'?FR.dubbing(p):FR.populer()},
+    _dbSortBar:function(){var s=this,h='<div class="fbar"><span class="flabel">Urutkan:</span>';DB_SORTS.forEach(function(x){h+='<button class="fbtn '+(s.sort===x.id?'on':'')+'" onclick="App.setSort('+x.id+')">'+x.label+'</button>'});return h+'</div>'},
+    _frFilterBar:function(){var s=this,h='<div class="fbar"><span class="flabel">Kategori:</span>';FR_FILTERS.forEach(function(x){h+='<button class="fbtn '+(s.filter===x.id?'on':'')+'" onclick="App.setFilter(\''+x.id+'\')"><i class="fas '+x.icon+'"></i> '+x.label+'</button>'});return h+'</div>'},
+    setSort:function(s){this.sort=s;this.currentList=[];this.pg=1;this.hasMoreData=true;this._loadTab('classify',1,false)},
+    setFilter:function(f){this.filter=f;this.currentList=[];this.pg=1;this.hasMoreData=true;this._loadTab('explore',1,false)},
+
+    _srcBadge:function(){
+        if(this.src==='freereels')return'<div class="src-badge fr"><i class="fas fa-film"></i> FreeReels</div>';
+        if(this.src==='melolo')return'<div class="src-badge ml"><i class="fas fa-tv"></i> MeloLo</div>';
+        if(this.src==='goodshort')return'<div class="src-badge gs"><i class="fas fa-star"></i> GoodShort</div>';
+        if(this.src==='dramawave')return'<div class="src-badge dw"><i class="fas fa-water"></i> DramaWave</div>';
+        if(this.src==='shortmax')return'<div class="src-badge sm"><i class="fas fa-bolt"></i> ShortMax</div>';
+        if(this.src==='netshort')return'<div class="src-badge ns"><i class="fas fa-play"></i> NetShort</div>';
+        if(this.src==='dramabite')return'<div class="src-badge db2"><i class="fas fa-play-circle"></i> DramaBite</div>';
+        if(this.src==='flextv')return'<div class="src-badge fx"><i class="fas fa-tv"></i> FlexTV</div>';
+        return'<div class="src-badge db"><i class="fas fa-play-circle"></i> DramaBox</div>';
+    },
+
+    _grid:function(list){
+        var self=this,h='<div class="grid">';
+        list.forEach(function(d){
+            var k=storeD(d);
+            var isSaved=Store.wlHas(d.id,self.src);
+            h+='<div class="card" onclick="App.openDetail(getD(\''+k+'\'))"><div class="cimg">';
+            h+=d.img?'<img src="'+esc(d.img)+'" loading="lazy" onerror="this.onerror=null;this.parentElement.innerHTML=\'<div class=noimg><i class=fas\\ fa-film></i></div>\'">':'<div class="noimg"><i class="fas fa-film"></i></div>';
+            h+='<div class="chov"><div class="cplay"><i class="fas fa-play"></i></div></div>';
+            if(d.eps)h+='<div class="cbadge">'+d.eps+' Ep</div>';
+            if(d.score)h+='<div class="cscore"><i class="fas fa-star"></i> '+d.score+'</div>';
+            h+='</div>';
+            // Watchlist quick button
+            h+='<button class="card-fav-btn'+(isSaved?' saved':'')+'" onclick="event.stopPropagation();App.toggleWatchlist(getD(\''+k+'\'),this)">'+(isSaved?'<i class="fas fa-bookmark"></i>':'<i class="far fa-bookmark"></i>')+'</button>';
+            h+='<div class="cbody"><div class="cname">'+esc(d.name)+'</div><div class="csub">';
+            if(d.tag)h+='<span>'+esc(String(d.tag).split(',')[0].trim())+'</span>';
+            if(d.views)h+='<span>👁 '+fmtV(d.views)+'</span>';
+            h+='</div></div></div>'
+        });
+        return h+'</div>'
+    },
+
+    _lmBtn:function(t,a){
+        if(!this.hasMoreData)return'<div class="end-msg">✅ Semua drama sudah ditampilkan</div>';
+        var ea=esc(String(a)).replace(/'/g,"\\'");
+        return'<div class="load-more"><button class="lmbtn" id="loadMoreBtn" onclick="App.loadMore(\''+t+'\',\''+ea+'\')"><span class="spinner"></span><span class="lmtext"><i class="fas fa-plus"></i> Muat Lebih Banyak</span></button></div>'
+    },
+    loadMore:function(t,a){
+        if(this.isLoading||!this.hasMoreData)return;
+        this.isLoading=true;var b=document.getElementById('loadMoreBtn');if(b)b.classList.add('loading');
+        var np=this.pg+1;
+        if(t==='tab')this._loadTab(a,np,true);else this._search(a,np,true)
+    },
+
+    openDetail:function(d){
+        if(!d){this._error('Drama tidak ditemukan',function(){App.goToList()});return}
+        this.curD=d;this.viewMode='detail';this._loading();window.scrollTo({top:0,behavior:'smooth'});
+        if(this.src==='freereels')this._openFR(d);
+        else if(this.src==='melolo')this._openML(d);
+        else if(this.src==='goodshort')this._openGS(d);
+        else if(this.src==='dramawave')this._openDW(d);
+        else if(this.src==='shortmax')this._openSM(d);
+        else if(this.src==='netshort')this._openNS(d);
+        else if(this.src==='dramabite')this._openDB2(d);
+        else if(this.src==='flextv')this._openFX(d);
+        else this._openDB(d)
+    },
+
+    _openDB:function(d){
+        var self=this;
+        Promise.allSettled([DB.chapters(d.id),DB.batch(d.id)]).then(function(r){
+            self.chaps=r[0].status==='fulfilled'?toList(r[0].value).map(normChap):[];
+            self.batch=r[1].status==='fulfilled'?toList(r[1].value):[];
+            self._renderDetail(d,self.chaps)
+        })
+    },
+    _openFR:function(d){
+        var self=this;
+        FR.detail(d.id).then(function(res){
+            var dd=res.data||res;if(Array.isArray(dd)&&dd.length)dd=dd[0];
+            if(dd&&typeof dd==='object'){
+                d.id=dd.drama_id||dd.dramaId||dd.bookId||dd.id||d.id;
+                d.name=dd.drama_name||dd.dramaName||dd.bookName||dd.name||d.name;
+                var nc=getCover(dd);if(nc)d.img=nc;
+                d.desc=dd.description||dd.introduction||dd.desc||d.desc;
+                d.eps=parseInt(dd.episode_count||dd.episodeCount||dd.chapterCount)||d.eps;
+                d.tag=dd.tags||dd.label||dd.tag||d.tag;d.views=dd.watch_value||dd.playCount||dd.views||d.views;
+                var el=dd.episode_list||dd.episodes||dd.chapters;
+                if(el&&Array.isArray(el))self.chaps=el.map(normChap);
+                else if(d.eps){self.chaps=[];for(var i=1;i<=d.eps;i++)self.chaps.push({num:i,title:'Episode '+i,streamId:''})}
+                else self.chaps=[];
+            }
+            self.batch=[];storeD(d);self._renderDetail(d,self.chaps)
+        }).catch(function(){
+            if(d.eps){self.chaps=[];for(var i=1;i<=d.eps;i++)self.chaps.push({num:i,title:'Episode '+i,streamId:''})}
+            self._renderDetail(d,self.chaps||[])
+        })
+    },
+    _openML:function(d){
+        var self=this;
+        ML.detail(d.id).then(function(res){
+            var dd=res.data||res;if(Array.isArray(dd)&&dd.length)dd=dd[0];
+            if(dd&&typeof dd==='object'){
+                d.id=dd.drama_id||dd.id||d.id;d.name=dd.drama_name||dd.name||dd.title||d.name;
+                var nc=getCover(dd);if(nc)d.img=nc;
+                d.desc=dd.description||dd.desc||d.desc;d.eps=parseInt(dd.episode_count)||d.eps;
+                d.tag=dd.tags||dd.tag||d.tag;d.views=dd.views||dd.watch_value||d.views;d.score=dd.rating||dd.score||d.score;
+                var epList=dd.video_list||dd.episodes||dd.episode_list||dd.chapters||null;
+                if(epList&&epList.length>0){
+                    self.chaps=epList.map(function(ep,i){
+                        var num=ep.episode_number||ep.episode||ep.number||ep.index||(i+1);
+                        var title=ep.title||ep.name||('Episode '+(i+1));
+                        var sid=ep.video_id||ep.id||ep.episode_id||ep.stream_id||ep.item_id||ep._id||'';
+                        return{num:parseInt(num)||(i+1),title:title,streamId:String(sid)};
+                    });
+                }else if(d.eps){self.chaps=[];for(var i=1;i<=d.eps;i++)self.chaps.push({num:i,title:'Episode '+i,streamId:''})}
+                else self.chaps=[];
+            }
+            self.batch=[];storeD(d);self._renderDetail(d,self.chaps);
+        }).catch(function(e){
+            console.error('[ML Error]',e);
+            if(d.eps){self.chaps=[];for(var i=1;i<=d.eps;i++)self.chaps.push({num:i,title:'Episode '+i,streamId:''})}
+            self._renderDetail(d,self.chaps||[]);
+        });
+    },
+    _openGS:function(d){
+        var self=this;
+        Promise.allSettled([GS.book(d.id),GS.chapters(d.id)]).then(function(r){
+            if(r[0].status==='fulfilled'){
+                var res=r[0].value;
+                var dd=(res.data&&res.data.book)?res.data.book:(res.data||res);
+                if(dd&&typeof dd==='object'){
+                    d.id=dd.bookId||dd.id||d.id;
+                    d.name=dd.bookName||dd.name||dd.title||d.name;
+                    var nc=dd.cover||dd.bookDetailCover||'';if(nc)d.img=fixImageUrl(nc);
+                    d.desc=dd.introduction||dd.description||dd.desc||d.desc;
+                    d.tag=dd.tags||dd.label||dd.genre||d.tag;
+                    d.score=dd.ratings||dd.score||dd.rating||d.score;
+                    d.views=dd.viewCount||dd.view_count||dd.views||d.views;
+                }
+            }
+            var clist=[];
+            if(r[1].status==='fulfilled'){
+                var cres=r[1].value;
+                if(cres.data&&cres.data.list&&Array.isArray(cres.data.list))clist=cres.data.list;
+                else if(cres.data&&Array.isArray(cres.data))clist=cres.data;
+                else if(Array.isArray(cres))clist=cres;
+                else clist=toList(cres);
+            }
+            if(clist.length>0){
+                self.chaps=clist.map(function(ep,i){
+                    var num=i+1;
+                    var title=ep.chapterName||('Episode '+(i+1));
+                    var sid=String(ep.id||ep.chapterId||'');
+                    var directUrl='';
+                    if(ep.cdnList&&ep.cdnList.length){directUrl=ep.cdnList[0].videoPath||ep.cdnList[0].url||''}
+                    if(!directUrl&&ep.multiVideos&&ep.multiVideos.length){
+                        for(var mi=0;mi<ep.multiVideos.length;mi++){
+                            if(ep.multiVideos[mi].type==='720p'||ep.multiVideos[mi].filePath){directUrl=ep.multiVideos[mi].filePath||ep.multiVideos[mi].url||'';break}
+                        }
+                        if(!directUrl)directUrl=ep.multiVideos[0].filePath||ep.multiVideos[0].url||'';
+                    }
+                    return{num:num,title:title,streamId:sid,directUrl:directUrl};
+                });
+                d.eps=self.chaps.length;
+            }else if(d.eps>0){
+                self.chaps=[];
+                for(var i=1;i<=d.eps;i++)self.chaps.push({num:i,title:'Episode '+i,streamId:'',directUrl:''});
+            }else self.chaps=[];
+            self.batch=[];storeD(d);self._renderDetail(d,self.chaps);
+        }).catch(function(e){
+            console.error('[GS Detail Error]',e);
+            if(d.eps>0){self.chaps=[];for(var i=1;i<=d.eps;i++)self.chaps.push({num:i,title:'Episode '+i,streamId:'',directUrl:''})}
+            else self.chaps=[];
+            self._renderDetail(d,self.chaps);
+        });
+    },
+    _openDW:function(d){
+        var self=this;
+        DW.detail(d.id).then(function(res){
+            var dd=res.data||res;
+            if(Array.isArray(dd))dd=dd[0];
+            if(dd&&typeof dd==='object'){
+                d.id=dd.id||dd.dramaId||dd.drama_id||d.id;
+                d.name=dd.title||dd.name||dd.dramaName||d.name;
+                var nc=dd.cover||dd.thumbnail||dd.poster||dd.image||dd.coverUrl||getCover(dd);
+                if(nc)d.img=fixImageUrl(nc);
+                d.desc=dd.description||dd.intro||dd.synopsis||dd.desc||d.desc;
+                d.tag=dd.tags||dd.genres||dd.genre||dd.label||d.tag;
+                d.score=dd.rating||dd.score||d.score;
+                d.views=dd.viewCount||dd.view_count||dd.views||dd.playCount||d.views;
+                var epList=dd.episodes||dd.episode_list||dd.chapters||dd.epList||null;
+                if(epList&&Array.isArray(epList)&&epList.length>0){
+                    self.chaps=epList.map(function(ep,i){
+                        var num=parseInt(ep.episode||ep.ep||ep.number||ep.index||ep.no||(i+1))||(i+1);
+                        var title=ep.title||ep.name||ep.episodeTitle||('Episode '+num);
+                        var sid=String(ep.id||ep.episodeId||ep.episode||num);
+                        return{num:num,title:title,streamId:sid};
+                    });
+                    d.eps=self.chaps.length;
+                }else{
+                    var cnt=parseInt(dd.totalEpisodes||dd.episodeCount||dd.episode_count||dd.total_episodes||dd.epCount||0)||0;
+                    if(cnt>0){
+                        d.eps=cnt;self.chaps=[];
+                        for(var i=1;i<=cnt;i++)self.chaps.push({num:i,title:'Episode '+i,streamId:String(i)});
+                    }else self.chaps=[];
+                }
+            }
+            self.batch=[];storeD(d);self._renderDetail(d,self.chaps);
+        }).catch(function(e){
+            console.error('[DW Detail Error]',e);
+            if(d.eps>0){self.chaps=[];for(var i=1;i<=d.eps;i++)self.chaps.push({num:i,title:'Episode '+i,streamId:String(i)})}
+            else self.chaps=[];
+            self._renderDetail(d,self.chaps);
+        });
+    },
+    _openSM:function(d){
+        var self=this;
+        var tryIds=[];var seen={};
+        var addId=function(v){if(v===null||v===undefined)return;var s=String(v).trim();if(!s||seen[s])return;seen[s]=1;tryIds.push(s)};
+        if(d.raw){var rx=d.raw;[rx.code,rx.id,rx.drama_id,rx.dramaId,rx.bookId,rx.book_id,rx.key,rx.slug].forEach(function(v){addId(v)})}
+        addId(d.id);
+        var renderFromCard=function(){
+            var cnt=parseInt(d.eps)||0;
+            if(cnt>0){self.chaps=[];for(var i=1;i<=cnt;i++)self.chaps.push({num:i,title:'Episode '+i,streamId:String(i)})}
+            else self.chaps=[];
+            self.batch=[];storeD(d);self._renderDetail(d,self.chaps);
+        };
+        var processDetail=function(res,usedId){
+            d.id=usedId;var dd=res.data||res;if(Array.isArray(dd))dd=dd[0];
+            if(dd&&typeof dd==='object'&&!dd.error){
+                if(dd.id)d.raw_detail_id=String(dd.id);
+                d.name=dd.name||dd.title||dd.dramaName||d.name;
+                var nc=dd.cover||dd.thumbnail||dd.poster||dd.image||getCover(dd);if(nc)d.img=fixImageUrl(nc);
+                d.desc=dd.summary||dd.description||dd.intro||dd.synopsis||dd.desc||d.desc;
+                d.tag=dd.tags||dd.genres||dd.genre||dd.label||d.tag;
+                d.score=dd.rating||dd.score||d.score;d.views=dd.viewCount||dd.view_count||dd.views||dd.playCount||d.views;
+                var epList=dd.episode_list||dd.chapters||dd.epList||dd.episodeList||res.episodes_list||res.episode_list||res.chapters||null;
+                if(epList&&Array.isArray(epList)&&epList.length>0){
+                    self.chaps=epList.map(function(ep,i){
+                        var num=parseInt(ep.ep||ep.episode||ep.number||ep.index||ep.no||ep.sort||(i+1))||(i+1);
+                        var title=ep.title||ep.name||ep.chapterName||ep.episodeTitle||('Episode '+num);
+                        var sid=String(ep.ep||ep.id||ep.episode||ep.episodeId||ep.chapterId||num);
+                        return{num:num,title:title,streamId:sid};
+                    });d.eps=self.chaps.length;
+                }else{
+                    var cnt=parseInt(dd.episodes||dd.totalEpisodes||dd.episodeCount||dd.episode_count||dd.epCount||dd.total_episodes||dd.chapterCount||res.totalEpisodes||res.episodeCount||0)||parseInt(d.eps)||0;
+                    if(cnt>0){d.eps=cnt;self.chaps=[];for(var i=1;i<=cnt;i++)self.chaps.push({num:i,title:'Episode '+i,streamId:String(i)})}
+                    else self.chaps=[];
+                }
+            }else{var cnt2=parseInt(d.eps)||0;if(cnt2>0){self.chaps=[];for(var i=1;i<=cnt2;i++)self.chaps.push({num:i,title:'Episode '+i,streamId:String(i)})}else self.chaps=[]}
+            self.batch=[];storeD(d);self._renderDetail(d,self.chaps);
+        };
+        var tryNext=function(ids){
+            if(!ids.length){renderFromCard();return}
+            var tid=ids[0];var rest=ids.slice(1);
+            SM.detail(tid).then(function(res){
+                var isError=false;
+                if(res&&res.data&&res.data.error)isError=true;if(res&&res.error)isError=true;
+                if(res&&res.message&&/not found/i.test(String(res.message)))isError=true;
+                if(res&&res.code&&(res.code===404||res.code===400))isError=true;
+                if(isError)tryNext(rest);else processDetail(res,tid);
+            }).catch(function(){tryNext(rest)});
+        };
+        tryNext(tryIds);
+    },
+    _openNS:function(d){
+        var self=this;
+        Promise.allSettled([NS.detail(d.id),NS.episodes(d.id)]).then(function(r){
+            if(r[0].status==='fulfilled'){
+                var res=r[0].value;var dd=res.data||res;if(Array.isArray(dd))dd=dd[0];
+                if(dd&&typeof dd==='object'){
+                    d.id=String(dd.id||dd.drama_id||d.id);d.name=dd.title||dd.name||dd.dramaName||d.name;
+                    var nc=dd.cover||dd.poster||dd.thumbnail||dd.image||getCover(dd);if(nc)d.img=fixImageUrl(nc);
+                    d.desc=dd.description||dd.summary||dd.intro||dd.synopsis||dd.desc||d.desc;
+                    d.tag=dd.tags||dd.genres||dd.genre||dd.label||d.tag;
+                    d.score=dd.rating||dd.score||d.score;d.views=dd.viewCount||dd.view_count||dd.views||dd.playCount||d.views;
+                }
+            }
+            var epList=[];
+            if(r[1].status==='fulfilled'){
+                var eres=r[1].value;var raw=eres.data||eres;
+                if(Array.isArray(raw))epList=raw;
+                else if(raw&&Array.isArray(raw.list))epList=raw.list;
+                else if(raw&&Array.isArray(raw.episodes))epList=raw.episodes;
+                else epList=toList(eres);
+            }
+            if(epList.length>0){
+                self.chaps=epList.map(function(ep,i){
+                    var num=parseInt(ep.episode||ep.ep||ep.number||ep.index||ep.no||(i+1))||(i+1);
+                    var title=ep.title||ep.name||ep.episodeTitle||('Episode '+num);
+                    var sid=String(ep.id||ep.episodeId||ep.episode||num);
+                    return{num:num,title:title,streamId:sid};
+                });d.eps=self.chaps.length;
+            }else{
+                var cnt=parseInt(d.eps)||0;
+                if(cnt>0){self.chaps=[];for(var i=1;i<=cnt;i++)self.chaps.push({num:i,title:'Episode '+i,streamId:String(i)})}
+                else self.chaps=[];
+            }
+            self.batch=[];storeD(d);self._renderDetail(d,self.chaps);
+        }).catch(function(e){
+            console.error('[NS Detail Error]',e);var cnt=parseInt(d.eps)||0;
+            if(cnt>0){self.chaps=[];for(var i=1;i<=cnt;i++)self.chaps.push({num:i,title:'Episode '+i,streamId:String(i)})}
+            else self.chaps=[];self._renderDetail(d,self.chaps);
+        });
+    },
+    _openDB2:function(d){
+        var self=this;
+        Promise.allSettled([DB2.detail(d.id)]).then(function(r){
+            var res=r[0].status==='fulfilled'?r[0].value:{};var dd=res.data||res;if(Array.isArray(dd))dd=dd[0];
+            if(dd&&typeof dd==='object'){
+                d.id=String(dd.id||dd.dramaId||d.id);d.name=dd.title||dd.name||dd.dramaName||d.name;
+                var nc=dd.cover||dd.poster||dd.thumbnail||dd.image||getCover(dd);if(nc)d.img=fixImageUrl(nc);
+                d.desc=dd.description||dd.summary||dd.intro||dd.synopsis||dd.desc||d.desc;
+                d.tag=dd.tags||dd.genres||dd.genre||dd.label||d.tag;d.score=dd.rating||dd.score||d.score;d.views=dd.viewCount||dd.view_count||dd.views||dd.playCount||d.views;
+                var epList=dd.episodes||dd.episode_list||dd.chapters||null;
+                if(epList&&Array.isArray(epList)&&epList.length>0){
+                    self.chaps=epList.map(function(ep,i){
+                        var num=parseInt(ep.episode||ep.ep||ep.number||ep.index||ep.no||(i+1))||(i+1);
+                        var title=ep.title||ep.name||('Episode '+num);var sid=String(ep.id||ep.episodeId||ep.episode||num);
+                        return{num:num,title:title,streamId:sid};
+                    });d.eps=self.chaps.length;
+                }else{
+                    var cnt=parseInt(dd.totalEpisodes||dd.episodeCount||dd.episode_count||dd.total||dd.epCount||0)||0;
+                    if(cnt>0){d.eps=cnt;self.chaps=[];for(var i=1;i<=cnt;i++)self.chaps.push({num:i,title:'Episode '+i,streamId:String(i)})}
+                    else self.chaps=[];
+                }
+            }
+            self.batch=[];storeD(d);self._renderDetail(d,self.chaps);
+        });
+    },
+    _openFX:function(d){
+        var self=this;
+        Promise.allSettled([FX.detail(d.id),FX.episodes(d.id)]).then(function(r){
+            if(r[0].status==='fulfilled'){
+                var res=r[0].value;var dd=res.data||res;if(Array.isArray(dd))dd=dd[0];
+                if(dd&&typeof dd==='object'){
+                    d.id=String(dd.id||dd.seriesId||dd.series_id||d.id);d.name=dd.title||dd.name||dd.seriesName||dd.series_name||d.name;
+                    var nc=dd.cover||dd.poster||dd.thumbnail||dd.image||dd.coverUrl||getCover(dd);if(nc)d.img=fixImageUrl(nc);
+                    d.desc=dd.description||dd.summary||dd.intro||dd.synopsis||dd.desc||d.desc;
+                    d.tag=dd.tags||dd.genres||dd.genre||dd.categories||dd.label||d.tag;
+                    d.score=dd.rating||dd.score||d.score;d.views=dd.viewCount||dd.view_count||dd.views||dd.playCount||d.views;
+                }
+            }
+            var epList=[];
+            if(r[1].status==='fulfilled'){
+                var eres=r[1].value;var raw=eres.data||eres;
+                if(Array.isArray(raw))epList=raw;
+                else if(raw&&Array.isArray(raw.list))epList=raw.list;
+                else if(raw&&Array.isArray(raw.episodes))epList=raw.episodes;
+                else if(raw&&Array.isArray(raw.items))epList=raw.items;
+                else epList=toList(eres);
+            }
+            if(epList.length>0){
+                self.chaps=epList.map(function(ep,i){
+                    var num=parseInt(ep.episode||ep.ep||ep.number||ep.index||ep.no||ep.sort||(i+1))||(i+1);
+                    var title=ep.title||ep.name||ep.episodeTitle||('Episode '+num);
+                    var sid=String(ep.id||ep.episodeId||ep.episode_id||ep.episode||num);
+                    return{num:num,title:title,streamId:sid};
+                });d.eps=self.chaps.length;
+            }else{
+                var cnt=parseInt(d.eps)||0;
+                if(cnt>0){self.chaps=[];for(var i=1;i<=cnt;i++)self.chaps.push({num:i,title:'Episode '+i,streamId:String(i)})}
+                else self.chaps=[];
+            }
+            self.batch=[];storeD(d);self._renderDetail(d,self.chaps);
+        }).catch(function(e){
+            console.error('[FX Detail Error]',e);var cnt=parseInt(d.eps)||0;
+            if(cnt>0){self.chaps=[];for(var i=1;i<=cnt;i++)self.chaps.push({num:i,title:'Episode '+i,streamId:String(i)})}
+            else self.chaps=[];self._renderDetail(d,self.chaps);
+        });
+    },
+
+    _renderDetail:function(d,chaps){
+        var self=this;
+        var k=storeD(d),ts=Array.isArray(d.tag)?d.tag.join(','):(d.tag||'');
+        var isSaved=Store.wlHas(d.id,this.src);
+        var cwItem=Store.cwFind(d.id,this.src);
+
+        var h='<button class="back" onclick="App.goToList()"><i class="fas fa-arrow-left"></i> Kembali</button>'+this._srcBadge()+'<div class="dhero">';
+        if(d.img)h+='<div class="dbg" style="background-image:url(\''+esc(d.img)+'\')"></div>';
+        h+='<div class="din"><div class="dposter">';
+        h+=d.img?'<img src="'+esc(d.img)+'" onerror="this.style.display=\'none\'">':'<div class="noimg" style="height:100%"><i class="fas fa-film"></i></div>';
+        h+='</div><div class="dinfo"><h1 class="dttl">'+esc(d.name)+'</h1><div class="dtags">';
+        if(ts)ts.split(/[,|]/).forEach(function(t){t=t.trim();if(t)h+='<span class="dtag">'+esc(t)+'</span>'});
+        h+='</div><div class="dsts">';
+        if(d.score)h+='<div class="ds"><i class="fas fa-star"></i> '+d.score+'</div>';
+        if(d.eps||chaps.length)h+='<div class="ds"><i class="fas fa-film"></i> '+(chaps.length||d.eps)+' Ep</div>';
+        if(d.views)h+='<div class="ds"><i class="fas fa-eye"></i> '+fmtV(d.views)+'</div>';
+        h+='</div>';
+        if(d.desc)h+='<p class="ddesc" id="ddd">'+esc(d.desc)+'</p><button class="bmore" onclick="document.getElementById(\'ddd\').classList.toggle(\'open\')">Selengkapnya ▼</button>';
+        h+='<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">';
+        // Tombol tonton — jika ada CW, lanjut dari episode terakhir
+        var startEp=cwItem?cwItem.ep:1;
+        h+='<button class="bwatch" onclick="App.play(\''+k+'\','+startEp+')"><i class="fas fa-play"></i> '+(cwItem?'Lanjut Ep '+startEp:'Tonton Ep 1')+'</button>';
+        // Tombol watchlist
+        h+='<button class="bfav'+(isSaved?' saved':'')+'" id="detailFavBtn" onclick="App._detailToggleWl(\''+k+'\',this)">'+(isSaved?'<i class="fas fa-bookmark"></i> Tersimpan':'<i class="far fa-bookmark"></i> Simpan')+'</button>';
+        h+='</div></div></div></div>';
+
+        // Resume banner jika ada progress
+        if(cwItem&&cwItem.progress>0.02){
+            var pct=Math.round(cwItem.progress*100);
+            h+='<div class="cw-resume-banner" onclick="App.play(\''+k+'\','+cwItem.ep+')">'+
+               '<div class="cw-resume-icon"><i class="fas fa-play"></i></div>'+
+               '<div class="cw-resume-text"><strong>Lanjut nonton Episode '+cwItem.ep+'</strong><span>Kamu sudah menonton '+pct+'% dari episode ini</span>'+
+               '<div class="cw-resume-prog"><div class="cw-resume-prog-fill" style="width:'+pct+'%"></div></div>'+
+               '</div><i class="fas fa-chevron-right" style="color:var(--text3)"></i></div>';
+        }
+
+        h+='<div style="margin-top:18px"><div class="stitle"><i class="fas fa-list"></i> Episode ('+(chaps.length||d.eps||0)+')</div><div class="epgrid">';
+        var lastEp=cwItem?cwItem.ep:null;
+        if(chaps.length)chaps.forEach(function(ch){h+='<button class="epc'+(lastEp&&ch.num==lastEp?' cw-ep-active':'')+'" onclick="App.play(\''+k+'\','+ch.num+')">Ep '+ch.num+'</button>'});
+        else if(d.eps)for(var i=1;i<=d.eps;i++)h+='<button class="epc'+(lastEp&&i==lastEp?' cw-ep-active':'')+'" onclick="App.play(\''+k+'\','+i+')">Ep '+i+'</button>';
+        else h+='<div class="empty"><p>Episode tidak tersedia</p></div>';
+        h+='</div></div>';
+        this.el.innerHTML=h;
+    },
+
+    _detailToggleWl:function(dKey,btn){
+        var d=getD(dKey);if(!d)return;
+        var item={id:d.id,name:d.name,img:d.img,src:this.src,eps:d.eps,score:d.score,tag:d.tag,ts:Date.now()};
+        var added=Store.wlToggle(item);
+        btn.className='bfav'+(added?' saved':'');
+        btn.innerHTML=added?'<i class="fas fa-bookmark"></i> Tersimpan':'<i class="far fa-bookmark"></i> Simpan';
+        showToast(added?'⭐ Ditambah ke Favorit':'🗑 Dihapus dari Favorit');
+    },
+
+    play:function(dKey,ep){
+        var d=getD(dKey);if(!d)return;
+        this.curD=d;
+        var total=this.chaps.length||d.eps||0;
+        this.tk={dKey:dKey,ep:ep,total:total,d:d};this.tkCache={};
+        this._tkRender();this._tkLoadEp(ep,'none');
+    },
+    _tkRender:function(){
+        var s=this.tk,d=s.d,el=document.getElementById('tkPlayer');
+        var isSaved=Store.wlHas(d.id,this.src);
+        var h='<div class="tk-vc" id="tkVC"><video id="tkVid" playsinline webkit-playsinline></video><div class="tk-grad-top"></div><div class="tk-grad-bot"></div><div class="tk-load" id="tkLoad"><div class="sp"></div></div><div class="tk-pp" id="tkPP"><i class="fas fa-play"></i></div><div class="tk-seek" id="tkSeek"><div class="tk-seek-ind" id="tkSeekInd"><i class="fas fa-forward"></i><span id="tkSeekTxt">+10s</span></div></div><div class="tk-err" id="tkErr"><i class="fas fa-exclamation-circle"></i><p>Video tidak tersedia</p><button onclick="App._tkRetry()"><i class="fas fa-redo"></i> Coba Lagi</button></div><button class="tk-close" onclick="App.tkClose()"><i class="fas fa-arrow-left"></i></button><div class="tk-epc" id="tkEpC">Ep '+s.ep+' / '+s.total+'</div><div class="tk-side"><button class="tk-sb'+(isSaved?' wl-active':'')+'" id="tkWlBtn" onclick="App._tkToggleWl()"><i class="fas fa-bookmark"></i>Favorit</button><button class="tk-sb" onclick="App.tkToggleEps()"><i class="fas fa-list-ol"></i>Episode</button><button class="tk-sb" onclick="App._tkSeek(10)"><i class="fas fa-forward"></i>+10 dtk</button><button class="tk-sb" onclick="App._tkSeek(-10)"><i class="fas fa-backward"></i>-10 dtk</button><button class="tk-sb" onclick="copyUrl()"><i class="fas fa-link"></i>Link</button></div><div class="tk-bottom"><div class="tk-dname">'+esc(d.name)+'</div><div class="tk-epsub" id="tkEpSub">Episode '+s.ep+'</div><div class="tk-hint"><i class="fas fa-chevron-up"></i> Geser untuk ganti episode</div></div><div class="tk-prog"><div class="tk-prog-bar" id="tkProg"></div></div><div class="tk-overlay" id="tkOverlay" onclick="App.tkToggleEps()"></div><div class="tk-epanel" id="tkEpanel"><div class="tk-eph"><span><i class="fas fa-list"></i> Episode ('+s.total+')</span><button onclick="App.tkToggleEps()"><i class="fas fa-times"></i></button></div><div class="tk-epl" id="tkEpList">'+this._tkEpBtns(s.ep)+'</div></div></div>';
+        el.innerHTML=h;el.classList.add('open');document.body.classList.add('noscroll');this._tkBindEvents()
+    },
+    _tkToggleWl:function(){
+        var d=this.tk&&this.tk.d;if(!d)return;
+        var item={id:d.id,name:d.name,img:d.img,src:this.src,eps:d.eps,score:d.score,tag:d.tag,ts:Date.now()};
+        var added=Store.wlToggle(item);
+        var btn=document.getElementById('tkWlBtn');
+        if(btn)btn.classList.toggle('wl-active',added);
+        showToast(added?'⭐ Ditambah ke Favorit':'🗑 Dihapus dari Favorit');
+    },
+    _tkEpBtns:function(cur){
+        var h='',chaps=this.chaps,total=this.tk.total;
+        if(chaps.length){chaps.forEach(function(ch){h+='<button class="tk-epb'+(ch.num==cur?' on':'')+'" onclick="App._tkGoEp('+ch.num+')">'+ch.num+'</button>'})}
+        else{for(var i=1;i<=total;i++)h+='<button class="tk-epb'+(i==cur?' on':'')+'" onclick="App._tkGoEp('+i+')">'+i+'</button>'}
+        return h
+    },
+    _tkBindEvents:function(){
+        if(this.tkBound)return;this.tkBound=true;
+        var vc=document.getElementById('tkVC'),self=this,sy=0,mv=false;if(!vc)return;
+        vc.addEventListener('touchstart',function(e){sy=e.changedTouches[0].screenY;mv=true},{passive:true});
+        vc.addEventListener('touchend',function(e){if(!mv)return;mv=false;var dy=sy-e.changedTouches[0].screenY;if(dy>70)self._tkNext();else if(dy<-70)self._tkPrev();else if(Math.abs(dy)<10)self._tkTap()},{passive:true});
+        vc.addEventListener('wheel',function(e){e.preventDefault();if(self.tkCD)return;self.tkCD=true;if(e.deltaY>30)self._tkNext();else if(e.deltaY<-30)self._tkPrev();setTimeout(function(){self.tkCD=false},800)},{passive:false});
+        document.addEventListener('keydown',function(e){var p=document.getElementById('tkPlayer');if(!p||!p.classList.contains('open'))return;if(e.key==='ArrowUp')self._tkPrev();else if(e.key==='ArrowDown')self._tkNext();else if(e.key==='ArrowLeft')self._tkSeek(-10);else if(e.key==='ArrowRight')self._tkSeek(10);else if(e.key===' '){e.preventDefault();self._tkTap()}else if(e.key==='Escape')self.tkClose()})
+    },
+    _tkSeek:function(sec){
+        var vid=document.getElementById('tkVid');if(!vid||!vid.duration)return;
+        var newTime=vid.currentTime+sec;if(newTime<0)newTime=0;if(newTime>vid.duration)newTime=vid.duration;vid.currentTime=newTime;
+        var seekInd=document.getElementById('tkSeekInd'),seekTxt=document.getElementById('tkSeekTxt'),seekIcon=seekInd?seekInd.querySelector('i'):null;
+        if(seekInd&&seekTxt&&seekIcon){seekTxt.textContent=(sec>0?'+':'')+sec+'s';seekIcon.className=sec>0?'fas fa-forward':'fas fa-backward';seekInd.classList.add('show');setTimeout(function(){seekInd.classList.remove('show')},600)}
+    },
+    _tkLoadEp:function(ep,dir){
+        var self=this,s=this.tk;if(ep<1||ep>s.total)return;s.ep=ep;
+        var epc=document.getElementById('tkEpC');if(epc)epc.textContent='Ep '+ep+' / '+s.total;
+        var esub=document.getElementById('tkEpSub');if(esub)esub.textContent='Episode '+ep;
+        var epl=document.getElementById('tkEpList');if(epl)epl.innerHTML=this._tkEpBtns(ep);
+        this._tkShowLoad(true);this._tkShowErr(false);
+        var vid=document.getElementById('tkVid');
+        if(vid&&dir!=='none'){vid.className='tk-anim-'+(dir==='up'?'up':'down');setTimeout(function(){vid.className=''},350)}
+        if(this.tkCache[ep]){this._tkPlayUrl(this.tkCache[ep]);return}
+
+        if(this.src==='goodshort'){
+            var chap=null;for(var ci=0;ci<this.chaps.length;ci++){if(this.chaps[ci].num==ep){chap=this.chaps[ci];break}}
+            var gsExtract=function(res){var u=res.m3u8||res.url||res.video_url||res.stream_url||'';if(u)return u;if(res.data){u=res.data.m3u8||res.data.url||res.data.video_url||extractVideoUrl(res.data)||'';if(u)return u}return extractVideoUrl(res)};
+            var tryUnlock=function(){GS.unlock(s.d.id,'720p').then(function(r2){var u2=gsExtract(r2);if(u2){self.tkCache[ep]=u2;self._tkPlayUrl(u2)}else{self._tkShowLoad(false);self._tkShowErr(true)}}).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)})};
+            var tryPlay=function(){if(chap&&chap.streamId){GS.play(s.d.id,chap.streamId,'720p').then(function(res){var u=gsExtract(res);if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else tryUnlock()}).catch(function(){tryUnlock()})}else tryUnlock()};
+            if(chap&&chap.directUrl){self.tkCache[ep]=chap.directUrl;self._tkPlayUrl(chap.directUrl)}else tryPlay();
+        }else if(this.src==='dramabite'){
+            DB2.episode(s.d.id,ep).then(function(res){
+                var u='';var dd=res.data||res;
+                if(dd.videoUrl||dd.video_url||dd.url||dd.m3u8||dd.stream_url){u=dd.videoUrl||dd.video_url||dd.url||dd.m3u8||dd.stream_url||''}
+                if(!u)u=extractVideoUrl(dd)||extractVideoUrl(res)||'';
+                var subText=dd.subtitle||dd.subtitles||dd.srt||'';var subUrl=dd.subtitleUrl||dd.subtitle_url||'';
+                if(u){self.tkCache[ep]=u;self._tkPlayUrl(u);if(subText&&subText.length>10&&subText.indexOf('-->')>-1)self._tkLoadSubText(subText,false);else if(subUrl&&subUrl.indexOf('http')===0)self._tkLoadSub(subUrl,false)}
+                else{self._tkShowLoad(false);self._tkShowErr(true)}
+            }).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)})
+        }else if(this.src==='netshort'){
+            NS.episode(s.d.id,ep).then(function(res){
+                var u='';
+                if(res.data){var d2=res.data;if(d2.videos&&Array.isArray(d2.videos)&&d2.videos.length){var QORD=['1080p','720p','540p','480p','360p'];var vmap={};d2.videos.forEach(function(v){if(v.url)vmap[v.quality||'']=v.url});for(var qi=0;qi<QORD.length;qi++){if(vmap[QORD[qi]]){u=vmap[QORD[qi]];break}}if(!u)u=d2.videos[0].url||''}if(!u)u=d2.video_url||d2.videoUrl||d2.url||d2.m3u8||d2.stream_url||d2.playUrl||'';if(!u)u=extractVideoUrl(d2)||''}
+                if(!u)u=extractVideoUrl(res)||'';
+                if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}
+            }).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)})
+        }else if(this.src==='shortmax'){
+            var smPlayId=s.d.id,smAltId=s.d.raw_detail_id||null;
+            var smTryPlay=function(pid,fallbackId){SM.play(pid,ep).then(function(res){var u='';if(res.data&&res.data.video){var v=res.data.video;u=v.video_1080||v.video_720||v.video_480||v.video_360||v.url||v.m3u8||'';if(!u)u=res.data.m3u8||res.data.url||res.data.stream_url||res.data.video_url||''}if(!u)u=res.m3u8||res.url||res.stream_url||res.video_url||extractVideoUrl(res)||'';if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else if(fallbackId)smTryPlay(fallbackId,null);else{self._tkShowLoad(false);self._tkShowErr(true)}}).catch(function(){if(fallbackId)smTryPlay(fallbackId,null);else{self._tkShowLoad(false);self._tkShowErr(true)}})};
+            smTryPlay(smPlayId,smAltId);
+        }else if(this.src==='dramawave'){
+            DW.play(s.d.id,ep).then(function(res){var u=res.m3u8||res.url||res.stream_url||res.video_url||res.videoUrl||res.streamUrl||'';if(!u&&res.data){var d2=res.data;u=d2.m3u8||d2.url||d2.stream_url||d2.video_url||d2.videoUrl||d2.streamUrl||d2.playUrl||d2.hlsUrl||d2.mp4||'';if(!u)u=extractVideoUrl(d2)}if(!u)u=extractVideoUrl(res);if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}}).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)})
+        }else if(this.src==='melolo'){
+            var chap=null;for(var i=0;i<this.chaps.length;i++){if(this.chaps[i].num==ep){chap=this.chaps[i];break}}
+            if(chap&&chap.streamId){ML.stream(chap.streamId).then(function(res){var u=extractVideoUrl(res);if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}}).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)})}
+            else{self._tkShowLoad(false);self._tkShowErr(true)}
+        }else if(this.src==='freereels'){
+            var proxy=FR.streamUrl(s.d.id,ep);
+            FR.stream(s.d.id,ep).then(function(res){var u=extractVideoUrl(res)||proxy;self.tkCache[ep]=u;self._tkPlayUrl(u)}).catch(function(){self.tkCache[ep]=proxy;self._tkPlayUrl(proxy)})
+        }else if(this.src==='flextv'){
+            var fxChap=null;for(var fxi=0;fxi<this.chaps.length;fxi++){if(this.chaps[fxi].num==ep){fxChap=this.chaps[fxi];break}}
+            var fxEpId=fxChap?fxChap.streamId:String(ep);
+            FX.play(s.d.id,fxEpId).then(function(res){var u='';var dd=res.data||res;if(dd.qualities&&Array.isArray(dd.qualities)&&dd.qualities.length){u=extractFromQualities(dd.qualities)}if(!u)u=dd.m3u8||dd.url||dd.video_url||dd.videoUrl||dd.stream_url||dd.streamUrl||dd.playUrl||dd.hlsUrl||dd.mp4||dd.src||'';if(!u)u=extractVideoUrl(dd)||extractVideoUrl(res)||'';if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}}).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)})
+        }else{
+            DB.watch(s.d.id,ep).then(function(res){var u=extractVideoUrl(res.data||res);if(!u&&self.batch.length){for(var i=0;i<self.batch.length;i++){var bf=flattenObj(self.batch[i],'',0);if(parseInt(smartGet(bf,['chapterNo','number','episode'])||0)===ep){u=extractVideoUrl(self.batch[i]);break}}}if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}}).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)})
+        }
+        this._tkPreload(ep+1);
+    },
+    _tkPlayUrl:function(url){
+        var vid=document.getElementById('tkVid');if(!vid)return;currentVideoUrl=url;
+        vid.src=url;vid.load();
+        var self=this;
+        vid.oncanplay=function(){vid.play().catch(function(){});App._tkShowLoad(false)};
+        vid.onerror=function(){App._tkShowLoad(false);App._tkShowErr(true)};
+        vid.ontimeupdate=function(){
+            var p=document.getElementById('tkProg');if(p&&vid.duration)p.style.width=(vid.currentTime/vid.duration*100)+'%';
+            // Simpan progress CW setiap 5 detik
+            if(App.tk&&vid.duration&&Math.floor(vid.currentTime)%5===0){
+                var prog=vid.currentTime/vid.duration;
+                App._cwSave(App.tk.d,App.tk.ep,App.tk.total,prog);
+            }
+        };
+        vid.onended=function(){
+            // Simpan CW sebagai selesai (progress 1)
+            if(App.tk)App._cwSave(App.tk.d,App.tk.ep,App.tk.total,1);
+            App._tkNext();
+        }
+    },
+
+    _tkLoadSubText:function(srtText,autoTranslate){
+        var vid=document.getElementById('tkVid');if(!vid||!srtText)return;
+        var oldEl=document.getElementById('tkSubEl');if(oldEl)oldEl.parentNode.removeChild(oldEl);
+        var oldBtn=document.getElementById('tkSubBtn');if(oldBtn)oldBtn.parentNode.removeChild(oldBtn);
+        var self=this;self._subCues=[];self._subTransCache={};self._subTranslating=false;
+        var cues=self._parseSRT(srtText);if(!cues.length){console.warn('[SUB] No cues in text');return}
+        self._subCues=cues;console.log('[SUB] Loaded from text',cues.length,'cues');
+        var subEl=document.createElement('div');subEl.id='tkSubEl';subEl.style.cssText='position:absolute;bottom:70px;left:50%;transform:translateX(-50%);width:90%;text-align:center;pointer-events:none;z-index:20;transition:opacity .2s';
+        var vc=document.getElementById('tkVC');if(vc)vc.appendChild(subEl);
+        var subBtn=document.createElement('button');subBtn.id='tkSubBtn';subBtn.className='tk-sb';
+        subBtn.innerHTML='<i class="fas fa-language" style="width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:1.15rem;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.05)"></i><span>Terjemah</span>';
+        subBtn.onclick=function(){self._toggleTranslate(cues)};
+        var side=vc&&vc.querySelector('.tk-side');if(side)side.insertBefore(subBtn,side.firstChild);
+        if(self._subTimer)clearInterval(self._subTimer);
+        self._subTimer=setInterval(function(){var el=document.getElementById('tkSubEl');if(!el){clearInterval(self._subTimer);return}var t=vid.currentTime;var active=null;for(var i=0;i<self._subCues.length;i++){if(t>=self._subCues[i].start&&t<=self._subCues[i].end){active=self._subCues[i];break}}if(active){var txt=active.translated||active.text;el.innerHTML='<span style="background:rgba(0,0,0,0.82);color:#fff;font-size:15px;font-weight:600;padding:5px 14px;border-radius:8px;line-height:1.7;display:inline-block;max-width:100%;word-break:break-word;text-shadow:0 1px 4px rgba(0,0,0,.9)">'+txt+'</span>'}else{el.innerHTML=''}},200);
+        if(autoTranslate)setTimeout(function(){self._toggleTranslate(cues)},500)
+    },
+    _tkLoadSub:function(srtUrl,autoTranslate){
+        var vid=document.getElementById('tkVid');if(!vid||!srtUrl)return;
+        var oldEl=document.getElementById('tkSubEl');if(oldEl)oldEl.parentNode.removeChild(oldEl);
+        var oldBtn=document.getElementById('tkSubBtn');if(oldBtn)oldBtn.parentNode.removeChild(oldBtn);
+        var self=this;self._subCues=[];self._subTransCache={};self._subTranslating=false;
+        console.log('[SUB] Loading:',srtUrl);
+        fetch(srtUrl).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()}).then(function(srt){
+            var cues=self._parseSRT(srt);if(!cues.length){console.warn('[SUB] No cues parsed');return}
+            self._subCues=cues;console.log('[SUB] Loaded',cues.length,'cues');
+            var subEl=document.createElement('div');subEl.id='tkSubEl';subEl.style.cssText='position:absolute;bottom:70px;left:50%;transform:translateX(-50%);width:90%;text-align:center;pointer-events:none;z-index:20;transition:opacity .2s';
+            var vc=document.getElementById('tkVC');if(vc)vc.appendChild(subEl);
+            var subBtn=document.createElement('button');subBtn.id='tkSubBtn';subBtn.className='tk-sb';
+            subBtn.innerHTML='<i class="fas fa-language" style="width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:1.15rem;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.05)"></i><span>Terjemah</span>';
+            subBtn.onclick=function(){self._toggleTranslate(cues)};
+            var side=vc&&vc.querySelector('.tk-side');if(side)side.insertBefore(subBtn,side.firstChild);
+            if(self._subTimer)clearInterval(self._subTimer);
+            self._subTimer=setInterval(function(){var el=document.getElementById('tkSubEl');if(!el){clearInterval(self._subTimer);return}var t=vid.currentTime;var active=null;for(var i=0;i<self._subCues.length;i++){if(t>=self._subCues[i].start&&t<=self._subCues[i].end){active=self._subCues[i];break}}if(active){var txt=active.translated||active.text;el.innerHTML='<span style="background:rgba(0,0,0,0.82);color:#fff;font-size:15px;font-weight:600;padding:5px 14px;border-radius:8px;line-height:1.7;display:inline-block;max-width:100%;word-break:break-word;text-shadow:0 1px 4px rgba(0,0,0,.9)">'+txt+'</span>'}else{el.innerHTML=''}},200);
+            if(autoTranslate)setTimeout(function(){self._toggleTranslate(cues)},500)
+        }).catch(function(e){console.warn('[sub err]',e)})
+    },
+    _subCues:[],_subTimer:null,_subTransCache:{},_subTranslating:false,
+    _toggleTranslate:function(cues){
+        var self=this;var btn=document.getElementById('tkSubBtn');
+        var alreadyDone=cues.length>0&&cues[0].translated;
+        if(alreadyDone){cues.forEach(function(c){delete c.translated});if(btn)btn.innerHTML='<i class="fas fa-language" style="width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:1.15rem;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.05)"></i><span>Terjemah</span>';showToast('Subtitle asli');return}
+        if(self._subTranslating)return;self._subTranslating=true;showToast('Menerjemahkan...');
+        if(btn)btn.innerHTML='<i class="fas fa-spinner fa-spin" style="width:46px;height:46px;border-radius:50%;background:rgba(16,185,129,.2);display:flex;align-items:center;justify-content:center;font-size:1.15rem;backdrop-filter:blur(10px)"></i><span>Loading</span>';
+        var texts=[];var seen={};cues.forEach(function(c){var k=c.text.replace(/<[^>]+>/g,'');if(!seen[k]){seen[k]=true;texts.push(k)}});
+        var translated={};var batchSize=8;var batches=[];for(var i=0;i<texts.length;i+=batchSize)batches.push(texts.slice(i,i+batchSize));
+        var doNext=function(idx){
+            if(idx>=batches.length){cues.forEach(function(c){var k=c.text.replace(/<[^>]+>/g,'');if(translated[k])c.translated=translated[k]});self._subTranslating=false;if(btn)btn.innerHTML='<i class="fas fa-language" style="width:46px;height:46px;border-radius:50%;background:rgba(16,185,129,.2);display:flex;align-items:center;justify-content:center;font-size:1.15rem;backdrop-filter:blur(10px);border:1px solid rgba(16,185,129,.3)"></i><span>Indo ✓</span>';showToast('Subtitle sudah diterjemahkan!');return}
+            var batch=batches[idx];
+            var promises=batch.map(function(txt){if(self._subTransCache[txt])return Promise.resolve({o:txt,t:self._subTransCache[txt]});return fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(txt)+'&langpair=zh-CN|id').then(function(r){return r.json()}).then(function(j){var t=(j&&j.responseData&&j.responseData.translatedText)||txt;self._subTransCache[txt]=t;return{o:txt,t:t}}).catch(function(){return{o:txt,t:txt}})});
+            Promise.all(promises).then(function(res){res.forEach(function(r){translated[r.o]=r.t});setTimeout(function(){doNext(idx+1)},300)});
+        };
+        doNext(0);
+    },
+    _parseSRT:function(srt){
+        var cues=[];var normalized=srt.trim().replace(/\r\n/g,'\n').replace(/\r/g,'\n');var blocks=normalized.split(/\n\n+/);
+        blocks.forEach(function(block){var lines=block.trim().split('\n');if(lines.length<2)return;var tsLine='';var textLines=[];var found=false;for(var i=0;i<lines.length;i++){if(!found&&lines[i].indexOf('-->')>=0){tsLine=lines[i];found=true}else if(found){textLines.push(lines[i])}}if(!tsLine||!textLines.length)return;var ts=tsLine.split('-->');if(ts.length<2)return;var parseT=function(s){s=s.trim().replace(',','.');var p=s.split(':');if(p.length===3)return parseFloat(p[0])*3600+parseFloat(p[1])*60+parseFloat(p[2]);if(p.length===2)return parseFloat(p[0])*60+parseFloat(p[1]);return 0};var text=textLines.join('<br>').replace(/<[^>]+>/g,'');cues.push({start:parseT(ts[0]),end:parseT(ts[1]),text:text})});
+        return cues
+    },
+    _tkPreload:function(ep){
+        var s=this.tk;if(!s||ep<1||ep>s.total||this.tkCache[ep])return;
+        if(this.src==='goodshort'){var chap=null;for(var i=0;i<this.chaps.length;i++){if(this.chaps[i].num==ep){chap=this.chaps[i];break}}if(chap&&chap.directUrl)App.tkCache[ep]=chap.directUrl;else if(chap&&chap.streamId){GS.play(s.d.id,chap.streamId,'720p').then(function(r){var u=r.m3u8||r.url||extractVideoUrl(r);if(u)App.tkCache[ep]=u}).catch(function(){})}}
+        else if(this.src==='dramabite'){DB2.episode(s.d.id,ep).then(function(r){var u=extractVideoUrl(r.data||r)||extractVideoUrl(r)||'';if(u)App.tkCache[ep]=u}).catch(function(){})}
+        else if(this.src==='netshort'){NS.episode(s.d.id,ep).then(function(r){var u='';if(r.data&&r.data.videos&&Array.isArray(r.data.videos)&&r.data.videos.length){var QORD=['1080p','720p','540p','480p','360p'];var vmap={};r.data.videos.forEach(function(v){if(v.url)vmap[v.quality||'']=v.url});for(var qi=0;qi<QORD.length;qi++){if(vmap[QORD[qi]]){u=vmap[QORD[qi]];break}}if(!u)u=r.data.videos[0].url||''}if(!u&&r.data)u=r.data.video_url||r.data.url||r.data.m3u8||extractVideoUrl(r.data)||'';if(!u)u=extractVideoUrl(r)||'';if(u)App.tkCache[ep]=u}).catch(function(){})}
+        else if(this.src==='shortmax'){SM.play(s.d.id,ep).then(function(r){var u='';if(r.data&&r.data.video){var v=r.data.video;u=v.video_1080||v.video_720||v.video_480||v.url||v.m3u8||''}if(!u)u=r.m3u8||r.url||(r.data&&(r.data.m3u8||r.data.url||r.data.stream_url))||extractVideoUrl(r)||'';if(u)App.tkCache[ep]=u}).catch(function(){})}
+        else if(this.src==='dramawave'){DW.play(s.d.id,ep).then(function(r){var u=r.m3u8||r.url||r.stream_url||(r.data&&(r.data.m3u8||r.data.url||r.data.stream_url))||extractVideoUrl(r);if(u)App.tkCache[ep]=u}).catch(function(){})}
+        else if(this.src==='melolo'){var chap=null;for(var i=0;i<this.chaps.length;i++){if(this.chaps[i].num==ep){chap=this.chaps[i];break}}if(chap&&chap.streamId){ML.stream(chap.streamId).then(function(r){var u=extractVideoUrl(r);if(u)App.tkCache[ep]=u}).catch(function(){})}}
+        else if(this.src==='freereels'){FR.stream(s.d.id,ep).then(function(r){var u=extractVideoUrl(r)||FR.streamUrl(s.d.id,ep);if(u)App.tkCache[ep]=u}).catch(function(){})}
+        else if(this.src==='flextv'){var fxChap=null;for(var i=0;i<this.chaps.length;i++){if(this.chaps[i].num==ep){fxChap=this.chaps[i];break}}var fxEpId=fxChap?fxChap.streamId:String(ep);FX.play(s.d.id,fxEpId).then(function(r){var dd=r.data||r;var u='';if(dd.qualities&&Array.isArray(dd.qualities))u=extractFromQualities(dd.qualities);if(!u)u=dd.m3u8||dd.url||dd.video_url||dd.videoUrl||extractVideoUrl(dd)||extractVideoUrl(r)||'';if(u)App.tkCache[ep]=u}).catch(function(){})}
+        else{DB.watch(s.d.id,ep).then(function(r){var u=extractVideoUrl(r.data||r);if(u)App.tkCache[ep]=u}).catch(function(){})}
+    },
+    _tkNext:function(){if(!this.tk||this.tk.ep>=this.tk.total){showToast('📺 Episode terakhir');return}this._tkLoadEp(this.tk.ep+1,'up')},
+    _tkPrev:function(){if(!this.tk||this.tk.ep<=1){showToast('📺 Episode pertama');return}this._tkLoadEp(this.tk.ep-1,'down')},
+    _tkGoEp:function(ep){this.tkToggleEps();this._tkLoadEp(ep,'none')},
+    _tkRetry:function(){if(this.tk)this._tkLoadEp(this.tk.ep,'none')},
+    _tkTap:function(){
+        var vid=document.getElementById('tkVid'),pp=document.getElementById('tkPP');if(!vid)return;
+        if(vid.paused){vid.play().catch(function(){});if(pp){pp.querySelector('i').className='fas fa-play';pp.classList.add('show');setTimeout(function(){pp.classList.remove('show')},400)}}
+        else{vid.pause();if(pp){pp.querySelector('i').className='fas fa-pause';pp.classList.add('show');setTimeout(function(){pp.classList.remove('show')},400)}}
+    },
+    _tkShowLoad:function(v){var e=document.getElementById('tkLoad');if(e)e.style.display=v?'flex':'none'},
+    _tkShowErr:function(v){var e=document.getElementById('tkErr');if(e)e.classList.toggle('show',v)},
+    tkToggleEps:function(){var p=document.getElementById('tkEpanel'),o=document.getElementById('tkOverlay');if(p){var open=p.classList.toggle('open');if(o)o.classList.toggle('show',open)}},
+    tkClose:function(){
+        // Simpan progress saat close
+        var vid=document.getElementById('tkVid');
+        if(vid&&this.tk&&vid.duration){var prog=vid.currentTime/vid.duration;this._cwSave(this.tk.d,this.tk.ep,this.tk.total,prog)}
+        var el=document.getElementById('tkPlayer');if(el)el.classList.remove('open');document.body.classList.remove('noscroll');
+        if(vid){vid.pause();vid.src=''}this.tk=null;this.tkBound=false
+    },
+
+    goToList:function(){
+        this.viewMode='list';window.scrollTo({top:0,behavior:'smooth'});
+        if(this.currentList.length>0){
+            if(this.lastSearchQuery&&this.qry){
+                var q=this.qry,self=this;
+                var h='<button class="back" onclick="App.goHome()"><i class="fas fa-arrow-left"></i> Kembali</button>'+self._srcBadge()+'<div class="stitle"><i class="fas fa-search"></i> Hasil: "'+esc(q)+'" ('+self.currentList.length+')</div>';
+                h+=self._grid(self.currentList);h+=self._lmBtn('search',q);self.el.innerHTML=h
+            }else this._renderList()
+        }else this.switchTab(TABS[this.src][0].id)
+    },
+    goHome:function(){document.getElementById('qInp').value='';this.currentList=[];this.pg=1;this.hasMoreData=true;this.qry='';this.lastSearchQuery='';this._curView='home';this.switchTab(TABS[this.src][0].id)},
+    _loading:function(){this.el.innerHTML='<div class="ld"><div class="sp"></div><div class="lt">Memuat...</div></div>'},
+    _error:function(msg,fn){this.el.innerHTML='<div class="ebox"><i class="fas fa-exclamation-triangle"></i><h3>Oops!</h3><p>'+esc(msg)+'</p><button class="bret" id="rbtn"><i class="fas fa-redo"></i> Coba Lagi</button></div>';if(fn)setTimeout(function(){var b=document.getElementById('rbtn');if(b)b.onclick=fn},50)}
+};
+
+document.addEventListener('DOMContentLoaded',function(){App.init()});
+
+// ============================================================
+// SAWERIA DONATION
+// ============================================================
+var Saw={
+    _amt:10000,
+    _url:'https://saweria.co/DramaFeed',
+    open:function(){
+        document.getElementById('sawModalBg').classList.add('open');
+        document.body.classList.add('noscroll');
+    },
+    close:function(){
+        document.getElementById('sawModalBg').classList.remove('open');
+        document.body.classList.remove('noscroll');
+    },
+    _closeBg:function(e){
+        if(e.target===document.getElementById('sawModalBg'))this.close();
+    },
+    pick:function(el,amt){
+        document.querySelectorAll('.saw-amt').forEach(function(a){a.classList.remove('on')});
+        el.classList.add('on');
+        this._amt=amt;
+        var txt=document.getElementById('sawGotoTxt');
+        if(txt){
+            if(amt===0)txt.textContent='Donasi Nominal Lainnya via Saweria';
+            else txt.textContent='Donasi Rp '+amt.toLocaleString('id-ID')+' via Saweria';
+        }
+    },
+    go:function(){
+        var url=this._url;
+        if(this._amt>0)url+='?amount='+this._amt;
+        window.open(url,'_blank');
+        this.close();
+        showToast('❤️ Terima kasih sudah mendukung DramaFeed!');
+    }
+};
+</script>
+</body>
+</html>
