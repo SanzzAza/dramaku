@@ -891,7 +891,7 @@ function fixImageUrl(url){if(!url||typeof url!=='string')return'';if(url.include
 function getCover(r){if(!r)return'';var c=r.cover||r.thumb_url||r.thumbUrl||r.thumb||r.coverUrl||r.cover_url||r.image||r.img||r.poster||r.thumbnail||r.pic||r.banner||'';if(c&&typeof c==='string')return fixImageUrl(c);if(c&&typeof c==='object'&&c.url)return fixImageUrl(c.url);return''}
 function normD(r){
   if(!r||typeof r==='string')return null;
-  var id=r.code||r.drama_id||r.dramaId||r.bookId||r.book_id||r.series_id||r.seriesId||r.id||r.key||r.slug;
+  var id=r.bookId||r.book_id||r.drama_id||r.dramaId||r.series_id||r.seriesId||r.id||r.key||r.slug||(typeof r.code==='string'?r.code:null);
   var nm=r.drama_name||r.dramaName||r.bookName||r.book_name||r.series_name||r.seriesName||r.title||r.name;
   var img=getCover(r);var desc=r.description||r.introduction||r.desc||r.synopsis||'';
   var eps=r.episode_count||r.episodeCount||r.chapterCount||r.chapter_count||r.totalEpisodes||r.total_episodes||r.epCount||r.ep_count||0;
