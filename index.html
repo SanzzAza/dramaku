@@ -1476,8 +1476,7 @@ var App={
         }else tryUnlock();
       };
       if(chap&&chap.directUrl){self.tkCache[ep]=chap.directUrl;self._tkPlayUrl(chap.directUrl)}
-      else if(ep>10){tryUnlock()}
-      else{tryPlay()}
+      else{tryPlay()}  // tryPlay already falls back to tryUnlock if needed
 
     }else if(this.src==='dramawave'){
       DW.play(s.d.id,ep).then(function(res){var u=res.m3u8||res.url||res.stream_url||(res.data&&(res.data.m3u8||res.data.url||res.data.stream_url))||extractVideoUrl(res)||'';if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}}).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)});
@@ -1520,7 +1519,7 @@ var App={
     if(this.src==='goodshort'){
       var chap=null;for(var i=0;i<this.chaps.length;i++){if(this.chaps[i].num==ep){chap=this.chaps[i];break}}
       if(chap&&chap.directUrl){App.tkCache[ep]=chap.directUrl}
-      else if(ep>10){GS.unlock(s.d.id,'720p').then(function(r){var u=r.m3u8||r.url||extractVideoUrl(r);if(u)App.tkCache[ep]=u}).catch(function(){})}
+      else if(chap&&chap.streamId){GS.play(s.d.id,chap.streamId,'720p').then(function(r){var u=r.m3u8||r.url||extractVideoUrl(r);if(u)App.tkCache[ep]=u}).catch(function(){})}
       else if(chap&&chap.streamId){GS.play(s.d.id,chap.streamId,'720p').then(function(r){var u=r.m3u8||r.url||extractVideoUrl(r);if(u)App.tkCache[ep]=u}).catch(function(){})}
     }else if(this.src==='freereels'){FR.play(s.d.id,ep).then(function(r){var u=extractVideoUrl(r.data||r)||extractVideoUrl(r)||'';if(u)App.tkCache[ep]=u}).catch(function(){})}
     else if(this.src==='dramabite'){DB2.episode(s.d.id,ep).then(function(r){var u=extractVideoUrl(r.data||r)||extractVideoUrl(r)||'';if(u)App.tkCache[ep]=u}).catch(function(){})}
