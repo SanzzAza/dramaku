@@ -1473,29 +1473,43 @@ var App={
         return extractVideoUrl(res)||'';
       };
       // Always re-fetch chapters to get fresh non-expired URL
+      var gsShowErr=function(){self._tkShowLoad(false);self._tkShowErr(true);};
+      var gsPlayFromChapters=function(){
+        // Fallback: ambil URL dari /chapters endpoint
+        GS.chapters(s.d.id).then(function(cres){
+          var clist=[];
+          if(cres.data&&cres.data.list&&Array.isArray(cres.data.list))clist=cres.data.list;
+          else if(cres.data&&Array.isArray(cres.data))clist=cres.data;
+          var epData=clist[ep-1]||clist.find(function(x){return parseInt(x.chapterName)===ep||x.index===(ep-1)});
+          var u='';
+          if(epData){
+            if(epData.cdnList&&epData.cdnList.length)u=epData.cdnList[0].videoPath||'';
+            if(!u&&epData.multiVideos){for(var i=0;i<epData.multiVideos.length;i++){if(epData.multiVideos[i].type==='720p'){u=epData.multiVideos[i].filePath||'';break;}}if(!u&&epData.multiVideos[0])u=epData.multiVideos[0].filePath||'';}
+            if(!u)u=epData.cdn||'';
+          }
+          if(u){self.tkCache[ep]=u;self._tkPlayUrl(u);}
+          else gsShowErr();
+        }).catch(gsShowErr);
+      };
       var gsFetchFreshUrl=function(){
-        // Gunakan /unlock endpoint - return semua episode dengan URL langsung tanpa expiry
+        // Coba /unlock dulu - return semua URL sekaligus tanpa expiry
         GS.unlock(s.d.id,'720p').then(function(ures){
           var u='';
-          // Format: { success:true, videos:[{id, name, url}] }
-          if(ures.success&&ures.videos&&Array.isArray(ures.videos)){
+          if(ures.success&&ures.videos&&Array.isArray(ures.videos)&&ures.videos.length){
             var epNum=String(ep).padStart(3,'0');
-            var vid=ures.videos.find(function(v){
-              return v.name===epNum||v.name===String(ep)||parseInt(v.name)===ep;
-            });
-            if(!vid&&ures.videos[ep-1])vid=ures.videos[ep-1];
+            var vid=ures.videos.find(function(v){return v.name===epNum||parseInt(v.name)===ep;});
+            if(!vid)vid=ures.videos[ep-1];
             if(vid)u=vid.url||'';
-            // Cache semua episode sekaligus untuk performa
+            // Cache semua episode sekaligus
             ures.videos.forEach(function(v,i){
-              var epIdx=parseInt(v.name)||i+1;
-              if(v.url&&!self.tkCache[epIdx])self.tkCache[epIdx]=v.url;
+              var idx=parseInt(v.name)||i+1;
+              if(v.url&&!self.tkCache[idx])self.tkCache[idx]=v.url;
             });
           }
           if(u){self._tkPlayUrl(u);}
-          else{self._tkShowLoad(false);self._tkShowErr(true);}
-        }).catch(function(){self._tkShowLoad(false);self._tkShowErr(true);});
+          else{gsPlayFromChapters();}  // Fallback ke chapters kalau unlock gagal
+        }).catch(gsPlayFromChapters);
       };
-      // Cek cache dulu, kalau tidak ada fetch dari unlock endpoint
       if(self.tkCache[ep]){self._tkPlayUrl(self.tkCache[ep]);}
       else{gsFetchFreshUrl();}
 
