@@ -531,6 +531,9 @@
         .saw-fab-btn i{font-size:1rem}
         .saw-fab-pulse{position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:#fbbf24;animation:sawPulse 2s infinite}
         @keyframes sawPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.5}}
+        .tg-fab-btn{display:flex;align-items:center;gap:9px;padding:11px 18px;background:linear-gradient(135deg,#229ED9,#0088cc);color:#fff;border-radius:50px;font-size:.82rem;font-weight:700;box-shadow:0 4px 20px rgba(34,158,217,.45);transition:var(--tr);border:none;cursor:pointer;white-space:nowrap;text-decoration:none}
+        .tg-fab-btn:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 8px 28px rgba(34,158,217,.6)}
+        .tg-fab-btn:active{transform:scale(.96)}
 
         .saw-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:400;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px);padding:0}
         .saw-modal-bg.open{display:flex}
@@ -557,6 +560,7 @@
         @media(max-width:768px){
             .saw-fab{bottom:76px;right:14px}
             .saw-fab-btn{padding:10px 14px;font-size:.78rem}
+            .tg-fab-btn{padding:10px 14px;font-size:.78rem}
             .saw-modal{max-width:100%}
         }
     </style>
@@ -653,6 +657,10 @@
 </footer>
 
 <div class="saw-fab">
+    <a class="tg-fab-btn" href="https://t.me/+aTJBTWSaTII1MGFl" target="_blank">
+        <i class="fab fa-telegram-plane" style="font-size:1.1rem"></i>
+        <span>Grup Telegram</span>
+    </a>
     <button class="saw-fab-btn" onclick="Saw.open()">
         <span class="saw-fab-pulse"></span>
         <img src="https://i.ibb.co.com/G3BCxv0J/unnamed.jpg" style="width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">
