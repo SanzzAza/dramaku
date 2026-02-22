@@ -1455,28 +1455,42 @@ var App={
 
     if(this.src==='goodshort'){
       var chap=null;for(var ci=0;ci<this.chaps.length;ci++){if(this.chaps[ci].num==ep){chap=this.chaps[ci];break}}
-      var gsExtract=function(res){
+      var gsExtractUrl=function(res){
+        // Extract from cdnList or multiVideos first (most reliable)
+        if(res.data&&res.data.list&&Array.isArray(res.data.list)){
+          var epData=res.data.list[0]||res.data.list.find(function(x){return x.index===(ep-1)||x.chapterName===String(ep)});
+          if(epData){
+            if(epData.cdnList&&epData.cdnList.length)return epData.cdnList[0].videoPath||'';
+            if(epData.multiVideos&&epData.multiVideos.length){for(var i=0;i<epData.multiVideos.length;i++){if(epData.multiVideos[i].type==='720p')return epData.multiVideos[i].filePath||'';}return epData.multiVideos[0].filePath||'';}
+            if(epData.cdn)return epData.cdn;
+          }
+        }
+        if(res.cdnList&&res.cdnList.length)return res.cdnList[0].videoPath||'';
+        if(res.multiVideos&&res.multiVideos.length){for(var i=0;i<res.multiVideos.length;i++){if(res.multiVideos[i].type==='720p')return res.multiVideos[i].filePath||'';}return res.multiVideos[0].filePath||'';}
+        if(res.cdn)return res.cdn;
         var u=res.m3u8||res.url||res.video_url||res.stream_url||'';if(u)return u;
-        if(res.data){u=res.data.m3u8||res.data.url||res.data.video_url||extractVideoUrl(res.data)||'';if(u)return u}
-        return extractVideoUrl(res);
+        if(res.data){u=res.data.m3u8||res.data.url||res.data.video_url||extractVideoUrl(res.data)||'';if(u)return u;}
+        return extractVideoUrl(res)||'';
       };
-      var tryUnlock=function(){
-        GS.unlock(s.d.id,'720p').then(function(r2){
-          var u2=gsExtract(r2);
-          if(u2){self.tkCache[ep]=u2;self._tkPlayUrl(u2)}
-          else{self._tkShowLoad(false);self._tkShowErr(true)}
-        }).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)});
+      // Always re-fetch chapters to get fresh non-expired URL
+      var gsFetchFreshUrl=function(){
+        GS.chapters(s.d.id).then(function(cres){
+          var clist=[];
+          if(cres.data&&cres.data.list&&Array.isArray(cres.data.list))clist=cres.data.list;
+          else if(cres.data&&Array.isArray(cres.data))clist=cres.data;
+          var epData=clist[ep-1]||clist.find(function(x){return x.index===(ep-1)||x.chapterName===String(ep)});
+          var u='';
+          if(epData){
+            if(epData.cdnList&&epData.cdnList.length)u=epData.cdnList[0].videoPath||'';
+            if(!u&&epData.multiVideos&&epData.multiVideos.length){for(var i=0;i<epData.multiVideos.length;i++){if(epData.multiVideos[i].type==='720p'){u=epData.multiVideos[i].filePath||'';break;}}if(!u)u=epData.multiVideos[0].filePath||'';}
+            if(!u&&epData.cdn)u=epData.cdn;
+          }
+          if(u){self.tkCache[ep]=u;self._tkPlayUrl(u);}
+          else{self._tkShowLoad(false);self._tkShowErr(true);}
+        }).catch(function(){self._tkShowLoad(false);self._tkShowErr(true);});
       };
-      var tryPlay=function(){
-        if(chap&&chap.streamId){
-          GS.play(s.d.id,chap.streamId,'720p').then(function(res){
-            var u=gsExtract(res);
-            if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else tryUnlock();
-          }).catch(function(){tryUnlock()});
-        }else tryUnlock();
-      };
-      if(chap&&chap.directUrl){self.tkCache[ep]=chap.directUrl;self._tkPlayUrl(chap.directUrl)}
-      else{tryPlay()}  // tryPlay already falls back to tryUnlock if needed
+      // Use cached url only if fresh (not expired), otherwise always re-fetch
+      gsFetchFreshUrl();
 
     }else if(this.src==='dramawave'){
       DW.play(s.d.id,ep).then(function(res){var u=res.m3u8||res.url||res.stream_url||(res.data&&(res.data.m3u8||res.data.url||res.data.stream_url))||extractVideoUrl(res)||'';if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}}).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)});
