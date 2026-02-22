@@ -1556,21 +1556,21 @@ var App={
     if(App._hls){App._hls.destroy();App._hls=null;}
     var isHLS=url.indexOf('.m3u8')>-1;
     vid.onerror=null;vid.oncanplay=null;
+    App._tkShowErr(false);// Sembunyikan error dulu, tampilkan lagi kalau benar-benar gagal
     if(isHLS&&typeof Hls!=='undefined'&&Hls.isSupported()){
-      var hls=new Hls({enableWorker:false});
+      var hls=new Hls({enableWorker:false,maxBufferLength:30});
       App._hls=hls;
       hls.loadSource(url);
       hls.attachMedia(vid);
-      hls.on(Hls.Events.MANIFEST_PARSED,function(){App._tkShowErr(false);vid.play().catch(function(){});App._tkShowLoad(false);});
+      hls.on(Hls.Events.MANIFEST_PARSED,function(){vid.play().catch(function(){});App._tkShowLoad(false);});
       hls.on(Hls.Events.ERROR,function(e,data){if(data.fatal){App._tkShowLoad(false);App._tkShowErr(true);}});
     }else if(isHLS&&vid.canPlayType('application/vnd.apple.mpegurl')){
-      // Safari/iOS native HLS support
       vid.src=url;vid.load();
-      vid.oncanplay=function(){App._tkShowErr(false);vid.play().catch(function(){});App._tkShowLoad(false)};
+      vid.oncanplay=function(){vid.play().catch(function(){});App._tkShowLoad(false)};
       vid.onerror=function(){App._tkShowLoad(false);App._tkShowErr(true)};
     }else{
       vid.src=url;vid.load();
-      vid.oncanplay=function(){App._tkShowErr(false);vid.play().catch(function(){});App._tkShowLoad(false)};
+      vid.oncanplay=function(){vid.play().catch(function(){});App._tkShowLoad(false)};
       vid.onerror=function(){App._tkShowLoad(false);App._tkShowErr(true)};
     }
     vid.ontimeupdate=function(){
