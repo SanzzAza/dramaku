@@ -231,13 +231,11 @@
         .csub{font-size:.68rem;color:var(--text2);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
         .noimg{width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:2rem}
 
-        /* ========== WATCHLIST BUTTON ON CARD ========== */
         .card-fav-btn{position:absolute;bottom:6px;right:6px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:.75rem;z-index:5;border:1px solid rgba(255,255,255,.1);opacity:0;transition:var(--tr)}
         .card:hover .card-fav-btn{opacity:1}
         .card-fav-btn.saved{opacity:1;color:var(--gold);background:rgba(0,0,0,.75)}
         .card-fav-btn:hover{transform:scale(1.15)}
 
-        /* ========== CONTINUE WATCHING SECTION ========== */
         .cw-section{margin-bottom:24px}
         .cw-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
         .cw-title{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px;color:var(--text)}
@@ -295,7 +293,6 @@
         .cw-card:hover .cw-del{opacity:1}
         .cw-del:hover{background:var(--accent);color:#fff}
 
-        /* ========== WATCHLIST PAGE ========== */
         .wl-empty{text-align:center;padding:60px 20px;color:var(--text3)}
         .wl-empty i{font-size:3rem;margin-bottom:14px;display:block;color:var(--text3)}
         .wl-empty p{font-size:.9rem;margin-bottom:6px}
@@ -369,7 +366,6 @@
         body.db2 .bwatch{background:var(--accent-vl);color:#fff}
         body.fx .bwatch{background:var(--accent-fx);color:#fff}
         .bwatch:hover{transform:translateY(-2px);filter:brightness(1.15)}
-        /* Watchlist/Favorit button di detail */
         .bfav{padding:10px 20px;background:var(--bg3);color:var(--text);border-radius:50px;font-size:.83rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;transition:var(--tr);border:1px solid var(--border)}
         .bfav:hover{border-color:var(--gold);color:var(--gold)}
         .bfav.saved{background:rgba(255,215,0,.12);color:var(--gold);border-color:var(--gold)}
@@ -385,7 +381,6 @@
         body.ns .epc:hover{border-color:var(--accent-ns)}
         body.db2 .epc:hover{border-color:var(--accent-vl)}
         body.fx .epc:hover{border-color:var(--accent-fx)}
-        /* Continue watching banner di halaman detail */
         .cw-resume-banner{background:linear-gradient(135deg,rgba(229,9,20,.15),rgba(229,9,20,.05));border:1px solid rgba(229,9,20,.3);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:16px;cursor:pointer;transition:var(--tr)}
         .cw-resume-banner:hover{background:linear-gradient(135deg,rgba(229,9,20,.25),rgba(229,9,20,.1))}
         body.fr .cw-resume-banner{background:linear-gradient(135deg,rgba(108,59,255,.15),rgba(108,59,255,.05));border-color:rgba(108,59,255,.3)}
@@ -529,7 +524,6 @@
         }
         @media(max-width:480px){.grid{grid-template-columns:repeat(3,1fr);gap:7px}.cbody{padding:6px 7px}.cname{font-size:.72rem}}
 
-        /* ========== SAWERIA DONATION ========== */
         .saw-fab{position:fixed;bottom:90px;right:18px;z-index:300;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
         .saw-fab-btn{display:flex;align-items:center;gap:9px;padding:11px 18px;background:linear-gradient(135deg,#f97316,#fb923c);color:#fff;border-radius:50px;font-size:.82rem;font-weight:700;box-shadow:0 4px 20px rgba(249,115,22,.45);transition:var(--tr);border:none;cursor:pointer;white-space:nowrap}
         .saw-fab-btn:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 8px 28px rgba(249,115,22,.6)}
@@ -538,7 +532,6 @@
         .saw-fab-pulse{position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:#fbbf24;animation:sawPulse 2s infinite}
         @keyframes sawPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.5}}
 
-        /* Modal donasi */
         .saw-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:400;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px);padding:0}
         .saw-modal-bg.open{display:flex}
         .saw-modal{background:var(--bg2);border:1px solid var(--border);border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:0 0 32px;animation:sawSlideUp .3s cubic-bezier(.34,1.56,.64,1);overflow:hidden}
@@ -659,7 +652,6 @@
 <br><span style="margin-top:6px;display:inline-block">☕ Dukung pengembangan DramaFeed di <a href="https://saweria.co/DramaFeed" target="_blank" style="color:#f97316;font-weight:700">saweria.co/DramaFeed</a></span>
 </footer>
 
-<!-- Saweria FAB -->
 <div class="saw-fab">
     <button class="saw-fab-btn" onclick="Saw.open()">
         <span class="saw-fab-pulse"></span>
@@ -668,7 +660,6 @@
     </button>
 </div>
 
-<!-- Saweria Modal -->
 <div class="saw-modal-bg" id="sawModalBg" onclick="Saw._closeBg(event)">
     <div class="saw-modal">
         <div class="saw-modal-handle"></div>
@@ -728,16 +719,10 @@ var DB_SORTS=[{id:1,label:'Terpopuler'},{id:2,label:'Terbaru'},{id:3,label:'Rati
 var GS_PLAT_NAMES={dramabox:'DramaFeed',freereels:'FreeReels',melolo:'MeloLo',goodshort:'GoodShort',dramawave:'DramaWave',shortmax:'ShortMax',netshort:'NetShort',dramabite:'DramaBite',flextv:'FlexTV'};
 var lastRaw=null,currentVideoUrl='';
 
-// ============================================================
-// STORAGE — Continue Watching & Watchlist (localStorage)
-// ============================================================
 var Store={
     _k:function(ns){return'df_'+ns},
     get:function(ns){try{return JSON.parse(localStorage.getItem(this._k(ns)))||[]}catch(e){return[]}},
     set:function(ns,v){try{localStorage.setItem(this._k(ns),JSON.stringify(v))}catch(e){}},
-
-    // ---- CONTINUE WATCHING ----
-    // item: {id, name, img, src, ep, total, progress, ts}
     cwGet:function(){return this.get('cw')},
     cwSave:function(item){
         var list=this.cwGet();
@@ -753,9 +738,6 @@ var Store={
     },
     cwClear:function(){this.set('cw',[])},
     cwFind:function(id,src){return this.cwGet().find(function(x){return x.id===id&&x.src===src})||null},
-
-    // ---- WATCHLIST ----
-    // item: {id, name, img, src, eps, score, tag, ts}
     wlGet:function(){return this.get('wl')},
     wlAdd:function(item){
         var list=this.wlGet();
@@ -1085,7 +1067,7 @@ var App={
     currentList:[],hasMoreData:true,isLoading:false,
     viewMode:'list',lastSearchQuery:'',
     tk:null,tkCache:{},tkCD:false,tkBound:false,
-    _curView:'home', // 'home'|'watchlist'
+    _curView:'home',
 
     init:function(){this.el=document.getElementById('root');this._bindSearch();this._buildNav();this.switchTab('foryou');this._updatePlatModal()},
 
@@ -1296,7 +1278,6 @@ var App={
         var info=ic[self.tab]||{icon:'fa-film',label:'Drama'};
         var h=self._srcBadge();
 
-        // Continue Watching section — tampil di tab pertama
         var firstTab=TABS[self.src][0].id;
         if(self.tab===firstTab){
             h+=self._cwSection();
@@ -1309,7 +1290,6 @@ var App={
         self.el.innerHTML=h
     },
 
-    // ---- CONTINUE WATCHING SECTION ----
     _cwSection:function(){
         var list=Store.cwGet();
         if(!list.length)return'';
@@ -1333,7 +1313,6 @@ var App={
     _cwClearAll:function(){Store.cwClear();this._renderList();showToast('🗑 Riwayat dihapus')},
     _cwRemoveItem:function(id,src){
         Store.cwRemove(id,src);
-        // rebuild only CW section
         var sec=document.querySelector('.cw-section');
         if(sec){
             var list=Store.cwGet();
@@ -1343,27 +1322,22 @@ var App={
         }
     },
     _cwResume:function(id,src){
-        // Cari drama di DS store atau buat stub lalu buka detail
         var cwItem=Store.cwFind(id,src);
         if(!cwItem)return;
-        // Jika source berbeda, switch dulu
         if(this.src!==src){this.setSource(src)}
         var dKey='D_'+id;
         if(getD(dKey)){
             this.openDetail(getD(dKey));
         }else{
-            // Buat stub drama dari cw data
             var stub={id:id,name:cwItem.name,img:cwItem.img,desc:'',eps:cwItem.total||0,tag:'',score:0,views:0,raw:{}};
             storeD(stub);
             this.openDetail(stub);
         }
     },
-    // Simpan progress ke CW store dipanggil dari player
     _cwSave:function(d,ep,total,progress){
         Store.cwSave({id:d.id,name:d.name,img:d.img,src:this.src,ep:ep,total:total,progress:progress,ts:Date.now()});
     },
 
-    // ---- WATCHLIST / FAVORIT ----
     toggleWatchlist:function(d,btn){
         var item={id:d.id,name:d.name,img:d.img,src:this.src,eps:d.eps,score:d.score,tag:d.tag,ts:Date.now()};
         var added=Store.wlToggle(item);
@@ -1385,10 +1359,8 @@ var App={
             h+='<div class="grid">';
             list.forEach(function(item){
                 var dKey='D_'+item.id;
-                var isSaved=Store.wlHas(item.id,item.src);
                 var stub={id:item.id,name:item.name,img:item.img,desc:'',eps:item.eps||0,tag:item.tag||'',score:item.score||0,views:0,raw:{}};
                 if(!getD(dKey))storeD(stub);
-                // Switch source saat buka dari watchlist
                 h+='<div class="card" onclick="App._wlOpen(\''+esc(item.id)+'\',\''+esc(item.src)+'\')">'+
                    '<div class="cimg">'+(item.img?'<img src="'+esc(item.img)+'" loading="lazy" onerror="this.onerror=null;this.parentElement.innerHTML=\'<div class=noimg><i class=fas\\ fa-film></i></div>\'">':'<div class="noimg"><i class="fas fa-film"></i></div>')+
                    '<div class="chov"><div class="cplay"><i class="fas fa-play"></i></div></div>'+
@@ -1443,7 +1415,6 @@ var App={
             if(d.eps)h+='<div class="cbadge">'+d.eps+' Ep</div>';
             if(d.score)h+='<div class="cscore"><i class="fas fa-star"></i> '+d.score+'</div>';
             h+='</div>';
-            // Watchlist quick button
             h+='<button class="card-fav-btn'+(isSaved?' saved':'')+'" onclick="event.stopPropagation();App.toggleWatchlist(getD(\''+k+'\'),this)">'+(isSaved?'<i class="fas fa-bookmark"></i>':'<i class="far fa-bookmark"></i>')+'</button>';
             h+='<div class="cbody"><div class="cname">'+esc(d.name)+'</div><div class="csub">';
             if(d.tag)h+='<span>'+esc(String(d.tag).split(',')[0].trim())+'</span>';
@@ -1490,7 +1461,6 @@ var App={
     _openFR:function(d){
         var self=this;
         Promise.allSettled([FR.detail(d.id),FR.episodes(d.id)]).then(function(r){
-            // Detail
             if(r[0].status==='fulfilled'){
                 var res=r[0].value;var dd=res.data||res;if(Array.isArray(dd)&&dd.length)dd=dd[0];
                 if(dd&&typeof dd==='object'){
@@ -1504,7 +1474,6 @@ var App={
                     d.views=dd.watch_value||dd.playCount||dd.views||dd.view_count||d.views;
                 }
             }
-            // Episodes
             var epList=[];
             if(r[1].status==='fulfilled'){
                 var eres=r[1].value;var raw=eres.data||eres;
@@ -1826,14 +1795,11 @@ var App={
         h+='</div>';
         if(d.desc)h+='<p class="ddesc" id="ddd">'+esc(d.desc)+'</p><button class="bmore" onclick="document.getElementById(\'ddd\').classList.toggle(\'open\')">Selengkapnya ▼</button>';
         h+='<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">';
-        // Tombol tonton — jika ada CW, lanjut dari episode terakhir
         var startEp=cwItem?cwItem.ep:1;
         h+='<button class="bwatch" onclick="App.play(\''+k+'\','+startEp+')"><i class="fas fa-play"></i> '+(cwItem?'Lanjut Ep '+startEp:'Tonton Ep 1')+'</button>';
-        // Tombol watchlist
         h+='<button class="bfav'+(isSaved?' saved':'')+'" id="detailFavBtn" onclick="App._detailToggleWl(\''+k+'\',this)">'+(isSaved?'<i class="fas fa-bookmark"></i> Tersimpan':'<i class="far fa-bookmark"></i> Simpan')+'</button>';
         h+='</div></div></div></div>';
 
-        // Resume banner jika ada progress
         if(cwItem&&cwItem.progress>0.02){
             var pct=Math.round(cwItem.progress*100);
             h+='<div class="cw-resume-banner" onclick="App.play(\''+k+'\','+cwItem.ep+')">'+
@@ -1902,6 +1868,9 @@ var App={
         var seekInd=document.getElementById('tkSeekInd'),seekTxt=document.getElementById('tkSeekTxt'),seekIcon=seekInd?seekInd.querySelector('i'):null;
         if(seekInd&&seekTxt&&seekIcon){seekTxt.textContent=(sec>0?'+':'')+sec+'s';seekIcon.className=sec>0?'fas fa-forward':'fas fa-backward';seekInd.classList.add('show');setTimeout(function(){seekInd.classList.remove('show')},600)}
     },
+
+    _tkRetry:function(){if(this.tk)this._tkLoadEp(this.tk.ep,'none')},
+
     _tkLoadEp:function(ep,dir){
         var self=this,s=this.tk;if(ep<1||ep>s.total)return;s.ep=ep;
         var epc=document.getElementById('tkEpC');if(epc)epc.textContent='Ep '+ep+' / '+s.total;
@@ -1967,14 +1936,12 @@ var App={
         vid.onerror=function(){App._tkShowLoad(false);App._tkShowErr(true)};
         vid.ontimeupdate=function(){
             var p=document.getElementById('tkProg');if(p&&vid.duration)p.style.width=(vid.currentTime/vid.duration*100)+'%';
-            // Simpan progress CW setiap 5 detik
             if(App.tk&&vid.duration&&Math.floor(vid.currentTime)%5===0){
                 var prog=vid.currentTime/vid.duration;
                 App._cwSave(App.tk.d,App.tk.ep,App.tk.total,prog);
             }
         };
         vid.onended=function(){
-            // Simpan CW sebagai selesai (progress 1)
             if(App.tk)App._cwSave(App.tk.d,App.tk.ep,App.tk.total,1);
             App._tkNext();
         }
@@ -2054,7 +2021,6 @@ var App={
     _tkNext:function(){if(!this.tk||this.tk.ep>=this.tk.total){showToast('📺 Episode terakhir');return}this._tkLoadEp(this.tk.ep+1,'up')},
     _tkPrev:function(){if(!this.tk||this.tk.ep<=1){showToast('📺 Episode pertama');return}this._tkLoadEp(this.tk.ep-1,'down')},
     _tkGoEp:function(ep){this.tkToggleEps();this._tkLoadEp(ep,'none')},
-    _tkRetry:function(){if(this.tk)this._tkLoadEp(this.tk.ep,'none')},
     _tkTap:function(){
         var vid=document.getElementById('tkVid'),pp=document.getElementById('tkPP');if(!vid)return;
         if(vid.paused){vid.play().catch(function(){});if(pp){pp.querySelector('i').className='fas fa-play';pp.classList.add('show');setTimeout(function(){pp.classList.remove('show')},400)}}
@@ -2064,7 +2030,6 @@ var App={
     _tkShowErr:function(v){var e=document.getElementById('tkErr');if(e)e.classList.toggle('show',v)},
     tkToggleEps:function(){var p=document.getElementById('tkEpanel'),o=document.getElementById('tkOverlay');if(p){var open=p.classList.toggle('open');if(o)o.classList.toggle('show',open)}},
     tkClose:function(){
-        // Simpan progress saat close
         var vid=document.getElementById('tkVid');
         if(vid&&this.tk&&vid.duration){var prog=vid.currentTime/vid.duration;this._cwSave(this.tk.d,this.tk.ep,this.tk.total,prog)}
         var el=document.getElementById('tkPlayer');if(el)el.classList.remove('open');document.body.classList.remove('noscroll');
@@ -2088,9 +2053,6 @@ var App={
 
 document.addEventListener('DOMContentLoaded',function(){App.init()});
 
-// ============================================================
-// SAWERIA DONATION
-// ============================================================
 var Saw={
     _amt:10000,
     _url:'https://saweria.co/DramaFeed',
@@ -2124,5 +2086,165 @@ var Saw={
     }
 };
 </script>
+
+<!-- ============================================================ -->
+<!-- TELEGRAM VISITOR LOG - AUTO NOTIF KE TELEGRAM                -->
+<!-- ============================================================ -->
+<script>
+var TG = {
+    BOT_TOKEN: '8451666477:AAGhNxMZHpjgVY2ToyclonTZI7NUNSA9EG0',
+    CHAT_ID: '8126241407',
+    _sent: false,
+    _dramasOpened: [],
+    _videosPlayed: [],
+
+    _getDevice: function () {
+        var ua = navigator.userAgent;
+        var device = /Mobile|Android|iPhone|iPad/.test(ua) ? '📱 Mobile' : '🖥️ Desktop';
+        var browser = 'Unknown';
+        if (ua.indexOf('Chrome') > -1 && ua.indexOf('Edg') === -1) browser = 'Chrome';
+        else if (ua.indexOf('Firefox') > -1) browser = 'Firefox';
+        else if (ua.indexOf('Safari') > -1 && ua.indexOf('Chrome') === -1) browser = 'Safari';
+        else if (ua.indexOf('Edg') > -1) browser = 'Edge';
+        else if (ua.indexOf('OPR') > -1 || ua.indexOf('Opera') > -1) browser = 'Opera';
+        var os = 'Unknown';
+        if (ua.indexOf('Windows') > -1) os = 'Windows';
+        else if (ua.indexOf('Android') > -1) os = 'Android';
+        else if (ua.indexOf('iPhone') > -1 || ua.indexOf('iPad') > -1) os = 'iOS';
+        else if (ua.indexOf('Mac') > -1) os = 'MacOS';
+        else if (ua.indexOf('Linux') > -1) os = 'Linux';
+        return { device: device, browser: browser, os: os };
+    },
+
+    _getTime: function () {
+        var now = new Date();
+        var wib = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+        var pad = function (n) { return n < 10 ? '0' + n : n; };
+        return pad(wib.getDate()) + '/' + pad(wib.getMonth() + 1) + '/' + wib.getFullYear() +
+            ' ' + pad(wib.getHours()) + ':' + pad(wib.getMinutes()) + ':' + pad(wib.getSeconds()) + ' WIB';
+    },
+
+    _getRef: function () {
+        var ref = document.referrer;
+        if (!ref) return '🔗 Direct / Unknown';
+        if (ref.indexOf('google') > -1) return '🔍 Google Search';
+        if (ref.indexOf('facebook') > -1) return '📘 Facebook';
+        if (ref.indexOf('twitter') > -1 || ref.indexOf('t.co') > -1) return '🐦 Twitter/X';
+        if (ref.indexOf('instagram') > -1) return '📸 Instagram';
+        if (ref.indexOf('tiktok') > -1) return '🎵 TikTok';
+        if (ref.indexOf('youtube') > -1) return '▶️ YouTube';
+        if (ref.indexOf('telegram') > -1) return '✈️ Telegram';
+        if (ref.indexOf('whatsapp') > -1) return '💬 WhatsApp';
+        return '🌐 ' + ref.split('/')[2];
+    },
+
+    _getResolution: function () { return window.screen.width + 'x' + window.screen.height; },
+    _getLanguage: function () { return navigator.language || navigator.userLanguage || 'Unknown'; },
+
+    send: function (msg) {
+        fetch('https://api.telegram.org/bot' + this.BOT_TOKEN + '/sendMessage', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: this.CHAT_ID, text: msg, parse_mode: 'HTML' })
+        }).catch(function () {});
+    },
+
+    logVisitor: function () {
+        if (this._sent) return;
+        this._sent = true;
+        var self = this;
+        var dev = this._getDevice();
+        fetch('https://ipapi.co/json/')
+            .then(function (r) { return r.json(); })
+            .then(function (geo) {
+                var msg =
+                    '🎬 <b>DRAMAFEED — VISITOR BARU!</b>\n' +
+                    '━━━━━━━━━━━━━━━━━━━━\n' +
+                    '🕐 <b>Waktu:</b> ' + self._getTime() + '\n' +
+                    '🌍 <b>IP:</b> <code>' + (geo.ip || 'Unknown') + '</code>\n' +
+                    '📍 <b>Lokasi:</b> ' + (geo.city || '?') + ', ' + (geo.region || '?') + ' — ' + (geo.country_name || '?') + '\n' +
+                    '🏢 <b>ISP:</b> ' + (geo.org || 'Unknown') + '\n' +
+                    '━━━━━━━━━━━━━━━━━━━━\n' +
+                    dev.device + ' | <b>' + dev.browser + '</b> | ' + dev.os + '\n' +
+                    '🖥️ <b>Resolusi:</b> ' + self._getResolution() + '\n' +
+                    '🌐 <b>Bahasa Browser:</b> ' + self._getLanguage() + '\n' +
+                    '📎 <b>Datang dari:</b> ' + self._getRef() + '\n' +
+                    '━━━━━━━━━━━━━━━━━━━━\n' +
+                    '🔗 <b>URL:</b> ' + window.location.href;
+                self.send(msg);
+            })
+            .catch(function () {
+                var dev2 = self._getDevice();
+                var msg =
+                    '🎬 <b>DRAMAFEED — VISITOR BARU!</b>\n' +
+                    '━━━━━━━━━━━━━━━━━━━━\n' +
+                    '🕐 <b>Waktu:</b> ' + self._getTime() + '\n' +
+                    '🌍 <b>IP:</b> Tidak terdeteksi\n' +
+                    '━━━━━━━━━━━━━━━━━━━━\n' +
+                    dev2.device + ' | <b>' + dev2.browser + '</b> | ' + dev2.os + '\n' +
+                    '🖥️ <b>Resolusi:</b> ' + self._getResolution() + '\n' +
+                    '🌐 <b>Bahasa Browser:</b> ' + self._getLanguage() + '\n' +
+                    '📎 <b>Datang dari:</b> ' + self._getRef();
+                self.send(msg);
+            });
+    },
+
+    logDrama: function (dramaName, platform) {
+        if (!dramaName) return;
+        var key = dramaName + '|' + platform;
+        if (this._dramasOpened.indexOf(key) > -1) return;
+        this._dramasOpened.push(key);
+        var plat = { dramabox:'DramaBox', freereels:'FreeReels', melolo:'MeloLo', goodshort:'GoodShort', dramawave:'DramaWave', shortmax:'ShortMax', netshort:'NetShort', dramabite:'DramaBite', flextv:'FlexTV' };
+        this.send(
+            '🎭 <b>DRAMA DIBUKA</b>\n' +
+            '━━━━━━━━━━━━━━━━━━━━\n' +
+            '📺 <b>Drama:</b> ' + dramaName + '\n' +
+            '🎬 <b>Platform:</b> ' + (plat[platform] || platform) + '\n' +
+            '🕐 <b>Waktu:</b> ' + this._getTime()
+        );
+    },
+
+    logPlay: function (dramaName, ep, platform) {
+        if (!dramaName) return;
+        var key = dramaName + '|ep' + ep + '|' + platform;
+        if (this._videosPlayed.indexOf(key) > -1) return;
+        this._videosPlayed.push(key);
+        var plat = { dramabox:'DramaBox', freereels:'FreeReels', melolo:'MeloLo', goodshort:'GoodShort', dramawave:'DramaWave', shortmax:'ShortMax', netshort:'NetShort', dramabite:'DramaBite', flextv:'FlexTV' };
+        this.send(
+            '▶️ <b>VIDEO DIPUTAR</b>\n' +
+            '━━━━━━━━━━━━━━━━━━━━\n' +
+            '📺 <b>Drama:</b> ' + dramaName + '\n' +
+            '🎞️ <b>Episode:</b> ' + ep + '\n' +
+            '🎬 <b>Platform:</b> ' + (plat[platform] || platform) + '\n' +
+            '🕐 <b>Waktu:</b> ' + this._getTime()
+        );
+    }
+};
+
+// Auto log visitor setelah 1.5 detik halaman dimuat
+window.addEventListener('load', function () {
+    setTimeout(function () { TG.logVisitor(); }, 1500);
+});
+
+// Patch App.openDetail — log drama dibuka
+(function () {
+    var _orig = App.openDetail.bind(App);
+    App.openDetail = function (d) {
+        if (d && d.name) TG.logDrama(d.name, App.src);
+        return _orig(d);
+    };
+})();
+
+// Patch App.play — log video diputar
+(function () {
+    var _orig = App.play.bind(App);
+    App.play = function (dKey, ep) {
+        var d = (typeof getD === 'function') ? getD(dKey) : null;
+        if (d && d.name) TG.logPlay(d.name, ep, App.src);
+        return _orig(dKey, ep);
+    };
+})();
+</script>
+
 </body>
 </html>
