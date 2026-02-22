@@ -11,6 +11,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.12/dist/hls.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -1551,9 +1552,21 @@ var App={
 
   _tkPlayUrl:function(url){
     var vid=document.getElementById('tkVid');if(!vid)return;currentVideoUrl=url;
-    vid.src=url;vid.load();
-    vid.oncanplay=function(){vid.play().catch(function(){});App._tkShowLoad(false)};
-    vid.onerror=function(){App._tkShowLoad(false);App._tkShowErr(true)};
+    // Destroy previous HLS instance if any
+    if(App._hls){App._hls.destroy();App._hls=null;}
+    var isHLS=url.indexOf('.m3u8')>-1;
+    if(isHLS&&typeof Hls!=='undefined'&&Hls.isSupported()){
+      var hls=new Hls({enableWorker:false});
+      App._hls=hls;
+      hls.loadSource(url);
+      hls.attachMedia(vid);
+      hls.on(Hls.Events.MANIFEST_PARSED,function(){vid.play().catch(function(){});App._tkShowLoad(false);});
+      hls.on(Hls.Events.ERROR,function(e,data){if(data.fatal){App._tkShowLoad(false);App._tkShowErr(true);}});
+    }else{
+      vid.src=url;vid.load();
+      vid.oncanplay=function(){vid.play().catch(function(){});App._tkShowLoad(false)};
+      vid.onerror=function(){App._tkShowLoad(false);App._tkShowErr(true)};
+    }
     vid.ontimeupdate=function(){
       var p=document.getElementById('tkProg');if(p&&vid.duration)p.style.width=(vid.currentTime/vid.duration*100)+'%';
       if(App.tk&&vid.duration&&Math.floor(vid.currentTime)%5===0)App._cwSave(App.tk.d,App.tk.ep,App.tk.total,vid.currentTime/vid.duration);
