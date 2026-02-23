@@ -1,6 +1,3 @@
-// Vercel serverless function: api/gs-proxy.js
-// Usage: /api/gs-proxy?chapterId=16138329&bookId=31001241758&q=720p
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -12,7 +9,7 @@ export default async function handler(req, res) {
   const BASE = 'https://captain.sapimu.au/goodshort/api/v1';
 
   try {
-    // 1. Fetch /play to get m3u8 URL + AES key (field 'k')
+    // 1. Fetch /play to get m3u8 URL + AES key
     const playRes = await fetch(`${BASE}/play/${bookId}/${chapterId}?q=${q}`, {
       headers: { 'Authorization': `Bearer ${TOKEN}`, 'Accept': 'application/json' }
     });
@@ -26,6 +23,11 @@ export default async function handler(req, res) {
     // 2. Download the m3u8 playlist
     const m3u8Res = await fetch(m3u8Url);
     const m3u8Text = await m3u8Res.text();
+
+    // Check if m3u8 fetch failed
+    if (!m3u8Text.includes('#EXTM3U')) {
+      return res.status(500).json({ error: 'Invalid m3u8', m3u8Url, preview: m3u8Text.substring(0, 200) });
+    }
 
     // 3. Get base URL for resolving relative .ts paths
     const baseUrl = m3u8Url.substring(0, m3u8Url.lastIndexOf('/') + 1);
@@ -47,6 +49,6 @@ export default async function handler(req, res) {
     return res.status(200).send(lines.join('\n'));
 
   } catch (e) {
-    return res.status(500).json({ error: e.message });
+    return res.status(500).json({ error: e.message, stack: e.stack });
   }
 }
