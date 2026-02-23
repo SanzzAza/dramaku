@@ -1559,13 +1559,13 @@ var App={
     App._tkShowErr(false);
     App._hlsPlaying=false;// flag: HLS berhasil, block error dari async calls lain
     if(isHLS&&typeof Hls!=='undefined'&&Hls.isSupported()){
-      var hls=new Hls({enableWorker:false,maxBufferLength:30});
+      var hls=new Hls({enableWorker:false,maxBufferLength:60,maxMaxBufferLength:120,maxBufferSize:60*1000*1000,highWaterMark:0.5});
       App._hls=hls;
       hls.loadSource(url);
       hls.attachMedia(vid);
       hls.on(Hls.Events.MANIFEST_PARSED,function(){App._hlsPlaying=true;vid.play().catch(function(){});App._tkShowLoad(false);App._tkShowErr(false);});
       vid.onseeking=function(){App._tkShowLoad(true);};
-      vid.onseeked=function(){App._tkShowLoad(false);};
+      vid.onseeked=function(){setTimeout(function(){App._tkShowLoad(false);},100);};
       vid.onwaiting=function(){App._tkShowLoad(true);};
       vid.onplaying=function(){App._tkShowLoad(false);};
       hls.on(Hls.Events.ERROR,function(e,data){if(data.fatal&&!App._hlsPlaying){App._tkShowLoad(false);App._tkShowErr(true);}});
