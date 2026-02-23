@@ -1734,6 +1734,69 @@ var TG={
   logPlay:function(name,ep,src){var k=name+'|ep'+ep+'|'+src;if(this._videosPlayed.indexOf(k)>-1)return;this._videosPlayed.push(k);this.send('\u25b6\ufe0f <b>VIDEO DIPUTAR</b>\n\ud83d\udcfa <b>Drama:</b> '+name+'\n\ud83c\udfde\ufe0f <b>Episode:</b> '+ep+'\n\ud83c\udfa6 <b>Platform:</b> '+(PLAT_NAMES[src]||src)+'\n\ud83d\udd50 '+this._getTime())}
 };
 window.addEventListener('load',function(){setTimeout(function(){TG.logVisitor()},1500)});
+
+// ===== ADMIN REMOTE CONTROL =====
+var AdminRC={
+  _db:null,
+  init:function(){
+    try{
+      var db=firebase.firestore();
+      // Listen disabled sources
+      db.collection('admin').doc('config').onSnapshot(function(doc){
+        if(!doc.exists)return;
+        var data=doc.data();
+        // Disabled sources
+        if(data.disabledSources){
+          AdminRC._applyDisabled(data.disabledSources);
+        }
+        // Broadcast message
+        if(data.broadcast&&data.broadcast.active&&data.broadcast.message){
+          AdminRC._showBroadcast(data.broadcast.message,data.broadcast.timestamp);
+        }
+        // Banner override
+        if(data.banner&&data.banner.active){
+          AdminRC._updateBanner(data.banner);
+        }
+      });
+    }catch(e){}
+  },
+  _lastBroadcast:0,
+  _showBroadcast:function(msg,ts){
+    if(ts&&ts===this._lastBroadcast)return;
+    this._lastBroadcast=ts||Date.now();
+    var el=document.createElement('div');
+    el.style.cssText='position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#e91e63;color:#fff;padding:12px 20px;border-radius:12px;z-index:9999;font-size:.9rem;max-width:90%;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.4)';
+    el.innerHTML='📢 '+msg+'<span onclick="this.parentNode.remove()" style="margin-left:12px;cursor:pointer;opacity:.7">✕</span>';
+    document.body.appendChild(el);
+    setTimeout(function(){if(el.parentNode)el.remove()},8000);
+  },
+  _applyDisabled:function(disabled){
+    // Hide disabled platform tabs
+    var tabs=document.querySelectorAll('[data-src]');
+    tabs.forEach(function(t){
+      var src=t.getAttribute('data-src');
+      if(src&&disabled[src])t.style.display='none';
+      else if(src)t.style.display='';
+    });
+  },
+  _updateBanner:function(banner){
+    // Update banner di carousel jika ada
+    var bannerEl=document.getElementById('adminBanner');
+    if(!bannerEl){
+      bannerEl=document.createElement('div');
+      bannerEl.id='adminBanner';
+      bannerEl.style.cssText='background:linear-gradient(135deg,#1a237e,#283593);border-radius:12px;padding:16px;margin:10px 16px;display:flex;justify-content:space-between;align-items:center;';
+      var main=document.querySelector('.main-content')||document.body;
+      main.insertBefore(bannerEl,main.firstChild);
+    }
+    var btn=document.createElement('button');
+    btn.style.cssText='background:#e91e63;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600';
+    btn.textContent=banner.btn;
+    btn.onclick=function(){window.open(banner.link,'_blank');};
+    bannerEl.innerHTML='<div><div style="font-weight:700;color:#fff">'+banner.title+'</div><div style="font-size:.8rem;color:rgba(255,255,255,.7)">'+banner.sub+'</div></div>';
+    bannerEl.appendChild(btn);  }
+};
+document.addEventListener('DOMContentLoaded',function(){AdminRC.init();});
 (function(){var orig=App.openDetail.bind(App);App.openDetail=function(d){if(d&&d.name)TG.logDrama(d.name,App.src);return orig(d)}})();
 (function(){var orig=App.play.bind(App);App.play=function(dKey,ep){var d=getD(dKey);if(d&&d.name)TG.logPlay(d.name,ep,App.src);return orig(dKey,ep)}})();
 </script>
