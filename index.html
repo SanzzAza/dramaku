@@ -1421,8 +1421,8 @@ var App={
         '<div class="tk-side">'+
           '<button class="tk-sb'+(isSaved?' wl-active':'')+'" id="tkWlBtn" onclick="App._tkToggleWl()"><i class="fas fa-bookmark"></i>Favorit</button>'+
           '<button class="tk-sb" onclick="App.tkToggleEps()"><i class="fas fa-list-ol"></i>Episode</button>'+
-          '<button class="tk-sb" onclick="App._tkSeek(10)"><i class="fas fa-forward"></i>+10 dtk</button>'+
-          '<button class="tk-sb" onclick="App._tkSeek(-10)"><i class="fas fa-backward"></i>-10 dtk</button>'+
+          (this.src==='goodshort'?'':'<button class="tk-sb" onclick="App._tkSeek(10)"><i class="fas fa-forward"></i>+10 dtk</button>')+
+          (this.src==='goodshort'?'':'<button class="tk-sb" onclick="App._tkSeek(-10)"><i class="fas fa-backward"></i>-10 dtk</button>')+
           '<button class="tk-sb" onclick="copyUrl()"><i class="fas fa-link"></i>Link</button>'+
         '</div>'+
         '<div class="tk-bottom"><div class="tk-dname">'+esc(d.name)+'</div><div class="tk-epsub" id="tkEpSub">Episode '+s.ep+'</div><div class="tk-hint"><i class="fas fa-chevron-up"></i> Geser untuk ganti episode</div></div>'+
@@ -1476,11 +1476,6 @@ var App={
       };
       // Always re-fetch chapters to get fresh non-expired URL
       var gsShowErr=function(){self._tkShowLoad(false);self._tkShowErr(true);};
-      // Cari chapterId untuk episode ini
-      var gsChapterId='';
-      if(chap&&chap.chapterId)gsChapterId=chap.chapterId;
-      else if(chap&&chap.streamId)gsChapterId=chap.streamId;
-      var gsProxyUrl=gsChapterId?('/api/gs-proxy?chapterId='+gsChapterId+'&bookId='+s.d.id+'&q=720p'):'';
       var gsPlayFromChapters=function(){
         // Fallback: ambil URL dari /chapters endpoint
         GS.chapters(s.d.id).then(function(cres){
@@ -1499,12 +1494,6 @@ var App={
         }).catch(gsShowErr);
       };
       var gsFetchFreshUrl=function(){
-        // Coba proxy dulu (support AES decryption + seek)
-        if(gsProxyUrl){
-          self.tkCache[ep]=gsProxyUrl;
-          self._tkPlayUrl(gsProxyUrl);
-          return;
-        }
         var gsBookId=s.d.id;
         console.log('[GS DEBUG] bookId=',gsBookId,'ep=',ep,'cache=',JSON.stringify(App._gsUrlCache[gsBookId]?Object.keys(App._gsUrlCache[gsBookId]):'EMPTY'));
         // Cek persistent cache dulu
