@@ -1299,7 +1299,7 @@ var App={
           var directUrl='';
           if(ep.cdnList&&ep.cdnList.length)directUrl=ep.cdnList[0].videoPath||ep.cdnList[0].url||'';
           if(!directUrl&&ep.multiVideos&&ep.multiVideos.length){for(var mi=0;mi<ep.multiVideos.length;mi++){if(ep.multiVideos[mi].type==='720p'||ep.multiVideos[mi].filePath){directUrl=ep.multiVideos[mi].filePath||ep.multiVideos[mi].url||'';break}}if(!directUrl)directUrl=ep.multiVideos[0].filePath||ep.multiVideos[0].url||''}
-          return{num:num,title:title,streamId:sid,directUrl:directUrl};
+          return{num:num,title:title,streamId:sid,chapterId:sid,directUrl:directUrl};
         });d.eps=self.chaps.length;
       }else if(d.eps>0){self.chaps=[];for(var i=1;i<=d.eps;i++)self.chaps.push({num:i,title:'Episode '+i,streamId:'',directUrl:''})}
       else self.chaps=[];
@@ -1476,6 +1476,11 @@ var App={
       };
       // Always re-fetch chapters to get fresh non-expired URL
       var gsShowErr=function(){self._tkShowLoad(false);self._tkShowErr(true);};
+      // Cari chapterId untuk episode ini
+      var gsChapterId='';
+      if(chap&&chap.chapterId)gsChapterId=chap.chapterId;
+      else if(chap&&chap.streamId)gsChapterId=chap.streamId;
+      var gsProxyUrl=gsChapterId?('/api/gs-proxy?chapterId='+gsChapterId+'&bookId='+s.d.id+'&q=720p'):'';
       var gsPlayFromChapters=function(){
         // Fallback: ambil URL dari /chapters endpoint
         GS.chapters(s.d.id).then(function(cres){
@@ -1494,7 +1499,12 @@ var App={
         }).catch(gsShowErr);
       };
       var gsFetchFreshUrl=function(){
-        // Coba /unlock dulu - return semua URL sekaligus tanpa expiry
+        // Coba proxy dulu (support AES decryption + seek)
+        if(gsProxyUrl){
+          self.tkCache[ep]=gsProxyUrl;
+          self._tkPlayUrl(gsProxyUrl);
+          return;
+        }
         var gsBookId=s.d.id;
         console.log('[GS DEBUG] bookId=',gsBookId,'ep=',ep,'cache=',JSON.stringify(App._gsUrlCache[gsBookId]?Object.keys(App._gsUrlCache[gsBookId]):'EMPTY'));
         // Cek persistent cache dulu
