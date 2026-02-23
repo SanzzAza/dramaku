@@ -1564,9 +1564,8 @@ var App={
       hls.loadSource(url);
       hls.attachMedia(vid);
       hls.on(Hls.Events.MANIFEST_PARSED,function(){App._hlsPlaying=true;vid.play().catch(function(){});App._tkShowLoad(false);App._tkShowErr(false);});
-      vid.onseeking=function(){App._tkShowLoad(true);};
-      vid.onseeked=function(){setTimeout(function(){App._tkShowLoad(false);},100);};
-      vid.onwaiting=function(){App._tkShowLoad(true);};
+      // Tidak tampilkan spinner saat seek - video freeze sebentar lalu lanjut sendiri
+      vid.onwaiting=function(){if(!App._hlsPlaying)App._tkShowLoad(true);};
       vid.onplaying=function(){App._tkShowLoad(false);};
       hls.on(Hls.Events.ERROR,function(e,data){if(data.fatal&&!App._hlsPlaying){App._tkShowLoad(false);App._tkShowErr(true);}});
     }else if(isHLS&&vid.canPlayType('application/vnd.apple.mpegurl')){
