@@ -5,23 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>DramaCin</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --primary: #F5A623;
-  --primary-dark: #E0911A;
-  --primary-light: #FFF3DC;
-  --bg: #F7F8FA;
+  --primary: #E8622A;
+  --primary2: #FF8A50;
+  --bg: #F5F4F2;
   --card: #FFFFFF;
-  --text: #1A1A2E;
-  --muted: #8A8FAB;
-  --border: #ECEEF5;
-  --nav: 62px;
-  --radius: 16px;
-  --sh: 0 4px 20px rgba(0,0,0,0.08);
+  --text: #18181B;
+  --sub: #71717A;
+  --border: #E4E4E7;
+  --nav: 60px;
+  --radius: 14px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text)}
+html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text)}
 
 /* ── SCREENS ── */
 .screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg)}
@@ -30,195 +28,239 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 .scroll::-webkit-scrollbar{display:none}
 
 /* ── TOP BAR ── */
-.topbar{height:54px;background:#fff;display:flex;align-items:center;padding:0 16px;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0;z-index:10}
-.logo{font-family:'Poppins',sans-serif;font-weight:900;font-size:20px;color:var(--primary);letter-spacing:-0.5px}
-.logo b{color:var(--text)}
-.topbar-right{margin-left:auto;display:flex;gap:8px}
-.icon-btn{width:34px;height:34px;background:var(--bg);border-radius:50%;border:none;font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.topbar{height:52px;background:var(--card);display:flex;align-items:center;padding:0 16px;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0;z-index:10}
+.logo{font-family:'Sora',sans-serif;font-weight:800;font-size:18px;letter-spacing:-0.5px}
+.logo span{color:var(--primary)}
+.topbar-right{margin-left:auto;display:flex;gap:6px}
+.icon-btn{width:34px;height:34px;background:var(--bg);border-radius:10px;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text)}
+.icon-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 /* ── BOTTOM NAV ── */
-.bnav{position:fixed;bottom:0;left:0;right:0;height:var(--nav);background:#fff;border-top:1px solid var(--border);display:flex;z-index:100;box-shadow:0 -2px 12px rgba(0,0,0,0.06)}
-.nitem{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:none;cursor:pointer;font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;color:var(--muted);transition:color .2s}
-.nitem .ni{font-size:21px;transition:transform .2s}
+.bnav{position:fixed;bottom:0;left:0;right:0;height:var(--nav);background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100}
+.nitem{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;cursor:pointer;font-size:10px;font-weight:700;color:var(--sub);transition:color .15s;font-family:'Plus Jakarta Sans',sans-serif}
+.nitem svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:stroke .15s}
 .nitem.active{color:var(--primary)}
-.nitem.active .ni{transform:scale(1.18)}
+.nitem.active svg{stroke:var(--primary)}
 
 /* ── HERO BANNER ── */
-.hero{margin:12px;border-radius:var(--radius);overflow:hidden;position:relative;height:195px;background:#1a1a2e;flex-shrink:0}
-.hero-img{width:100%;height:100%;object-fit:cover;opacity:.65}
-.hero-grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.88) 0%,transparent 55%)}
+.hero{margin:12px;border-radius:var(--radius);overflow:hidden;position:relative;height:188px;background:#18181B;flex-shrink:0}
+.hero-img{width:100%;height:100%;object-fit:cover;opacity:.6}
+.hero-grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 55%)}
 .hero-body{position:absolute;bottom:0;left:0;right:0;padding:14px}
-.hero-badge{display:inline-flex;align-items:center;gap:4px;background:var(--primary);color:#fff;font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
-.hero-title{font-size:17px;font-weight:900;color:#fff;line-height:1.2;margin-bottom:8px}
+.hero-tag{display:inline-block;background:var(--primary);color:#fff;font-size:10px;font-weight:800;padding:3px 9px;border-radius:6px;margin-bottom:7px;letter-spacing:.4px;text-transform:uppercase}
+.hero-title{font-size:16px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:9px;font-family:'Sora',sans-serif}
 .hero-row{display:flex;align-items:flex-end;justify-content:space-between}
-.hero-meta span{font-size:11px;color:rgba(255,255,255,.75);font-weight:600;margin-right:8px}
-.hero-btn{background:var(--primary);color:#fff;border:none;border-radius:20px;padding:7px 16px;font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;display:flex;align-items:center;gap:5px}
+.hero-meta{font-size:11px;color:rgba(255,255,255,.72);font-weight:600;display:flex;gap:8px}
+.hero-btn{background:var(--primary);color:#fff;border:none;border-radius:9px;padding:8px 16px;font-size:12px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;display:flex;align-items:center;gap:5px}
+.hero-btn svg{width:13px;height:13px;fill:#fff}
 
 /* ── SECTION ── */
 .sec{padding:16px 16px 0}
 .sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.sec-title{font-size:15px;font-weight:900;display:flex;align-items:center;gap:6px}
-.see-all{font-size:12px;font-weight:700;color:var(--primary);border:none;background:none;cursor:pointer;font-family:'Nunito',sans-serif}
+.sec-title{font-size:14px;font-weight:800;letter-spacing:-.2px}
+.sec-dot{display:inline-block;width:7px;height:7px;background:var(--primary);border-radius:2px;margin-right:7px;vertical-align:middle}
+.see-all{font-size:12px;font-weight:700;color:var(--primary);border:none;background:none;cursor:pointer;font-family:inherit}
 
 /* ── HORIZONTAL SCROLL CARDS ── */
-.hscroll{display:flex;gap:11px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.hscroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;padding-left:16px;padding-right:16px;margin:0 -16px}
 .hscroll::-webkit-scrollbar{display:none}
-.dcard{flex-shrink:0;width:112px;cursor:pointer}
-.dcard-img{width:112px;height:158px;border-radius:12px;overflow:hidden;position:relative;background:#ddd;display:block}
-.dcard-img img{width:100%;height:100%;object-fit:cover}
-.ep-badge{position:absolute;bottom:6px;left:6px;background:rgba(0,0,0,.72);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px}
+.dcard{flex-shrink:0;width:108px;cursor:pointer}
+.dcard-img{width:108px;height:152px;border-radius:11px;overflow:hidden;position:relative;background:#ddd}
+.dcard-img img{width:100%;height:100%;object-fit:cover;display:block}
+.ep-badge{position:absolute;bottom:6px;left:6px;background:rgba(0,0,0,.68);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:5px}
 .dcard-title{font-size:11px;font-weight:700;margin-top:6px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.dcard-star{font-size:10px;color:var(--muted);margin-top:2px;font-weight:600}
+.dcard-sub{font-size:10px;color:var(--sub);margin-top:2px;font-weight:600}
 
 /* ── RANK LIST ── */
-.rlist{display:flex;flex-direction:column;gap:9px;padding:0 16px}
-.rcard{background:#fff;border-radius:14px;padding:11px;display:flex;align-items:center;gap:11px;cursor:pointer;box-shadow:var(--sh)}
-.rnum{font-size:22px;font-weight:900;font-family:'Poppins',sans-serif;min-width:30px;text-align:center}
-.rnum.g{color:#FFD700}.rnum.s{color:#C0C0C0}.rnum.b{color:#CD7F32}.rnum.n{color:var(--muted);font-size:16px}
-.rcov{width:50px;height:68px;border-radius:9px;object-fit:cover;background:linear-gradient(135deg,#f093fb,#f5576c);flex-shrink:0}
+.rlist{display:flex;flex-direction:column;gap:8px;padding:0 16px}
+.rcard{background:var(--card);border-radius:12px;padding:11px;display:flex;align-items:center;gap:11px;cursor:pointer}
+.rnum{font-size:20px;font-weight:900;font-family:'Sora',sans-serif;min-width:28px;text-align:center}
+.rnum.g{color:#F59E0B}.rnum.s{color:#94A3B8}.rnum.b{color:#B45309}.rnum.n{color:var(--sub);font-size:15px;font-weight:700}
+.rcov{width:48px;height:66px;border-radius:9px;object-fit:cover;flex-shrink:0}
 .rinfo{flex:1;min-width:0}
 .rtitle{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rmeta{font-size:11px;color:var(--muted);margin-top:2px;font-weight:600}
-.rscore{font-size:12px;font-weight:800;color:var(--primary)}
+.rmeta{font-size:11px;color:var(--sub);margin-top:2px;font-weight:600}
+.rscore{font-size:12px;font-weight:800;color:var(--primary);white-space:nowrap}
 
 /* ── SEARCH ── */
-.sbox{margin:12px;background:#fff;border-radius:14px;padding:11px 15px;display:flex;align-items:center;gap:9px;border:2px solid var(--border);transition:border-color .2s}
+.sbox{margin:12px 16px;background:var(--card);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:9px;border:1.5px solid var(--border);transition:border-color .2s}
 .sbox:focus-within{border-color:var(--primary)}
-.sbox input{flex:1;border:none;background:none;font-family:'Nunito',sans-serif;font-size:14px;color:var(--text);outline:none}
-.sbox input::placeholder{color:var(--muted)}
-.sbtn{background:var(--primary);color:#fff;border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer}
+.sbox svg{width:17px;height:17px;stroke:var(--sub);fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0}
+.sbox input{flex:1;border:none;background:none;font-family:inherit;font-size:14px;color:var(--text);outline:none;font-weight:500}
+.sbox input::placeholder{color:var(--sub)}
+.sbtn{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer}
 .tags{display:flex;flex-wrap:wrap;gap:7px;padding:0 16px;margin-bottom:14px}
-.tag{background:var(--primary-light);color:var(--primary-dark);border:none;border-radius:20px;padding:6px 13px;font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px;padding:0 16px}
+.tag{background:var(--card);color:var(--text);border:1.5px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer}
+.tag:active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px}
 .gcrd{cursor:pointer}
-.gcrd-img{width:100%;aspect-ratio:3/4;border-radius:13px;overflow:hidden;position:relative}
+.gcrd-img{width:100%;aspect-ratio:3/4;border-radius:11px;overflow:hidden;position:relative}
 .gcrd-img img{width:100%;height:100%;object-fit:cover}
-.grank{position:absolute;top:7px;left:7px;background:var(--primary);color:#fff;font-size:11px;font-weight:900;padding:3px 8px;border-radius:20px;font-family:'Poppins',sans-serif}
-.gcrd-title{font-size:12px;font-weight:800;margin-top:7px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.grank{position:absolute;top:7px;left:7px;background:var(--primary);color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:6px;font-family:'Sora',sans-serif}
+.gcrd-title{font-size:12px;font-weight:700;margin-top:7px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
-/* ── DETAIL SCREEN ── */
-.det-hero{position:relative;height:270px;background:#111;flex-shrink:0}
+/* ── DETAIL ── */
+.det-hero{position:relative;height:260px;background:#111;flex-shrink:0}
 .det-cover{width:100%;height:100%;object-fit:cover;opacity:.45}
-.det-overlay{position:absolute;inset:0;background:linear-gradient(to top,var(--bg) 0%,transparent 48%)}
-.back-btn{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.45);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.det-thumb{position:absolute;bottom:-46px;left:16px;width:96px;height:134px;border-radius:13px;object-fit:cover;box-shadow:0 8px 24px rgba(0,0,0,.28);border:3px solid #fff;background:linear-gradient(135deg,#667eea,#764ba2)}
-.det-info{padding:56px 16px 16px}
-.det-title{font-size:19px;font-weight:900;line-height:1.2}
-.det-meta{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
-.det-badge{background:var(--primary-light);color:var(--primary-dark);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
-.det-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-top:10px;font-weight:600}
+.det-overlay{position:absolute;inset:0;background:linear-gradient(to top,var(--bg) 0%,transparent 50%)}
+.back-btn{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.4);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.back-btn svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.det-thumb{position:absolute;bottom:-44px;left:16px;width:92px;height:130px;border-radius:12px;object-fit:cover;box-shadow:0 8px 24px rgba(0,0,0,.25);border:3px solid var(--card)}
+.det-info{padding:52px 16px 14px}
+.det-title{font-size:18px;font-weight:900;line-height:1.2;font-family:'Sora',sans-serif}
+.det-meta{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
+.det-badge{background:var(--bg);color:var(--sub);font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;border:1px solid var(--border)}
+.det-desc{font-size:13px;color:var(--sub);line-height:1.65;margin-top:10px;font-weight:500}
 .det-desc.col{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.readmore{background:none;border:none;color:var(--primary);font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;margin-top:3px}
+.readmore{background:none;border:none;color:var(--primary);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px}
 .det-actions{display:flex;gap:9px;margin-top:14px}
-.btn-pri{flex:1;background:var(--primary);color:#fff;border:none;border-radius:13px;padding:13px;font-size:14px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
-.btn-sec{background:var(--bg);color:var(--text);border:2px solid var(--border);border-radius:13px;padding:13px 16px;font-size:18px;cursor:pointer;display:flex;align-items:center}
+.btn-pri{flex:1;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-pri svg{width:16px;height:16px;fill:#fff}
+.btn-sec{background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:13px 15px;cursor:pointer;display:flex;align-items:center}
+.btn-sec svg{width:22px;height:22px;stroke:var(--text);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn-sec.faved svg{stroke:var(--primary);fill:var(--primary)}
 .ep-sec{padding:0 16px 16px}
-.ep-title{font-size:14px;font-weight:900;margin-bottom:11px}
+.ep-title{font-size:13px;font-weight:800;margin-bottom:10px;color:var(--sub);text-transform:uppercase;letter-spacing:.4px}
 .ep-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
-.ep-btn{background:#fff;border:2px solid var(--border);border-radius:9px;padding:9px 4px;font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;text-align:center;color:var(--text);transition:all .15s}
+.ep-btn{background:var(--card);border:1.5px solid var(--border);border-radius:8px;padding:8px 4px;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;text-align:center;color:var(--text);transition:all .15s}
 .ep-btn.active,.ep-btn:active{background:var(--primary);border-color:var(--primary);color:#fff}
 
 /* ══════════════════════════════════════════════════════
-   🎬 TIKTOK VIDEO PLAYER
+   TIKTOK VIDEO PLAYER  
 ══════════════════════════════════════════════════════ */
 #screen-watch{background:#000;z-index:200}
-.watch-wrap{position:relative;width:100%;height:100%;overflow:hidden}
 
-/* Video container - full screen */
-.vid-container{position:absolute;inset:0;background:#000;display:flex;align-items:center;justify-content:center}
-video#mainVideo{width:100%;height:100%;object-fit:contain;display:block}
+/* The TikTok feed container — vertical snap scroll */
+.feed-wrap{
+  position:absolute;inset:0;
+  overflow-y:scroll;
+  scroll-snap-type:y mandatory;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.feed-wrap::-webkit-scrollbar{display:none}
 
-/* Tap overlay to play/pause */
-.tap-overlay{position:absolute;inset:0;z-index:10;cursor:pointer}
-.tap-ripple{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;opacity:0;transition:opacity .3s}
-.tap-ripple.show{opacity:1;animation:rippleOut .5s forwards}
-@keyframes rippleOut{0%{transform:translate(-50%,-50%) scale(.5);opacity:1}100%{transform:translate(-50%,-50%) scale(1.5);opacity:0}}
-.tap-icon{font-size:64px;filter:drop-shadow(0 0 12px rgba(0,0,0,.5))}
+/* Each "slide" in the feed */
+.feed-slide{
+  position:relative;
+  width:100%;
+  height:100vh; /* full viewport height per slide */
+  scroll-snap-align:start;
+  scroll-snap-stop:always;
+  background:#000;
+  overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
 
-/* Top gradient */
-.vgrad-top{position:absolute;top:0;left:0;right:0;height:130px;background:linear-gradient(to bottom,rgba(0,0,0,.75),transparent);z-index:20;pointer-events:none}
-/* Bottom gradient */
-.vgrad-bot{position:absolute;bottom:0;left:0;right:0;height:200px;background:linear-gradient(to top,rgba(0,0,0,.9),transparent);z-index:20;pointer-events:none}
+/* The video inside each slide */
+.slide-video{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  background:#000;
+}
 
-/* Back button */
-.v-back{position:absolute;top:14px;left:14px;z-index:30;background:rgba(255,255,255,.15);border:none;color:#fff;width:38px;height:38px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+/* Tap overlay for play/pause */
+.tap-overlay{
+  position:absolute;inset:0;z-index:10;cursor:pointer;
+}
 
-/* Drama info - bottom left */
-.v-info{position:absolute;bottom:80px;left:14px;right:75px;z-index:30;color:#fff}
-.v-drama-title{font-size:15px;font-weight:900;line-height:1.3;text-shadow:0 1px 8px rgba(0,0,0,.6)}
-.v-ep-label{font-size:12px;font-weight:700;opacity:.85;margin-top:3px}
-.v-desc{font-size:12px;opacity:.75;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4}
-
-/* Right sidebar action buttons */
-.v-actions{position:absolute;bottom:85px;right:12px;z-index:30;display:flex;flex-direction:column;align-items:center;gap:18px}
-.v-act-btn{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;background:none;border:none;color:#fff}
-.v-act-icon{width:46px;height:46px;background:rgba(255,255,255,.18);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;backdrop-filter:blur(4px);transition:transform .15s}
-.v-act-btn:active .v-act-icon{transform:scale(.88)}
-.v-act-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.9)}
-
-/* Episode list bottom sheet */
-.ep-sheet{position:absolute;bottom:0;left:0;right:0;z-index:40;background:rgba(15,15,15,.95);backdrop-filter:blur(12px);border-radius:20px 20px 0 0;padding:12px 16px 24px;transform:translateY(100%);transition:transform .3s ease}
-.ep-sheet.open{transform:translateY(0)}
-.ep-sheet-handle{width:36px;height:4px;background:rgba(255,255,255,.3);border-radius:2px;margin:0 auto 14px}
-.ep-sheet-title{color:#fff;font-size:14px;font-weight:900;margin-bottom:12px}
-.ep-sheet-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;max-height:220px;overflow-y:auto;scrollbar-width:none}
-.ep-sheet-grid::-webkit-scrollbar{display:none}
-.ep-sht-btn{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.15);border-radius:9px;padding:9px 4px;font-size:12px;font-weight:800;color:#fff;font-family:'Nunito',sans-serif;cursor:pointer;text-align:center;transition:all .15s}
-.ep-sht-btn.active{background:var(--primary);border-color:var(--primary)}
-
-/* Seek bar */
-.seekbar-wrap{position:absolute;bottom:60px;left:14px;right:14px;z-index:30}
-.seekbar{-webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:2px;background:rgba(255,255,255,.3);outline:none;cursor:pointer}
-.seekbar::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 0 6px rgba(0,0,0,.5)}
-.time-row{display:flex;justify-content:space-between;margin-top:5px}
-.time-row span{font-size:10px;color:rgba(255,255,255,.7);font-weight:600}
-
-/* Episode nav pills bottom */
-.ep-nav{position:absolute;bottom:16px;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:center;gap:10px}
-.ep-nav-btn{background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:20px;padding:9px 20px;font-size:13px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;backdrop-filter:blur(4px);display:flex;align-items:center;gap:6px;transition:all .15s}
-.ep-nav-btn:active{transform:scale(.94)}
-.ep-nav-btn.primary{background:var(--primary)}
-.ep-nav-ep{background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:20px;padding:9px 16px;font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;backdrop-filter:blur(4px)}
-
-/* Loading / buffering overlay */
-.vbuf{position:absolute;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;pointer-events:none}
-.vspin{width:48px;height:48px;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* Center play/pause icon flash */
+/* Flash animation */
 .v-flash{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:35;pointer-events:none;opacity:0}
 .v-flash.show{animation:flashAnim .45s forwards}
-@keyframes flashAnim{0%{opacity:1;transform:translate(-50%,-50%) scale(.7)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.2)}}
-.v-flash-icon{font-size:70px;filter:drop-shadow(0 0 20px rgba(0,0,0,.6))}
+@keyframes flashAnim{0%{opacity:1;transform:translate(-50%,-50%) scale(.6)}60%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.15)}}
+.v-flash-icon{width:72px;height:72px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.v-flash-icon svg{width:34px;height:34px;fill:#fff}
+
+/* Top gradient & controls */
+.vgrad-top{position:absolute;top:0;left:0;right:0;height:120px;background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent);z-index:20;pointer-events:none}
+.vgrad-bot{position:absolute;bottom:0;left:0;right:0;height:220px;background:linear-gradient(to top,rgba(0,0,0,.88),transparent);z-index:20;pointer-events:none}
+
+/* Back button */
+.v-back{position:absolute;top:14px;left:14px;z-index:30;background:rgba(255,255,255,.12);border:none;color:#fff;width:38px;height:38px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.v-back svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* Episode indicator top center */
+.v-ep-pill{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:30;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);color:#fff;font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;white-space:nowrap}
+
+/* Drama info - bottom left */
+.v-info{position:absolute;bottom:90px;left:14px;right:76px;z-index:30;color:#fff}
+.v-drama-title{font-size:15px;font-weight:800;line-height:1.3;text-shadow:0 1px 8px rgba(0,0,0,.5);font-family:'Sora',sans-serif}
+.v-ep-label{font-size:12px;font-weight:600;opacity:.8;margin-top:3px}
+.v-desc{font-size:12px;opacity:.72;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4;font-weight:500}
+
+/* Right sidebar */
+.v-actions{position:absolute;bottom:95px;right:12px;z-index:30;display:flex;flex-direction:column;align-items:center;gap:20px}
+.v-act-btn{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;background:none;border:none;color:#fff;font-family:inherit}
+.v-act-icon{width:46px;height:46px;background:rgba(255,255,255,.14);border-radius:50%;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);transition:transform .15s}
+.v-act-icon svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.v-act-icon.faved svg{stroke:#E8622A;fill:#E8622A}
+.v-act-btn:active .v-act-icon{transform:scale(.86)}
+.v-act-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.88)}
+
+/* Seekbar */
+.seekbar-wrap{position:absolute;bottom:62px;left:14px;right:14px;z-index:30}
+.seekbar{-webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:2px;background:rgba(255,255,255,.28);outline:none;cursor:pointer}
+.seekbar::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#fff;cursor:pointer}
+.time-row{display:flex;justify-content:space-between;margin-top:5px}
+.time-row span{font-size:10px;color:rgba(255,255,255,.65);font-weight:600}
+
+/* Episode nav pills */
+.ep-nav{position:absolute;bottom:16px;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:center;gap:8px}
+.ep-nav-btn{background:rgba(255,255,255,.14);border:none;color:#fff;border-radius:20px;padding:9px 18px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;backdrop-filter:blur(4px);display:flex;align-items:center;gap:5px;transition:all .15s}
+.ep-nav-btn:active{transform:scale(.93)}
+.ep-nav-btn.primary{background:var(--primary)}
+.ep-nav-btn svg{width:15px;height:15px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.ep-num-pill{background:rgba(255,255,255,.14);border:none;color:#fff;border-radius:20px;padding:9px 14px;font-size:12px;font-weight:700;font-family:inherit;backdrop-filter:blur(4px)}
+
+/* Episode bottom sheet */
+.ep-sheet{position:absolute;bottom:0;left:0;right:0;z-index:40;background:rgba(12,12,12,.94);backdrop-filter:blur(16px);border-radius:20px 20px 0 0;padding:14px 16px 28px;transform:translateY(100%);transition:transform .3s ease}
+.ep-sheet.open{transform:translateY(0)}
+.ep-sheet-handle{width:36px;height:4px;background:rgba(255,255,255,.25);border-radius:2px;margin:0 auto 14px}
+.ep-sheet-title{color:#fff;font-size:14px;font-weight:800;margin-bottom:12px;font-family:'Sora',sans-serif}
+.ep-sheet-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;max-height:220px;overflow-y:auto;scrollbar-width:none}
+.ep-sheet-grid::-webkit-scrollbar{display:none}
+.ep-sht-btn{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.12);border-radius:9px;padding:9px 4px;font-size:12px;font-weight:800;color:#fff;font-family:inherit;cursor:pointer;text-align:center;transition:all .15s}
+.ep-sht-btn.active{background:var(--primary);border-color:var(--primary)}
+
+/* Buffering */
+.vbuf{position:absolute;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.vspin{width:44px;height:44px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* ── PROFILE ── */
-.prof-hd{background:linear-gradient(135deg,var(--primary),#FF6B35);padding:30px 18px 22px;color:#fff;flex-shrink:0}
-.prof-av{width:68px;height:68px;border-radius:50%;background:rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:10px;border:3px solid rgba(255,255,255,.45)}
-.prof-name{font-size:19px;font-weight:900}
-.prof-tag{font-size:13px;opacity:.85;font-weight:600;margin-top:2px}
-.vip-card{margin:14px;border-radius:var(--radius);background:linear-gradient(135deg,var(--primary),#FF6B35);padding:18px;color:#fff;position:relative;overflow:hidden}
-.vip-card::before{content:'👑';position:absolute;right:-8px;top:-8px;font-size:75px;opacity:.14}
-.vip-card-title{font-size:19px;font-weight:900}
-.vip-card-sub{font-size:12px;opacity:.88;margin-top:3px;font-weight:600}
-.vip-card-btn{margin-top:12px;background:#fff;color:var(--primary-dark);border:none;border-radius:9px;padding:9px 18px;font-size:12px;font-weight:900;font-family:'Nunito',sans-serif;cursor:pointer}
+.prof-hd{background:var(--card);padding:28px 18px 20px;flex-shrink:0;border-bottom:1px solid var(--border)}
+.prof-av{width:64px;height:64px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;margin-bottom:10px;border:2px solid var(--border)}
+.prof-av svg{width:32px;height:32px;stroke:var(--sub);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.prof-name{font-size:18px;font-weight:900;font-family:'Sora',sans-serif}
+.prof-tag{font-size:13px;color:var(--sub);font-weight:500;margin-top:2px}
+.vip-card{margin:14px;border-radius:var(--radius);background:linear-gradient(135deg,var(--primary),#FF8A50);padding:18px;color:#fff;position:relative;overflow:hidden}
+.vip-card::before{content:'';position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:rgba(255,255,255,.1);border-radius:50%}
+.vip-card-title{font-size:17px;font-weight:900;font-family:'Sora',sans-serif}
+.vip-card-sub{font-size:12px;opacity:.88;margin-top:3px;font-weight:500}
+.vip-card-btn{margin-top:12px;background:#fff;color:var(--primary);border:none;border-radius:9px;padding:9px 18px;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer}
 .pmenu{padding:12px;display:flex;flex-direction:column;gap:2px}
-.pitem{background:#fff;border:none;padding:14px;border-radius:13px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:'Nunito',sans-serif;margin-bottom:2px}
-.pitem-ico{font-size:20px;min-width:30px;text-align:center}
+.pitem{background:var(--card);border:none;padding:14px;border-radius:12px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:inherit;margin-bottom:2px}
+.pitem-ico{width:34px;height:34px;background:var(--bg);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pitem-ico svg{width:18px;height:18px;stroke:var(--sub);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .pitem-txt{flex:1;text-align:left}
-.pitem-label{font-size:13px;font-weight:800;color:var(--text)}
-.pitem-sub{font-size:11px;color:var(--muted);font-weight:600;margin-top:1px}
+.pitem-label{font-size:13px;font-weight:700;color:var(--text)}
+.pitem-sub{font-size:11px;color:var(--sub);font-weight:500;margin-top:1px}
+.pitem-arr{width:16px;height:16px;stroke:var(--sub);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 /* ── UTILS ── */
 .loader{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:36px}
-.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
-.empty{text-align:center;padding:44px 24px;color:var(--muted)}
-.empty-ico{font-size:44px;margin-bottom:10px}
+.spinner{width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
+.empty{text-align:center;padding:44px 24px;color:var(--sub)}
+.empty-ico{width:44px;height:44px;background:var(--border);border-radius:12px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center}
+.empty-ico svg{width:22px;height:22px;stroke:var(--sub);fill:none;stroke-width:1.5;stroke-linecap:round}
 .empty-txt{font-size:14px;font-weight:700}
-.toast{position:fixed;top:64px;left:50%;transform:translateX(-50%);background:rgba(26,26,46,.92);color:#fff;padding:9px 18px;border-radius:20px;font-size:12px;font-weight:700;z-index:999;opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap}
+.toast{position:fixed;top:66px;left:50%;transform:translateX(-50%);background:rgba(24,24,27,.92);color:#fff;padding:9px 18px;border-radius:20px;font-size:12px;font-weight:700;z-index:999;opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap}
 .toast.show{opacity:1}
-
-/* Cover placeholder colors */
-.cph{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;text-align:center;padding:8px;line-height:1.3}
+.cph{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;text-align:center;padding:8px;line-height:1.4}
+.cph svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:1.5;margin-bottom:4px;opacity:.7}
 </style>
 </head>
 <body>
@@ -226,39 +268,44 @@ video#mainVideo{width:100%;height:100%;object-fit:contain;display:block}
 <!-- ══ HOME ══ -->
 <div class="screen active" id="screen-home">
   <div class="topbar">
-    <div class="logo">Drama<b>Cin</b></div>
+    <div class="logo">Drama<span>Cin</span></div>
     <div class="topbar-right">
-      <button class="icon-btn" onclick="toast('Notifikasi')">🔔</button>
+      <button class="icon-btn" onclick="toast('Notifikasi')">
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
     </div>
   </div>
   <div class="scroll" id="home-scroll">
     <div class="hero" id="hero-wrap">
-      <div style="width:100%;height:100%;background:linear-gradient(135deg,#1a1a2e,#2d2d5e);display:flex;align-items:center;justify-content:center;font-size:40px;opacity:.35">🎬</div>
+      <div style="width:100%;height:100%;background:linear-gradient(135deg,#18181B,#2d2d3e)"></div>
       <div class="hero-grad"></div>
       <div class="hero-body">
         <div class="hero-row">
           <div>
-            <div class="hero-badge">🔥 Trending</div>
+            <div class="hero-tag">Trending</div>
             <div class="hero-title" id="hero-title">Memuat...</div>
-            <div><span class="hero-meta" id="hero-meta"></span></div>
+            <div class="hero-meta" id="hero-meta"></div>
           </div>
-          <button class="hero-btn" id="hero-btn">▶ Tonton</button>
+          <button class="hero-btn" id="hero-btn">
+            <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Tonton
+          </button>
         </div>
       </div>
     </div>
 
     <div class="sec">
       <div class="sec-hd">
-        <div class="sec-title">🔥 Lagi Populer</div>
-        <button class="see-all" onclick="switchNav('rank')">Lihat Semua ›</button>
+        <div class="sec-title"><span class="sec-dot"></span>Populer Sekarang</div>
+        <button class="see-all" onclick="switchNav('rank')">Lihat Semua</button>
       </div>
       <div class="hscroll" id="popular-list"><div class="loader"><div class="spinner"></div></div></div>
     </div>
 
-    <div class="sec" style="margin-top:8px">
+    <div class="sec" style="margin-top:10px">
       <div class="sec-hd">
-        <div class="sec-title">🆕 Terbaru</div>
-        <button class="see-all" onclick="switchNav('search')">Lihat Semua ›</button>
+        <div class="sec-title"><span class="sec-dot"></span>Terbaru</div>
+        <button class="see-all" onclick="switchNav('search')">Lihat Semua</button>
       </div>
       <div class="hscroll" id="new-list"><div class="loader"><div class="spinner"></div></div></div>
     </div>
@@ -268,32 +315,36 @@ video#mainVideo{width:100%;height:100%;object-fit:contain;display:block}
 
 <!-- ══ SEARCH ══ -->
 <div class="screen" id="screen-search">
-  <div class="topbar"><div class="logo">Drama<b>Cin</b></div></div>
+  <div class="topbar"><div class="logo">Drama<span>Cin</span></div></div>
   <div class="scroll">
     <div class="sbox">
-      <span style="font-size:17px">🔍</span>
-      <input type="text" id="sinput" placeholder="Cari drama, genre..." onkeydown="if(event.key==='Enter')doSearch()">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="sinput" placeholder="Cari judul, genre..." onkeydown="if(event.key==='Enter')doSearch()">
       <button class="sbtn" onclick="doSearch()">Cari</button>
     </div>
     <div id="stags-sec">
-      <div class="sec" style="padding-top:4px"><div class="sec-hd"><div class="sec-title">📈 Populer Dicari</div></div></div>
-      <div class="tags">
-        <button class="tag" onclick="searchKw('cinta')">cinta</button>
-        <button class="tag" onclick="searchKw('keluarga')">keluarga</button>
-        <button class="tag" onclick="searchKw('balas dendam')">balas dendam</button>
-        <button class="tag" onclick="searchKw('pewaris')">pewaris</button>
-        <button class="tag" onclick="searchKw('istri')">istri</button>
-        <button class="tag" onclick="searchKw('raja')">raja</button>
-        <button class="tag" onclick="searchKw('dendam')">dendam</button>
-        <button class="tag" onclick="searchKw('pengusaha')">pengusaha</button>
+      <div class="sec" style="padding-top:4px">
+        <div class="sec-hd"><div class="sec-title"><span class="sec-dot"></span>Populer Dicari</div></div>
       </div>
-      <div class="sec" style="padding-top:0"><div class="sec-hd"><div class="sec-title">🔥 Sedang Banyak Dicari</div></div></div>
+      <div class="tags">
+        <button class="tag" onclick="searchKw('cinta')">Cinta</button>
+        <button class="tag" onclick="searchKw('keluarga')">Keluarga</button>
+        <button class="tag" onclick="searchKw('balas dendam')">Balas Dendam</button>
+        <button class="tag" onclick="searchKw('pewaris')">Pewaris</button>
+        <button class="tag" onclick="searchKw('istri')">Istri</button>
+        <button class="tag" onclick="searchKw('raja')">Raja</button>
+        <button class="tag" onclick="searchKw('dendam')">Dendam</button>
+        <button class="tag" onclick="searchKw('pengusaha')">Pengusaha</button>
+      </div>
+      <div class="sec" style="padding-top:0">
+        <div class="sec-hd"><div class="sec-title"><span class="sec-dot"></span>Sedang Trending</div></div>
+      </div>
       <div class="grid2" id="trending-grid"><div class="loader" style="grid-column:span 2"><div class="spinner"></div></div></div>
     </div>
     <div id="sresults-sec" style="display:none">
       <div class="sec"><div class="sec-hd">
         <div class="sec-title" id="sresult-title">Hasil</div>
-        <button class="see-all" onclick="clearSearch()">✕ Tutup</button>
+        <button class="see-all" onclick="clearSearch()">Tutup</button>
       </div></div>
       <div class="rlist" id="sresults"></div>
     </div>
@@ -303,9 +354,9 @@ video#mainVideo{width:100%;height:100%;object-fit:contain;display:block}
 
 <!-- ══ RANK ══ -->
 <div class="screen" id="screen-rank">
-  <div class="topbar"><div class="logo">Drama<b>Cin</b></div></div>
+  <div class="topbar"><div class="logo">Drama<span>Cin</span></div></div>
   <div class="scroll">
-    <div class="sec"><div class="sec-hd"><div class="sec-title">🏆 Ranking Drama</div></div></div>
+    <div class="sec"><div class="sec-hd"><div class="sec-title"><span class="sec-dot"></span>Ranking Drama</div></div></div>
     <div class="rlist" id="rank-list"><div class="loader"><div class="spinner"></div></div></div>
     <div style="height:14px"></div>
   </div>
@@ -317,163 +368,115 @@ video#mainVideo{width:100%;height:100%;object-fit:contain;display:block}
     <div class="det-hero">
       <img id="det-cover" class="det-cover" src="" alt="">
       <div class="det-overlay"></div>
-      <button class="back-btn" onclick="goBack()">←</button>
+      <button class="back-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
       <img id="det-thumb" class="det-thumb" src="" alt="" onerror="this.style.display='none'">
     </div>
     <div class="det-info">
       <div id="det-title" class="det-title">Loading...</div>
       <div id="det-meta" class="det-meta"></div>
       <div id="det-desc" class="det-desc col">-</div>
-      <button class="readmore" id="readmore-btn" onclick="toggleDesc()">Selengkapnya ›</button>
+      <button class="readmore" id="readmore-btn" onclick="toggleDesc()">Selengkapnya</button>
       <div class="det-actions">
-        <button class="btn-pri" id="det-watch-btn">▶ Mulai Tonton</button>
-        <button class="btn-sec" id="det-fav-btn" onclick="toggleFav()">🤍</button>
+        <button class="btn-pri" id="det-watch-btn">
+          <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Mulai Tonton
+        </button>
+        <button class="btn-sec" id="det-fav-btn" onclick="toggleFav()">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
       </div>
     </div>
     <div class="ep-sec">
-      <div class="ep-title">📋 Daftar Episode</div>
+      <div class="ep-title">Daftar Episode</div>
       <div class="ep-grid" id="det-ep-grid"><div class="loader" style="grid-column:span 5"><div class="spinner"></div></div></div>
     </div>
     <div style="height:80px"></div>
   </div>
 </div>
 
-<!-- ══ WATCH (TikTok Player) ══ -->
+<!-- ══ WATCH — TikTok Swipe Feed ══ -->
 <div class="screen" id="screen-watch">
-  <div class="watch-wrap" id="watch-wrap">
-
-    <!-- Video element -->
-    <div class="vid-container">
-      <video id="mainVideo" playsinline webkit-playsinline preload="auto"
-        onwaiting="showBuf()" oncanplay="hideBuf()" onplaying="hideBuf()"
-        ontimeupdate="onTimeUpdate()" onended="onVideoEnded()"
-        onerror="onVideoError()">
-      </video>
-    </div>
-
-    <!-- Buffering -->
-    <div class="vbuf" id="vbuf" style="display:none"><div class="vspin"></div></div>
-
-    <!-- Tap overlay -->
-    <div class="tap-overlay" id="tapOverlay" onclick="tapPlayPause()"></div>
-
-    <!-- Flash icon -->
-    <div class="v-flash" id="vflash"><div class="v-flash-icon" id="vflash-icon">▶️</div></div>
-
-    <!-- Top gradient & Back -->
-    <div class="vgrad-top"></div>
-    <button class="v-back" onclick="goBack()">←</button>
-
-    <!-- Bottom gradient -->
-    <div class="vgrad-bot"></div>
-
-    <!-- Seek bar -->
-    <div class="seekbar-wrap" id="seekbar-wrap">
-      <input type="range" class="seekbar" id="seekbar" value="0" min="0" max="100" step="0.1"
-        oninput="onSeekInput()" onchange="onSeekChange()">
-      <div class="time-row">
-        <span id="time-cur">0:00</span>
-        <span id="time-dur">0:00</span>
-      </div>
-    </div>
-
-    <!-- Drama info bottom left -->
-    <div class="v-info">
-      <div class="v-drama-title" id="v-title">Loading...</div>
-      <div class="v-ep-label" id="v-ep-label">Episode 1</div>
-      <div class="v-desc" id="v-desc"></div>
-    </div>
-
-    <!-- Right actions -->
-    <div class="v-actions">
-      <button class="v-act-btn" onclick="toggleFavWatch()" id="v-fav-btn">
-        <div class="v-act-icon" id="v-fav-icon">🤍</div>
-        <span class="v-act-label">Favorit</span>
-      </button>
-      <button class="v-act-btn" onclick="toggleMute()">
-        <div class="v-act-icon" id="v-mute-icon">🔊</div>
-        <span class="v-act-label" id="v-mute-label">Suara</span>
-      </button>
-      <button class="v-act-btn" onclick="toggleEpSheet()">
-        <div class="v-act-icon">📋</div>
-        <span class="v-act-label">Episode</span>
-      </button>
-      <button class="v-act-btn" onclick="toggleFullscreen()">
-        <div class="v-act-icon" id="v-fs-icon">⛶</div>
-        <span class="v-act-label">Layar</span>
-      </button>
-    </div>
-
-    <!-- Episode nav bottom -->
-    <div class="ep-nav">
-      <button class="ep-nav-btn" id="prev-btn" onclick="changeEp(-1)">⬅ Sebelumnya</button>
-      <button class="ep-nav-ep" id="ep-num-label">Ep 1</button>
-      <button class="ep-nav-btn primary" id="next-btn" onclick="changeEp(1)">Berikutnya ➡</button>
-    </div>
-
-    <!-- Episode sheet -->
-    <div class="ep-sheet" id="ep-sheet">
-      <div class="ep-sheet-handle"></div>
-      <div class="ep-sheet-title" id="ep-sheet-title">Pilih Episode</div>
-      <div class="ep-sheet-grid" id="ep-sheet-grid"></div>
-    </div>
-    <!-- sheet backdrop -->
-    <div id="ep-sheet-backdrop" onclick="toggleEpSheet()" style="display:none;position:absolute;inset:0;z-index:38;background:transparent"></div>
-
+  <!-- 
+    TikTok feed: vertical snap scroll container.
+    Slides are dynamically inserted here by JS.
+  -->
+  <div class="feed-wrap" id="feed-wrap">
+    <!-- slides injected by watchEp() -->
   </div>
+
+  <!-- Global back button (always on top) -->
+  <button class="v-back" id="v-back-btn" onclick="goBack()">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
 </div>
 
 <!-- ══ PROFILE ══ -->
 <div class="screen" id="screen-profile">
   <div class="scroll">
     <div class="prof-hd">
-      <div class="prof-av">👤</div>
+      <div class="prof-av">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
       <div class="prof-name" id="prof-name">Pengguna</div>
       <div class="prof-tag" id="prof-tag">Member Gratis</div>
     </div>
     <div class="vip-card">
-      <div class="vip-card-title">👑 Upgrade ke VIP</div>
-      <div class="vip-card-sub">Bebas iklan & akses semua episode HD</div>
+      <div class="vip-card-title">Upgrade ke VIP</div>
+      <div class="vip-card-sub">Bebas iklan, akses semua episode HD</div>
       <button class="vip-card-btn">Mulai dari Rp 2.000/hari</button>
     </div>
     <div class="pmenu">
       <button class="pitem" onclick="toast('Favorit kamu')">
-        <span class="pitem-ico">❤️</span>
+        <div class="pitem-ico"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
         <div class="pitem-txt"><div class="pitem-label">Favorit Saya</div><div class="pitem-sub" id="fav-lbl">0 drama</div></div>
-        <span>›</span>
+        <svg class="pitem-arr" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
       <button class="pitem" onclick="toast('Riwayat tonton')">
-        <span class="pitem-ico">📺</span>
+        <div class="pitem-ico"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg></div>
         <div class="pitem-txt"><div class="pitem-label">Riwayat Tonton</div><div class="pitem-sub" id="hist-lbl">0 drama</div></div>
-        <span>›</span>
+        <svg class="pitem-arr" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
       <button class="pitem" onclick="toast('Program Afiliasi')">
-        <span class="pitem-ico">🤝</span>
+        <div class="pitem-ico"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
         <div class="pitem-txt"><div class="pitem-label">Program Afiliasi</div><div class="pitem-sub">Dapatkan komisi</div></div>
-        <span>›</span>
+        <svg class="pitem-arr" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
       <button class="pitem" onclick="toast('Pengaturan')">
-        <span class="pitem-ico">⚙️</span>
+        <div class="pitem-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
         <div class="pitem-txt"><div class="pitem-label">Pengaturan</div><div class="pitem-sub">Akun & notifikasi</div></div>
-        <span>›</span>
+        <svg class="pitem-arr" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
       <button class="pitem" onclick="toast('Admin')">
-        <span class="pitem-ico">💬</span>
+        <div class="pitem-ico"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
         <div class="pitem-txt"><div class="pitem-label">Hubungi Admin</div><div class="pitem-sub">Bantuan & dukungan</div></div>
-        <span>›</span>
+        <svg class="pitem-arr" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
     </div>
-    <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px;font-weight:600">DramaCin v2.0</div>
+    <div style="text-align:center;color:var(--sub);font-size:11px;padding:8px;font-weight:600">DramaCin v2.1</div>
     <div style="height:70px"></div>
   </div>
 </div>
 
 <!-- ══ BOTTOM NAV ══ -->
 <nav class="bnav" id="bnav">
-  <button class="nitem active" id="nav-home" onclick="switchNav('home')"><span class="ni">🏠</span>Home</button>
-  <button class="nitem" id="nav-search" onclick="switchNav('search')"><span class="ni">🔍</span>Pencarian</button>
-  <button class="nitem" id="nav-rank" onclick="switchNav('rank')"><span class="ni">🏆</span>Ranking</button>
-  <button class="nitem" id="nav-profile" onclick="switchNav('profile')"><span class="ni">👤</span>Profil</button>
+  <button class="nitem active" id="nav-home" onclick="switchNav('home')">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </button>
+  <button class="nitem" id="nav-search" onclick="switchNav('search')">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    Pencarian
+  </button>
+  <button class="nitem" id="nav-rank" onclick="switchNav('rank')">
+    <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+    Ranking
+  </button>
+  <button class="nitem" id="nav-profile" onclick="switchNav('profile')">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profil
+  </button>
 </nav>
 
 <div class="toast" id="toast-el"></div>
@@ -490,19 +493,21 @@ const LANG  = 'in';
 // STATE
 // ═══════════════════════════════════════════════════════
 let cur        = 'home';
-let history_   = [];
+let navHistory = [];
 let bookId     = null;
 let curEp      = 1;
 let maxEp      = 1;
 let chapters_  = [];
-let favs       = JSON.parse(localStorage.getItem('favs')  || '[]');
-let hist       = JSON.parse(localStorage.getItem('hist')  || '[]');
+let favs       = JSON.parse(localStorage.getItem('favs') || '[]');
+let hist       = JSON.parse(localStorage.getItem('hist') || '[]');
 let homeOk=false, rankOk=false, trendOk=false;
-let isMuted    = false;
-let epSheetOpen= false;
-const vidEl    = document.getElementById('mainVideo');
-const seekEl   = document.getElementById('seekbar');
-let seekDragging = false;
+let detailDrama = null;
+let currentDrama = null;
+let epSheetOpen = false;
+
+// Feed-specific: track slides built
+let feedSlides = [];   // array of {ep, videoUrl, loaded}
+let feedBuildId = null; // current drama's build session id (prevents stale builds)
 
 // ═══════════════════════════════════════════════════════
 // TELEGRAM
@@ -533,7 +538,7 @@ const getList = d =>
   (Array.isArray(g(d,'data'))?g(d,'data'):null) || [];
 
 // ═══════════════════════════════════════════════════════
-// NAV
+// PALETTES / COVER
 // ═══════════════════════════════════════════════════════
 const PALETTES = [
   'linear-gradient(135deg,#667eea,#764ba2)',
@@ -549,23 +554,26 @@ function coverHtml(d, cls='dcard-img'){
   const cov = gf(d,'coverUrl','cover','coverImg','image','pic');
   const ttl = gf(d,'bookName','name','title');
   const ep  = gf(d,'chapterCount','episodeCount','totalChapter');
+  const fillerSvg = `<svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`;
   if(cov) return `<div class="${cls}" style="position:relative">
     <img src="${cov}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy"
-      onerror="this.parentNode.innerHTML='<div class=cph style=background:${pal(ttl)}>🎬<br><small>${ttl.slice(0,25)}</small></div>'">
+      onerror="this.parentNode.innerHTML='<div class=cph style=background:${pal(ttl)}>${fillerSvg}<small>${ttl.slice(0,22)}</small></div>'">
     ${ep?`<span class="ep-badge">${ep} Ep</span>`:''}
   </div>`;
-  return `<div class="${cls}"><div class="cph" style="background:${pal(ttl)}">🎬<br><small>${ttl.slice(0,30)}</small>${ep?`<br><small style="opacity:.7">${ep} Ep</small>`:''}</div></div>`;
+  return `<div class="${cls}"><div class="cph" style="background:${pal(ttl)}">${fillerSvg}<small>${ttl.slice(0,28)}</small>${ep?`<br><small style="opacity:.65">${ep} Ep</small>`:''}</div></div>`;
 }
 
+// ═══════════════════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════════════════
 function switchNav(name){
   if(cur===name && !['detail','watch'].includes(cur)) return;
-  const old = document.getElementById('screen-'+cur);
-  if(old) old.classList.remove('active');
+  document.getElementById('screen-'+cur).classList.remove('active');
   document.getElementById('bnav').style.display='flex';
   ['home','search','rank','profile'].forEach(n=>
     document.getElementById('nav-'+n).classList.toggle('active',n===name));
-  if(!['detail','watch'].includes(cur)) history_=[cur];
-  cur = name;
+  if(!['detail','watch'].includes(cur)) navHistory=[cur];
+  cur=name;
   document.getElementById('screen-'+name).classList.add('active');
   if(name==='home'   && !homeOk)  loadHome();
   if(name==='rank'   && !rankOk)  loadRank();
@@ -573,14 +581,13 @@ function switchNav(name){
 }
 
 function goBack(){
-  // pause video if leaving watch
-  if(cur==='watch') vidEl.pause();
-  const prev = history_.pop() || 'home';
+  if(cur==='watch') pauseAllVideos();
+  const prev = navHistory.pop() || 'home';
   document.getElementById('screen-'+cur).classList.remove('active');
   document.getElementById('bnav').style.display='flex';
   ['home','search','rank','profile'].forEach(n=>
     document.getElementById('nav-'+n).classList.toggle('active',n===prev));
-  cur = prev;
+  cur=prev;
   document.getElementById('screen-'+prev).classList.add('active');
 }
 
@@ -593,25 +600,24 @@ async function loadHome(){
   const list = getList(d);
   if(list.length){
     const h=list[0];
-    document.getElementById('hero-title').textContent = gf(h,'bookName','name','title');
-    const ep=gf(h,'chapterCount','episodeCount'), sc=gf(h,'score','rating');
-    document.getElementById('hero-meta').innerHTML =
-      `${ep?`<span>${ep} Ep</span>`:''}${sc?`<span>⭐${sc}</span>`:''}`;
-    document.getElementById('hero-btn').onclick=()=>openDetail(h);
-
     const cover = gf(h,'coverUrl','cover','coverImg');
+    const ttl   = gf(h,'bookName','name','title');
+    const ep    = gf(h,'chapterCount','episodeCount');
+    const sc    = gf(h,'score','rating');
+    const hw    = document.getElementById('hero-wrap');
     if(cover){
-      const hw = document.getElementById('hero-wrap');
       hw.innerHTML = `<img class="hero-img" src="${cover}">
         <div class="hero-grad"></div>
         <div class="hero-body">
           <div class="hero-row">
             <div>
-              <div class="hero-badge">🔥 Trending</div>
-              <div class="hero-title">${gf(h,'bookName','name','title')}</div>
-              <div>${ep?`<span style="font-size:11px;color:rgba(255,255,255,.75);font-weight:600">${ep} Ep  </span>`:''}${sc?`<span style="font-size:11px;color:rgba(255,255,255,.75);font-weight:600">⭐${sc}</span>`:''}</div>
+              <div class="hero-tag">Trending</div>
+              <div class="hero-title">${ttl}</div>
+              <div class="hero-meta">${ep?`<span>${ep} Ep</span>`:''}${sc?`<span>${sc}</span>`:''}</div>
             </div>
-            <button class="hero-btn" onclick='openDetail(${JSON.stringify(h)})'>▶ Tonton</button>
+            <button class="hero-btn" onclick='openDetail(${JSON.stringify(h)})'>
+              <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>Tonton
+            </button>
           </div>
         </div>`;
     }
@@ -621,11 +627,11 @@ async function loadHome(){
       return `<div class="dcard" onclick='openDetail(${JSON.stringify(d)})'>
         ${coverHtml(d)}
         <div class="dcard-title">${t}</div>
-        ${sc?`<div class="dcard-star">⭐${sc}</div>`:''}
+        ${sc?`<div class="dcard-sub">${sc} / 10</div>`:''}
       </div>`;
     }).join('');
   } else {
-    document.getElementById('popular-list').innerHTML='<div class="empty"><div class="empty-ico">📡</div><div class="empty-txt">Gagal memuat</div></div>';
+    document.getElementById('popular-list').innerHTML='<div class="empty"><div class="empty-ico"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.23h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.73a16 16 0 0 0 6.29 6.29l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div><div class="empty-txt">Gagal memuat</div></div>';
   }
 
   const nd = await apiFetch(`new/1?lang=${LANG}`);
@@ -636,10 +642,10 @@ async function loadHome(){
         return `<div class="dcard" onclick='openDetail(${JSON.stringify(d)})'>
           ${coverHtml(d)}
           <div class="dcard-title">${t}</div>
-          ${sc?`<div class="dcard-star">⭐${sc}</div>`:''}
+          ${sc?`<div class="dcard-sub">${sc} / 10</div>`:''}
         </div>`;
       }).join('')
-    : '<div class="empty"><div class="empty-ico">📺</div><div class="empty-txt">Tidak ada data</div></div>';
+    : '<div class="empty"><div class="empty-ico"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg></div><div class="empty-txt">Tidak ada data</div></div>';
 }
 
 // ═══════════════════════════════════════════════════════
@@ -650,7 +656,7 @@ async function loadRank(){
   const d=await apiFetch(`rank/1?lang=${LANG}`);
   const list=getList(d);
   const el=document.getElementById('rank-list');
-  if(!list.length){el.innerHTML='<div class="empty"><div class="empty-ico">🏆</div><div class="empty-txt">Gagal memuat</div></div>';return}
+  if(!list.length){el.innerHTML='<div class="empty"><div class="empty-ico"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg></div><div class="empty-txt">Gagal memuat</div></div>';return}
   el.innerHTML=list.slice(0,20).map((d,i)=>{
     const t=gf(d,'bookName','name','title'), sc=gf(d,'score','rating'), ep=gf(d,'chapterCount','episodeCount');
     const nc=i===0?'g':i===1?'s':i===2?'b':'n';
@@ -658,9 +664,9 @@ async function loadRank(){
     return `<div class="rcard" onclick='openDetail(${JSON.stringify(d)})'>
       <div class="rnum ${nc}">${i+1}</div>
       ${cov?`<img class="rcov" src="${cov}" loading="lazy" onerror="this.style.background='${pal(t)}'">`:
-        `<div class="rcov" style="background:${pal(t)};display:flex;align-items:center;justify-content:center;font-size:22px">🎬</div>`}
-      <div class="rinfo"><div class="rtitle">${t}</div><div class="rmeta">${ep?ep+' Ep':'Drama China'}</div></div>
-      ${sc?`<div class="rscore">⭐${sc}</div>`:''}
+        `<div class="rcov" style="background:${pal(t)}"></div>`}
+      <div class="rinfo"><div class="rtitle">${t}</div><div class="rmeta">${ep?ep+' Episode':'Drama China'}</div></div>
+      ${sc?`<div class="rscore">${sc}</div>`:''}
     </div>`;
   }).join('');
 }
@@ -673,12 +679,12 @@ async function loadTrend(){
   const d=await apiFetch(`rank/1?lang=${LANG}`);
   const list=getList(d);
   const el=document.getElementById('trending-grid');
-  if(!list.length){el.innerHTML='<div style="grid-column:span 2;text-align:center;color:var(--muted);padding:20px">Gagal memuat</div>';return}
+  if(!list.length){el.innerHTML='<div style="grid-column:span 2;text-align:center;color:var(--sub);padding:20px;font-size:13px">Gagal memuat</div>';return}
   el.innerHTML=list.slice(0,6).map((d,i)=>{
     const t=gf(d,'bookName','name','title'), cov=gf(d,'coverUrl','cover','coverImg');
     return `<div class="gcrd" onclick='openDetail(${JSON.stringify(d)})'>
       <div class="gcrd-img">${cov?`<img src="${cov}" style="width:100%;height:100%;object-fit:cover" loading="lazy">`:
-        `<div style="width:100%;height:100%;background:${pal(t)};display:flex;align-items:center;justify-content:center;font-size:36px">🎬</div>`}
+        `<div style="width:100%;height:100%;background:${pal(t)}"></div>`}
         <div class="grank">#${i+1}</div>
       </div>
       <div class="gcrd-title">${t}</div>
@@ -691,19 +697,19 @@ async function searchKw(kw){
   document.getElementById('sinput').value=kw;
   document.getElementById('stags-sec').style.display='none';
   document.getElementById('sresults-sec').style.display='block';
-  document.getElementById('sresult-title').textContent=`🔍 "${kw}"`;
+  document.getElementById('sresult-title').textContent=`"${kw}"`;
   document.getElementById('sresults').innerHTML='<div class="loader"><div class="spinner"></div></div>';
   const d=await apiFetch(`search/${encodeURIComponent(kw)}/1?lang=${LANG}&pageSize=20`);
   const list=getList(d);
-  if(!list.length){document.getElementById('sresults').innerHTML='<div class="empty"><div class="empty-ico">🔍</div><div class="empty-txt">Tidak ditemukan</div></div>';return}
+  if(!list.length){document.getElementById('sresults').innerHTML='<div class="empty"><div class="empty-ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div class="empty-txt">Tidak ditemukan</div></div>';return}
   document.getElementById('sresults').innerHTML=list.slice(0,20).map(d=>{
     const t=gf(d,'bookName','name','title'), sc=gf(d,'score','rating'), ep=gf(d,'chapterCount','episodeCount');
     const cov=gf(d,'coverUrl','cover','coverImg');
     return `<div class="rcard" onclick='openDetail(${JSON.stringify(d)})'>
       ${cov?`<img class="rcov" src="${cov}" loading="lazy">`:
-        `<div class="rcov" style="background:${pal(t)};display:flex;align-items:center;justify-content:center;font-size:22px">🎬</div>`}
-      <div class="rinfo"><div class="rtitle">${t}</div><div class="rmeta">${ep?ep+' Ep':'Drama China'}</div></div>
-      ${sc?`<div class="rscore">⭐${sc}</div>`:''}
+        `<div class="rcov" style="background:${pal(t)}"></div>`}
+      <div class="rinfo"><div class="rtitle">${t}</div><div class="rmeta">${ep?ep+' Episode':'Drama China'}</div></div>
+      ${sc?`<div class="rscore">${sc}</div>`:''}
     </div>`;
   }).join('');
 }
@@ -716,10 +722,9 @@ function clearSearch(){
 // ═══════════════════════════════════════════════════════
 // DETAIL
 // ═══════════════════════════════════════════════════════
-let detailDrama = null;
 function openDetail(drama){
-  history_.push(cur);
-  detailDrama = drama;
+  navHistory.push(cur);
+  detailDrama=drama;
   const id=gf(drama,'bookId','id');
   const ttl=gf(drama,'bookName','name','title');
   const desc=gf(drama,'introduce','description','intro','synopsis')||'Tidak ada deskripsi.';
@@ -731,11 +736,12 @@ function openDetail(drama){
   document.getElementById('det-desc').textContent=desc;
   document.getElementById('det-desc').className='det-desc col';
   document.getElementById('det-meta').innerHTML=
-    [sc?`<span class="det-badge">⭐ ${sc}</span>`:'',
-     ep?`<span class="det-badge">📺 ${ep} Episode</span>`:'',
-     `<span class="det-badge">🇨🇳 Drama China</span>`].filter(Boolean).join('');
+    [sc?`<span class="det-badge">${sc} / 10</span>`:'',
+     ep?`<span class="det-badge">${ep} Episode</span>`:'',
+     `<span class="det-badge">Drama China</span>`].filter(Boolean).join('');
   if(cov){document.getElementById('det-cover').src=cov;document.getElementById('det-thumb').src=cov;}
-  document.getElementById('det-fav-btn').textContent=favs.includes(id)?'❤️':'🤍';
+  const favBtn=document.getElementById('det-fav-btn');
+  favBtn.className='btn-sec'+(favs.includes(id)?' faved':'');
   document.getElementById('det-watch-btn').onclick=()=>watchEp(id,1,ttl,drama);
   loadChapters(id,ttl);
 
@@ -745,13 +751,14 @@ function openDetail(drama){
   cur='detail';
   document.getElementById('screen-detail').classList.add('active');
 }
+
 async function loadChapters(id,ttl){
   const el=document.getElementById('det-ep-grid');
   el.innerHTML='<div class="loader" style="grid-column:span 5"><div class="spinner"></div></div>';
   const d=await apiFetch(`chapters/${id}?lang=${LANG}`);
-  chapters_ = g(d,'data','chapterList') || g(d,'data','list') || getList(d) || [];
+  chapters_=g(d,'data','chapterList')||g(d,'data','list')||getList(d)||[];
   maxEp=chapters_.length;
-  if(!chapters_.length){el.innerHTML='<div style="grid-column:span 5;text-align:center;color:var(--muted);padding:20px">Episode tidak tersedia</div>';return}
+  if(!chapters_.length){el.innerHTML='<div style="grid-column:span 5;text-align:center;color:var(--sub);padding:20px;font-size:13px">Episode tidak tersedia</div>';return}
   el.innerHTML=chapters_.slice(0,60).map((ch,i)=>{
     const n=gf(ch,'chapterNo','episodeNo')||(i+1);
     return `<button class="ep-btn" onclick="watchEp('${id}',${n},'${ttl}',null)">${n}</button>`;
@@ -760,165 +767,15 @@ async function loadChapters(id,ttl){
 
 function toggleDesc(){
   const el=document.getElementById('det-desc'),btn=document.getElementById('readmore-btn');
-  if(el.classList.contains('col')){el.classList.remove('col');btn.textContent='Sembunyikan ‹';}
-  else{el.classList.add('col');btn.textContent='Selengkapnya ›';}
+  if(el.classList.contains('col')){el.classList.remove('col');btn.textContent='Sembunyikan';}
+  else{el.classList.add('col');btn.textContent='Selengkapnya';}
 }
 
-// ═══════════════════════════════════════════════════════
-// 🎬 TIKTOK VIDEO PLAYER
-// ═══════════════════════════════════════════════════════
-let currentDrama = null;
-async function watchEp(id, ep, title, dramaObj){
-  history_.push(cur);
-  bookId=id; curEp=Number(ep);
-  currentDrama = dramaObj || detailDrama;
-
-  // Switch to watch screen
-  document.getElementById('screen-'+cur).classList.remove('active');
-  document.getElementById('bnav').style.display='none'; // hide nav for immersive
-  ['home','search','rank','profile'].forEach(n=>document.getElementById('nav-'+n).classList.remove('active'));
-  cur='watch';
-  document.getElementById('screen-watch').classList.add('active');
-
-  // Reset UI
-  document.getElementById('v-title').textContent = title || 'Loading...';
-  document.getElementById('v-ep-label').textContent = `Episode ${ep}`;
-  document.getElementById('ep-num-label').textContent = `Ep ${ep}`;
-  document.getElementById('v-desc').textContent = '';
-  document.getElementById('vbuf').style.display='flex';
-  document.getElementById('seekbar').value=0;
-  document.getElementById('time-cur').textContent='0:00';
-  document.getElementById('time-dur').textContent='0:00';
-
-  // Nav buttons state
-  document.getElementById('prev-btn').style.opacity = ep<=1?'0.4':'1';
-  document.getElementById('prev-btn').disabled = ep<=1;
-
-  // Fav state
-  document.getElementById('v-fav-icon').textContent = favs.includes(id)?'❤️':'🤍';
-
-  // Fill episode sheet
-  if(chapters_.length){
-    document.getElementById('ep-sheet-title').textContent = title||'Episode';
-    document.getElementById('ep-sheet-grid').innerHTML = chapters_.slice(0,80).map((ch,i)=>{
-      const n=gf(ch,'chapterNo','episodeNo')||(i+1);
-      return `<button class="ep-sht-btn ${n==ep?'active':''}" onclick="watchEp('${id}',${n},'${title}',null);toggleEpSheet()">${n}</button>`;
-    }).join('');
-  }
-
-  // Set desc
-  const desc = currentDrama ? gf(currentDrama,'introduce','description','intro','synopsis') : '';
-  document.getElementById('v-desc').textContent = desc ? desc.slice(0,100)+'…' : '';
-
-  // Fetch video
-  const data = await apiFetch(`watch/${id}/${ep}?lang=${LANG}&direction=1`);
-  const videoUrl =
-    g(data,'data','videoUrl') || g(data,'data','url') || g(data,'data','playUrl') ||
-    g(data,'data','streamUrl') || g(data,'data','m3u8Url') || g(data,'data','mp4Url') || null;
-
-  const dramaTitle = g(data,'data','bookName') || g(data,'data','name') || title;
-  document.getElementById('v-title').textContent = dramaTitle || title;
-
-  if(videoUrl){
-    vidEl.src = videoUrl;
-    vidEl.load();
-    // try autoplay
-    vidEl.play().catch(()=>{
-      // autoplay blocked - show big play button hint
-      showFlash('▶️');
-      document.getElementById('vbuf').style.display='none';
-    });
-  } else {
-    document.getElementById('vbuf').style.display='none';
-    toast('⚠️ Video episode ini belum tersedia');
-    showFlash('⚠️');
-  }
-
-  // Save history
-  if(!hist.includes(id)){hist.unshift(id);if(hist.length>50)hist.pop();localStorage.setItem('hist',JSON.stringify(hist));updateCounts();}
-}
-
-// Play / Pause on tap
-function tapPlayPause(){
-  if(epSheetOpen){toggleEpSheet();return}
-  if(vidEl.paused||vidEl.ended){ vidEl.play(); showFlash('▶️'); }
-  else{ vidEl.pause(); showFlash('⏸️'); }
-}
-
-function showFlash(icon){
-  const el=document.getElementById('vflash'), ico=document.getElementById('vflash-icon');
-  ico.textContent=icon; el.classList.remove('show');
-  void el.offsetWidth; el.classList.add('show');
-}
-
-function showBuf(){ document.getElementById('vbuf').style.display='flex'; }
-function hideBuf(){ document.getElementById('vbuf').style.display='none'; }
-
-function onVideoEnded(){
-  // Auto next episode
-  if(chapters_.length && curEp<maxEp){ changeEp(1); }
-  else{ showFlash('🔚'); }
-}
-function onVideoError(){
-  hideBuf();
-  toast('⚠️ Gagal memutar video');
-  showFlash('❌');
-}
-
-// Seek bar
-function onTimeUpdate(){
-  if(seekDragging) return;
-  const cur_=vidEl.currentTime, dur=vidEl.duration||0;
-  if(dur>0) seekEl.value=(cur_/dur)*100;
-  document.getElementById('time-cur').textContent=fmt(cur_);
-  document.getElementById('time-dur').textContent=fmt(dur);
-}
-function onSeekInput(){ seekDragging=true; const dur=vidEl.duration||0; if(dur>0){const t=(seekEl.value/100)*dur;document.getElementById('time-cur').textContent=fmt(t);} }
-function onSeekChange(){ seekDragging=false; const dur=vidEl.duration||0; if(dur>0) vidEl.currentTime=(seekEl.value/100)*dur; }
-function fmt(s){ const m=Math.floor((s||0)/60),sec=Math.floor((s||0)%60); return `${m}:${sec<10?'0':''}${sec}`; }
-
-function changeEp(dir){
-  const ne=curEp+dir;
-  if(ne<1||(!chapters_.length&&ne>999)) return;
-  if(chapters_.length&&ne>chapters_.length) return;
-  const title=document.getElementById('v-title').textContent;
-  watchEp(bookId,ne,title,currentDrama);
-}
-
-function toggleMute(){
-  isMuted=!isMuted; vidEl.muted=isMuted;
-  document.getElementById('v-mute-icon').textContent=isMuted?'🔇':'🔊';
-  document.getElementById('v-mute-label').textContent=isMuted?'Mute':'Suara';
-  toast(isMuted?'🔇 Suara dimatikan':'🔊 Suara dinyalakan');
-}
-
-function toggleEpSheet(){
-  epSheetOpen=!epSheetOpen;
-  document.getElementById('ep-sheet').classList.toggle('open',epSheetOpen);
-  document.getElementById('ep-sheet-backdrop').style.display=epSheetOpen?'block':'none';
-}
-
-function toggleFullscreen(){
-  const el=document.getElementById('screen-watch');
-  if(!document.fullscreenElement){ el.requestFullscreen?.(); document.getElementById('v-fs-icon').textContent='⊡'; }
-  else{ document.exitFullscreen?.(); document.getElementById('v-fs-icon').textContent='⛶'; }
-}
-
-function toggleFavWatch(){
-  const id=bookId;
-  if(favs.includes(id)){ favs=favs.filter(f=>f!==id); document.getElementById('v-fav-icon').textContent='🤍'; toast('Dihapus dari favorit'); }
-  else{ favs.unshift(id); document.getElementById('v-fav-icon').textContent='❤️'; toast('Ditambahkan ke favorit ❤️'); }
-  localStorage.setItem('favs',JSON.stringify(favs)); updateCounts();
-}
-
-// ═══════════════════════════════════════════════════════
-// FAVORITES
-// ═══════════════════════════════════════════════════════
 function toggleFav(){
-  const id=bookId, btn=document.getElementById('det-fav-btn');
-  if(favs.includes(id)){ favs=favs.filter(f=>f!==id); btn.textContent='🤍'; toast('Dihapus dari favorit'); }
-  else{ favs.unshift(id); btn.textContent='❤️'; toast('Ditambahkan ke favorit ❤️'); }
-  localStorage.setItem('favs',JSON.stringify(favs)); updateCounts();
+  const id=bookId,btn=document.getElementById('det-fav-btn');
+  if(favs.includes(id)){favs=favs.filter(f=>f!==id);btn.className='btn-sec';toast('Dihapus dari favorit');}
+  else{favs.unshift(id);btn.className='btn-sec faved';toast('Ditambahkan ke favorit');}
+  localStorage.setItem('favs',JSON.stringify(favs));updateCounts();
 }
 function updateCounts(){
   document.getElementById('fav-lbl').textContent  = favs.length+' drama';
@@ -926,10 +783,342 @@ function updateCounts(){
 }
 
 // ═══════════════════════════════════════════════════════
+// TIKTOK VERTICAL FEED PLAYER
+// ═══════════════════════════════════════════════════════
+
+function pauseAllVideos(){
+  document.querySelectorAll('.slide-video').forEach(v=>v.pause());
+}
+
+/*
+  Build the TikTok feed starting from a given episode.
+  We pre-build N slides but load video URLs lazily (on demand / IntersectionObserver).
+*/
+async function watchEp(id, ep, title, dramaObj){
+  navHistory.push(cur);
+  bookId=id; curEp=Number(ep);
+  currentDrama = dramaObj || detailDrama;
+
+  // Switch to watch screen immediately
+  document.getElementById('screen-'+cur).classList.remove('active');
+  document.getElementById('bnav').style.display='none';
+  ['home','search','rank','profile'].forEach(n=>document.getElementById('nav-'+n).classList.remove('active'));
+  cur='watch';
+  document.getElementById('screen-watch').classList.add('active');
+
+  // History
+  if(!hist.includes(id)){hist.unshift(id);if(hist.length>50)hist.pop();localStorage.setItem('hist',JSON.stringify(hist));updateCounts();}
+
+  // Fetch chapters if needed
+  if(!chapters_.length || chapters_[0].__bookId !== id){
+    const d=await apiFetch(`chapters/${id}?lang=${LANG}`);
+    const chs=g(d,'data','chapterList')||g(d,'data','list')||getList(d)||[];
+    chs.forEach(c=>c.__bookId=id);
+    chapters_=chs;
+    maxEp=chapters_.length;
+  }
+  buildFeed(id, Number(ep), title);
+}
+
+function buildFeed(id, startEp, title){
+  const wrap = document.getElementById('feed-wrap');
+  wrap.innerHTML=''; // clear old slides
+  feedSlides=[];
+  feedBuildId = id+'_'+Date.now();
+  const sessionId = feedBuildId;
+
+  // We create slides from startEp to maxEp (or +30 if maxEp unknown)
+  const total = maxEp || startEp+29;
+  const drama = currentDrama;
+
+  for(let ep=startEp; ep<=Math.min(total, startEp+49); ep++){
+    const slide = createSlide(id, ep, title, drama, ep===startEp);
+    wrap.appendChild(slide);
+    feedSlides.push({ep, el:slide, loaded:false, playing:false});
+  }
+
+  // Scroll to first slide (ep already at top)
+  wrap.scrollTop=0;
+
+  // Observe slides for lazy video loading
+  startFeedObserver(id, title, sessionId);
+}
+
+function createSlide(id, ep, title, drama, isFirst){
+  const slide = document.createElement('div');
+  slide.className='feed-slide';
+  slide.dataset.ep=ep;
+  slide.dataset.bookId=id;
+
+  // Skeleton / placeholder while video loads
+  const cov = drama ? gf(drama,'coverUrl','cover','coverImg') : '';
+  slide.innerHTML=`
+    ${cov?`<img src="${cov}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(18px) brightness(.4);transform:scale(1.05)">`:
+      `<div style="position:absolute;inset:0;background:${pal(title)}"></div>`}
+
+    <video class="slide-video" playsinline webkit-playsinline preload="${isFirst?'auto':'none'}"
+      data-ep="${ep}" data-bookid="${id}"
+      onwaiting="this.closest('.feed-slide').querySelector('.slide-buf').style.display='flex'"
+      oncanplay="this.closest('.feed-slide').querySelector('.slide-buf').style.display='none'"
+      onplaying="this.closest('.feed-slide').querySelector('.slide-buf').style.display='none'"
+      ontimeupdate="onSlideTimeUpdate(this)"
+      onended="onSlideEnded(this)">
+    </video>
+
+    <!-- Buffering -->
+    <div class="vbuf slide-buf" style="display:${isFirst?'flex':'none'}"><div class="vspin"></div></div>
+
+    <!-- Tap overlay -->
+    <div class="tap-overlay" onclick="tapSlide(this.closest('.feed-slide'))"></div>
+
+    <!-- Flash -->
+    <div class="v-flash slide-flash"><div class="v-flash-icon">
+      <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3" fill="white"/></svg>
+    </div></div>
+
+    <!-- Top gradient -->
+    <div class="vgrad-top"></div>
+
+    <!-- Episode pill -->
+    <div class="v-ep-pill slide-ep-pill">Episode ${ep}</div>
+
+    <!-- Bottom gradient -->
+    <div class="vgrad-bot"></div>
+
+    <!-- Seekbar -->
+    <div class="seekbar-wrap" style="bottom:68px">
+      <input type="range" class="seekbar slide-seek" value="0" min="0" max="100" step="0.1"
+        oninput="onSlideSeekInput(this)" onchange="onSlideSeekChange(this)">
+      <div class="time-row">
+        <span class="slide-time-cur">0:00</span>
+        <span class="slide-time-dur">0:00</span>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="v-info">
+      <div class="v-drama-title">${title||''}</div>
+      <div class="v-ep-label">Episode ${ep}</div>
+      <div class="v-desc slide-vdesc">${drama?gf(drama,'introduce','description','intro','synopsis','').slice(0,90):''}</div>
+    </div>
+
+    <!-- Right actions -->
+    <div class="v-actions">
+      <button class="v-act-btn" onclick="toggleFavSlide('${id}',this)">
+        <div class="v-act-icon slide-fav-icon ${favs.includes(id)?'faved':''}">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <span class="v-act-label">Favorit</span>
+      </button>
+      <button class="v-act-btn" onclick="toggleMuteSlide(this)">
+        <div class="v-act-icon slide-mute-icon">
+          <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        </div>
+        <span class="v-act-label">Suara</span>
+      </button>
+      <button class="v-act-btn" onclick="openEpSheetSlide('${id}','${title}')">
+        <div class="v-act-icon">
+          <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </div>
+        <span class="v-act-label">Episode</span>
+      </button>
+    </div>
+
+    <!-- Ep nav -->
+    <div class="ep-nav">
+      <button class="ep-nav-btn" onclick="jumpEpFeed(-1,this)" ${ep<=1?'style="opacity:.4"':''} ${ep<=1?'disabled':''}>
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Sebelumnya
+      </button>
+      <span class="ep-num-pill">Ep ${ep}</span>
+      <button class="ep-nav-btn primary" onclick="jumpEpFeed(1,this)">
+        Berikutnya<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6" style="transform:rotate(180deg);transform-origin:center"/></svg>
+      </button>
+    </div>
+
+    <!-- Episode bottom sheet (per slide) -->
+    <div class="ep-sheet slide-ep-sheet" id="ep-sheet-${ep}">
+      <div class="ep-sheet-handle"></div>
+      <div class="ep-sheet-title">${title||''}</div>
+      <div class="ep-sheet-grid" id="ep-sheet-grid-${ep}"></div>
+    </div>
+    <div class="ep-sheet-backdrop" onclick="closeEpSheet(${ep})"
+      style="display:none;position:absolute;inset:0;z-index:38"></div>
+  `;
+  return slide;
+}
+
+// IntersectionObserver: play video when slide enters viewport
+let feedObserver = null;
+function startFeedObserver(id, title, sessionId){
+  if(feedObserver) feedObserver.disconnect();
+  feedObserver = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      const slide = entry.target;
+      const vid   = slide.querySelector('.slide-video');
+      const ep    = Number(slide.dataset.ep);
+      if(entry.isIntersecting){
+        curEp = ep;
+        // Load video if not already
+        if(!vid.src && feedBuildId===sessionId){
+          loadSlideVideo(vid, id, ep);
+        } else if(vid.src){
+          vid.play().catch(()=>{});
+        }
+        // Pause all others
+        document.querySelectorAll('.slide-video').forEach(v=>{
+          if(v!==vid) v.pause();
+        });
+      } else {
+        vid.pause();
+      }
+    });
+  },{threshold:0.6});
+
+  document.querySelectorAll('.feed-slide').forEach(s=>feedObserver.observe(s));
+}
+
+async function loadSlideVideo(vid, id, ep){
+  const slide = vid.closest('.feed-slide');
+  const buf   = slide.querySelector('.slide-buf');
+  buf.style.display='flex';
+
+  const data = await apiFetch(`watch/${id}/${ep}?lang=${LANG}&direction=1`);
+  const url  =
+    g(data,'data','videoUrl') || g(data,'data','url') || g(data,'data','playUrl') ||
+    g(data,'data','streamUrl') || g(data,'data','m3u8Url') || g(data,'data','mp4Url') || null;
+
+  if(url){
+    vid.src=url;
+    vid.load();
+    vid.play().catch(()=>{showSlideFlash(slide,false);buf.style.display='none';});
+  } else {
+    buf.style.display='none';
+    toast('Video episode '+ep+' belum tersedia');
+  }
+}
+
+// Tap to play/pause
+function tapSlide(slide){
+  const sheet = slide.querySelector('.slide-ep-sheet');
+  if(sheet && sheet.classList.contains('open')){ sheet.classList.remove('open');slide.querySelector('.ep-sheet-backdrop').style.display='none';return; }
+  const vid = slide.querySelector('.slide-video');
+  if(vid.paused||vid.ended){ vid.play(); showSlideFlash(slide,true); }
+  else { vid.pause(); showSlideFlash(slide,false); }
+}
+
+function showSlideFlash(slide,playing){
+  const f = slide.querySelector('.slide-flash');
+  const icon = f.querySelector('svg');
+  if(!playing) icon.innerHTML='<rect x="6" y="4" width="4" height="16" fill="white"/><rect x="14" y="4" width="4" height="16" fill="white"/>';
+  else icon.innerHTML='<polygon points="5 3 19 12 5 21 5 3" fill="white"/>';
+  f.classList.remove('show');
+  void f.offsetWidth;
+  f.classList.add('show');
+}
+
+// Seekbar
+function onSlideTimeUpdate(vid){
+  const slide=vid.closest('.feed-slide');
+  const dur=vid.duration||0,cur_=vid.currentTime;
+  if(dur>0) slide.querySelector('.slide-seek').value=(cur_/dur)*100;
+  slide.querySelector('.slide-time-cur').textContent=fmtTime(cur_);
+  slide.querySelector('.slide-time-dur').textContent=fmtTime(dur);
+}
+function onSlideSeekInput(seek){
+  const slide=seek.closest('.feed-slide');
+  const vid=slide.querySelector('.slide-video');
+  const dur=vid.duration||0;
+  if(dur>0) slide.querySelector('.slide-time-cur').textContent=fmtTime((seek.value/100)*dur);
+}
+function onSlideSeekChange(seek){
+  const slide=seek.closest('.feed-slide');
+  const vid=slide.querySelector('.slide-video');
+  const dur=vid.duration||0;
+  if(dur>0) vid.currentTime=(seek.value/100)*dur;
+}
+function fmtTime(s){const m=Math.floor((s||0)/60),sec=Math.floor((s||0)%60);return `${m}:${sec<10?'0':''}${sec}`}
+
+// Auto-next on ended
+function onSlideEnded(vid){
+  const slide=vid.closest('.feed-slide');
+  const ep=Number(slide.dataset.ep);
+  // scroll to next slide
+  const wrap=document.getElementById('feed-wrap');
+  const nextSlide=wrap.querySelector(`.feed-slide[data-ep="${ep+1}"]`);
+  if(nextSlide) nextSlide.scrollIntoView({behavior:'smooth'});
+}
+
+// Jump ep (prev/next button)
+function jumpEpFeed(dir, btn){
+  const slide = btn.closest('.feed-slide');
+  const ep    = Number(slide.dataset.ep);
+  const target= ep+dir;
+  if(target<1) return;
+  const wrap  = document.getElementById('feed-wrap');
+  const existSlide = wrap.querySelector(`.feed-slide[data-ep="${target}"]`);
+  if(existSlide){
+    existSlide.scrollIntoView({behavior:'smooth'});
+  } else {
+    // Need to rebuild from target
+    watchEp(bookId, target, document.querySelector('.v-drama-title')?.textContent||'', currentDrama);
+  }
+}
+
+// Mute toggle
+function toggleMuteSlide(btn){
+  const slide=btn.closest('.feed-slide');
+  const vid=slide.querySelector('.slide-video');
+  vid.muted=!vid.muted;
+  const icon=slide.querySelector('.slide-mute-icon');
+  if(vid.muted){
+    icon.innerHTML='<svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+  } else {
+    icon.innerHTML='<svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+  }
+}
+
+// Fav toggle
+function toggleFavSlide(id, btn){
+  const iconEl = btn.querySelector('.slide-fav-icon');
+  if(favs.includes(id)){favs=favs.filter(f=>f!==id);iconEl.classList.remove('faved');toast('Dihapus dari favorit');}
+  else{favs.unshift(id);iconEl.classList.add('faved');toast('Ditambahkan ke favorit');}
+  localStorage.setItem('favs',JSON.stringify(favs));updateCounts();
+}
+
+// Episode sheet (per-slide)
+function openEpSheetSlide(id, title){
+  // Find currently visible slide
+  const visSlide = [...document.querySelectorAll('.feed-slide')].find(s=>{
+    const r=s.getBoundingClientRect();
+    return r.top>=0&&r.top<window.innerHeight/2;
+  });
+  if(!visSlide) return;
+  const ep  = Number(visSlide.dataset.ep);
+  const grid= document.getElementById(`ep-sheet-grid-${ep}`);
+  const sheet=document.getElementById(`ep-sheet-${ep}`);
+  const bd  = visSlide.querySelector('.ep-sheet-backdrop');
+  if(!grid.children.length && chapters_.length){
+    grid.innerHTML=chapters_.slice(0,80).map((ch,i)=>{
+      const n=gf(ch,'chapterNo','episodeNo')||(i+1);
+      return `<button class="ep-sht-btn ${n==ep?'active':''}" onclick="watchEp('${id}',${n},'${title}',null)">${n}</button>`;
+    }).join('');
+  }
+  sheet.classList.add('open');
+  bd.style.display='block';
+}
+function closeEpSheet(ep){
+  const sheet=document.getElementById(`ep-sheet-${ep}`);
+  if(sheet) sheet.classList.remove('open');
+  const wrap=document.getElementById('feed-wrap');
+  const slide=wrap.querySelector(`.feed-slide[data-ep="${ep}"]`);
+  if(slide) slide.querySelector('.ep-sheet-backdrop').style.display='none';
+}
+
+// ═══════════════════════════════════════════════════════
 // TOAST
 // ═══════════════════════════════════════════════════════
 let toastT;
-function toast(m){ const el=document.getElementById('toast-el'); el.textContent=m; el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),2400); }
+function toast(m){const el=document.getElementById('toast-el');el.textContent=m;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2400);}
 
 // ═══════════════════════════════════════════════════════
 // INIT
