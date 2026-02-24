@@ -1521,9 +1521,22 @@ var App={
       }else{gsFetchFreshUrl();}
 
     }else if(this.src==='dramawave'){
-      DW.play(s.d.id,ep).then(function(res){var u=res.m3u8||res.url||res.stream_url||(res.data&&(res.data.m3u8||res.data.url||res.data.stream_url))||extractVideoUrl(res)||'';if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}}).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)});
+      DW.play(s.d.id,ep).then(function(res){
+        var u=res.m3u8||res.url||res.stream_url||(res.data&&(res.data.m3u8||res.data.url||res.data.stream_url))||extractVideoUrl(res)||'';
+        if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}
+      }).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)});
     }else if(this.src==='shortmax'){
-      SM.play(s.d.id,ep).then(function(res){var u='';if(res.data&&res.data.video){var v=res.data.video;u=v.video_1080||v.video_720||v.video_480||v.url||v.m3u8||''}if(!u)u=res.m3u8||res.url||(res.data&&(res.data.m3u8||res.data.url||res.data.stream_url))||extractVideoUrl(res)||'';if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}}).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)});
+      SM.play(s.d.id,ep).then(function(res){
+        console.log('[SM.play]',JSON.stringify(res).slice(0,600));
+        var u='';
+        if(res.data&&res.data.video){var v=res.data.video;u=v.video_1080||v.video_720||v.video_480||v.video_360||v.url||v.m3u8||v.src||''}
+        if(!u&&res.data){var d2=res.data;u=d2.m3u8||d2.url||d2.video_url||d2.videoUrl||d2.stream_url||d2.playUrl||d2.hlsUrl||d2.src||''}
+        if(!u&&res.video){var v2=res.video;u=v2.video_1080||v2.video_720||v2.video_480||v2.url||v2.m3u8||''}
+        if(!u&&res.result){u=res.result.m3u8||res.result.url||res.result.video_url||''}
+        if(!u)u=extractVideoUrl(res)||'';
+        console.log('[SM.play url]',u);
+        if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}
+      }).catch(function(e){console.log('[SM.play err]',e);self._tkShowLoad(false);self._tkShowErr(true)});
     }else if(this.src==='netshort'){
       NS.episode(s.d.id,ep).then(function(res){var u='';if(res.data){var d2=res.data;if(d2.videos&&Array.isArray(d2.videos)&&d2.videos.length){var QORD=['1080p','720p','540p','480p','360p'];var vmap={};d2.videos.forEach(function(v){if(v.url)vmap[v.quality||'']=v.url});for(var qi=0;qi<QORD.length;qi++){if(vmap[QORD[qi]]){u=vmap[QORD[qi]];break}}if(!u)u=d2.videos[0].url||''}if(!u)u=d2.video_url||d2.videoUrl||d2.url||d2.m3u8||''}if(!u)u=extractVideoUrl(res)||'';if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}}).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)});
     }else if(this.src==='dramabite'){
@@ -1547,7 +1560,11 @@ var App={
       var fxEpId=fxChap?fxChap.streamId:String(ep);
       FX.play(s.d.id,fxEpId).then(function(res){var dd=res.data||res;var u='';if(dd.qualities&&Array.isArray(dd.qualities))u=extractFromQualities(dd.qualities);if(!u)u=dd.m3u8||dd.url||dd.video_url||dd.videoUrl||extractVideoUrl(dd)||extractVideoUrl(res)||'';if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}}).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)});
     }else{
-      DB.watch(s.d.id,ep).then(function(res){var u=extractVideoUrl(res.data||res);if(!u&&self.batch.length){for(var i=0;i<self.batch.length;i++){var bf=flattenObj(self.batch[i],'',0);if(parseInt(smartGet(bf,['chapterNo','number','episode'])||0)===ep){u=extractVideoUrl(self.batch[i]);break}}}if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}}).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)});
+      DB.watch(s.d.id,ep).then(function(res){
+        var u=extractVideoUrl(res.data||res);
+        if(!u&&self.batch.length){for(var i=0;i<self.batch.length;i++){var bf=flattenObj(self.batch[i],'',0);if(parseInt(smartGet(bf,['chapterNo','number','episode'])||0)===ep){u=extractVideoUrl(self.batch[i]);break}}}
+        if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}
+      }).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)});
     }
     this._tkPreload(ep+1);
   },
@@ -1555,28 +1572,64 @@ var App={
   _tkPlayUrl:function(url){
     var vid=document.getElementById('tkVid');if(!vid)return;currentVideoUrl=url;
     if(App._hls){App._hls.destroy();App._hls=null;}
-    var isHLS=url.indexOf('.m3u8')>-1;
-    vid.onerror=null;vid.oncanplay=null;
+    if(!url){showToast('❌ DEBUG: URL kosong! Src='+App.src);App._tkShowLoad(false);App._tkShowErr(true);return;}
     App._tkShowErr(false);
     App._hlsPlaying=false;
+    App._tkTryUrl(vid,url,false);
+  },
+
+  _tkTryUrl:function(vid,url,isProxy){
+    var isHLS=url.indexOf('.m3u8')>-1;
+    vid.onerror=null;vid.oncanplay=null;
+    if(App._hls){App._hls.destroy();App._hls=null;}
+
     if(isHLS&&typeof Hls!=='undefined'&&Hls.isSupported()){
-      var hls=new Hls({enableWorker:false,maxBufferLength:60,maxMaxBufferLength:120,maxBufferSize:60*1000*1000,highWaterMark:0.5});
+      var hls=new Hls({
+        enableWorker:false,
+        maxBufferLength:60,maxMaxBufferLength:120,
+        maxBufferSize:60*1000*1000,
+        xhrSetup:function(xhr,xhrUrl){
+          // Tidak set Referer (browser blokir), tapi pastikan credentials tidak dikirim
+          xhr.withCredentials=false;
+        }
+      });
       App._hls=hls;
       hls.loadSource(url);
       hls.attachMedia(vid);
-      hls.on(Hls.Events.MANIFEST_PARSED,function(){App._hlsPlaying=true;vid.play().catch(function(){});App._tkShowLoad(false);App._tkShowErr(false);});
+      hls.on(Hls.Events.MANIFEST_PARSED,function(){
+        App._hlsPlaying=true;
+        vid.play().catch(function(){});
+        App._tkShowLoad(false);App._tkShowErr(false);
+      });
       vid.onwaiting=function(){if(!App._hlsPlaying)App._tkShowLoad(true);};
       vid.onplaying=function(){App._tkShowLoad(false);};
-      hls.on(Hls.Events.ERROR,function(e,data){if(data.fatal&&!App._hlsPlaying){App._tkShowLoad(false);App._tkShowErr(true);}});
+      hls.on(Hls.Events.ERROR,function(e,data){
+        if(data.fatal&&!App._hlsPlaying){
+          hls.destroy();App._hls=null;
+          if(!isProxy){
+            // Coba lewat proxy CORS
+            var proxyUrl='https://cors.eu.org/'+url.replace('https://','');
+            App._tkTryUrl(vid,proxyUrl,true);
+          }else{
+            // Proxy juga gagal, coba native player
+            App._tkTryNative(vid,currentVideoUrl);
+          }
+        }
+      });
     }else if(isHLS&&vid.canPlayType('application/vnd.apple.mpegurl')){
-      vid.src=url;vid.load();
-      vid.oncanplay=function(){vid.play().catch(function(){});App._tkShowLoad(false)};
-      vid.onerror=function(){App._tkShowLoad(false);App._tkShowErr(true)};
+      App._tkTryNative(vid,url);
     }else{
       vid.src=url;vid.load();
       vid.oncanplay=function(){vid.play().catch(function(){});App._tkShowLoad(false)};
       vid.onerror=function(){App._tkShowLoad(false);App._tkShowErr(true)};
     }
+  },
+
+  _tkTryNative:function(vid,url){
+    // Coba native video player tanpa HLS.js
+    vid.src=url;vid.load();
+    vid.oncanplay=function(){vid.play().catch(function(){});App._tkShowLoad(false)};
+    vid.onerror=function(){App._tkShowLoad(false);App._tkShowErr(true)};
     vid.ontimeupdate=function(){
       var p=document.getElementById('tkProg');if(p&&vid.duration)p.style.width=(vid.currentTime/vid.duration*100)+'%';
       if(App.tk&&vid.duration&&Math.floor(vid.currentTime)%5===0)App._cwSave(App.tk.d,App.tk.ep,App.tk.total,vid.currentTime/vid.duration);
@@ -1795,9 +1848,13 @@ var AdminRC={
     bannerEl.appendChild(btn);
   }
 };
-document.addEventListener('DOMContentLoaded',function(){AdminRC.init();});
-(function(){var orig=App.openDetail.bind(App);App.openDetail=function(d){if(d&&d.name)TG.logDrama(d.name,App.src);return orig(d)}})();
-(function(){var orig=App.play.bind(App);App.play=function(dKey,ep){var d=getD(dKey);if(d&&d.name)TG.logPlay(d.name,ep,App.src);return orig(dKey,ep)}})();
+document.addEventListener('DOMContentLoaded',function(){
+  AdminRC.init();
+  if(typeof App!=='undefined'){
+    (function(){var orig=App.openDetail.bind(App);App.openDetail=function(d){if(d&&d.name)TG.logDrama(d.name,App.src);return orig(d)}})();
+    (function(){var orig=App.play.bind(App);App.play=function(dKey,ep){var d=typeof getD==='function'?getD(dKey):null;if(d&&d.name)TG.logPlay(d.name,ep,App.src);return orig(dKey,ep)}})();
+  }
+});
 </script>
 </body>
 </html>
