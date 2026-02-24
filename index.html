@@ -320,13 +320,11 @@ a{text-decoration:none;color:inherit}
 .rot-dot.on{background:rgba(255,255,255,.7);width:12px;border-radius:2px}
 .rot-banner-close{position:absolute;top:5px;right:5px;width:18px;height:18px;border-radius:3px;background:rgba(0,0,0,.3);color:rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;font-size:.5rem;cursor:pointer;border:none}
 .fb-sync-status{display:inline-flex;align-items:center;gap:4px;font-size:.62rem;color:var(--ml);padding:3px 8px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:var(--radius);margin-left:8px}
-/* ══ LOGIN BUTTON ══ */
 .login-btn{display:flex;align-items:center;gap:6px;padding:5px 11px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);font-size:.74rem;font-weight:500;color:var(--text2);cursor:pointer;transition:var(--tr);flex-shrink:0;white-space:nowrap}
 .login-btn:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
 .login-btn img{width:14px;height:14px;border-radius:50%}
 .user-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1.5px solid var(--border);cursor:pointer;flex-shrink:0;transition:var(--tr)}
 .user-avatar:hover{border-color:rgba(255,255,255,.3)}
-/* ══ LOGIN MODAL ══ */
 .auth-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:600;display:none;align-items:center;justify-content:center;backdrop-filter:blur(12px);padding:20px}
 .auth-modal-bg.open{display:flex}
 .auth-modal{background:var(--bg2);border:1px solid var(--border);border-radius:14px;width:100%;max-width:340px;overflow:hidden;animation:authPop .22s cubic-bezier(.34,1.56,.64,1)}
@@ -345,7 +343,6 @@ a{text-decoration:none;color:inherit}
 .auth-anon-btn:hover{border-color:rgba(255,255,255,.15);color:var(--text2)}
 .auth-note{font-size:.62rem;color:var(--text3);text-align:center;line-height:1.55}
 .auth-close{position:absolute;top:12px;right:12px;width:26px;height:26px;border-radius:var(--radius);background:var(--bg3);color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:.65rem;cursor:pointer;border:1px solid var(--border)}
-/* ══ USER DROPDOWN ══ */
 .user-menu-bg{position:fixed;inset:0;z-index:550;display:none}
 .user-menu-bg.open{display:block}
 .user-menu{position:fixed;top:58px;right:16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);width:220px;z-index:560;overflow:hidden;animation:authPop .18s ease}
@@ -401,7 +398,6 @@ a{text-decoration:none;color:inherit}
   </div>
 </header>
 
-<!-- USER MENU BACKDROP -->
 <div class="user-menu-bg" id="userMenuBg" onclick="Auth.closeMenu()"></div>
 <div class="user-menu" id="userMenu" style="display:none">
   <div class="user-menu-head">
@@ -416,7 +412,6 @@ a{text-decoration:none;color:inherit}
   <button class="user-menu-item danger" onclick="Auth.logout()"><i class="fas fa-sign-out-alt"></i> Keluar</button>
 </div>
 
-<!-- AUTH MODAL -->
 <div class="auth-modal-bg" id="authModalBg" onclick="Auth._closeBg(event)">
   <div class="auth-modal" style="position:relative">
     <button class="auth-close" onclick="Auth.closeModal()"><i class="fas fa-times"></i></button>
@@ -585,7 +580,6 @@ var TABS={
 };
 var lastRaw=null,currentVideoUrl='';
 
-// ══ FIREBASE MANAGER ══
 var FB={
   _db:null,_auth:null,_uid:null,_ready:false,_user:null,
   init:function(){
@@ -596,7 +590,6 @@ var FB={
     try{
       firebase.initializeApp(FIREBASE_CONFIG);
       self._db=firebase.firestore();self._auth=firebase.auth();
-      // Listen to auth state changes
       self._auth.onAuthStateChanged(function(user){
         if(user){
           self._uid=user.uid;self._ready=true;self._user=user;
@@ -648,13 +641,14 @@ var FB={
   }
 };
 
-// ══ AUTH MANAGER ══
 var Auth={
   _pendingPlay:null,
   openModal:function(fromWatch){
     var sub=document.querySelector('.auth-sub');
     if(sub){
-      if(fromWatch||Auth._pendingPlay){
+      if(fromWatch==='guest_limit'){
+        sub.innerHTML='<span style="color:var(--gold);font-weight:700">&#127381; Episode 1-3 Gratis!</span><br><small>Untuk lanjut nonton episode berikutnya, login dulu dengan Google. Gratis & cuma butuh 5 detik!</small>';
+      }else if(fromWatch||Auth._pendingPlay){
         sub.innerHTML='<span style="color:var(--red);font-weight:700">&#128274; Login untuk Menonton</span><br><small>Kamu harus login Google dulu sebelum bisa nonton drama.</small>';
       }else{
         sub.textContent='Login untuk menyinkron favorit dan riwayat nonton di semua perangkat kamu';
@@ -685,11 +679,12 @@ var Auth={
     });
   },
   loginAnon:function(){
-    if(Auth._pendingPlay){showToast('&#128274; Login Google diperlukan untuk menonton!');return;}
+    // Kalau pending play ep 4+, tamu tidak boleh lanjut
+    if(Auth._pendingPlay&&Auth._pendingPlay.ep>3){showToast('🔒 Login Google diperlukan untuk ep 4+!');return;}
     var self=this;
     FB._auth.signInAnonymously().then(function(){
       self.closeModal();
-      showToast('\u{1F464} Masuk sebagai tamu');
+      showToast('\u{1F464} Masuk sebagai tamu — gratis ep 1-3!');
     }).catch(function(e){
       showToast('\u274c Gagal: '+e.message);
     });
@@ -704,7 +699,6 @@ var Auth={
     var wrap=document.getElementById('authBtnWrap');
     if(!wrap)return;
     var isAnon=user.isAnonymous;
-    // Resume pending play setelah login Google
     if(!isAnon&&Auth._pendingPlay){
       var pp=Auth._pendingPlay;Auth._pendingPlay=null;
       setTimeout(function(){App.play(pp.dKey,pp.ep)},400);
@@ -735,7 +729,6 @@ var Auth={
       }else{
         wrap.innerHTML='<button class="login-btn" onclick="Auth.toggleMenu()" style="gap:6px"><span style="width:22px;height:22px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#fff;font-weight:700">'+initials+'</span></button>';
       }
-      // Update menu info
       var ua=document.getElementById('umAvatar');var un=document.getElementById('umName');var ue=document.getElementById('umEmail');
       if(ua)ua.src=photo;
       if(un)un.textContent=name;
@@ -763,7 +756,6 @@ var Auth={
   }
 };
 
-// ══ STORE ══
 var Store={
   _k:function(ns){return 'df_'+ns},
   get:function(ns){try{return JSON.parse(localStorage.getItem(this._k(ns)))||[]}catch(e){return[]}},
@@ -885,7 +877,6 @@ var FX={
   play:function(seriesId,episodeId){return apiFetch(FX_BASE,'/play/'+seriesId+'/'+episodeId+'?lang='+FX_LANG)}
 };
 
-// ════ HELPERS ════
 function flattenObj(o,p,d){var r={};if(!o||typeof o!=='object'||d>4)return r;p=p||'';d=d||0;Object.keys(o).forEach(function(k){var v=o[k],f=p?p+'.'+k:k;if(v===null||v===undefined)return;if(typeof v==='string'||typeof v==='number'||typeof v==='boolean'){r[f]=v;r[k]=v}else if(Array.isArray(v)){r[f]=v;r[k]=v}else if(typeof v==='object'){var n=flattenObj(v,f,d+1);Object.keys(n).forEach(function(nk){r[nk]=n[nk]})}});return r}
 function smartGet(f,c){for(var i=0;i<c.length;i++){var v=f[c[i]];if(v!==undefined&&v!==null&&v!=='')return v}return null}
 function fixImageUrl(url){if(!url||typeof url!=='string')return'';if(url.includes('.heic')||url.includes('fizzopic.org'))return'https://wsrv.nl/?url='+encodeURIComponent(url)+'&output=webp&q=80';return url}
@@ -984,7 +975,6 @@ var DS={};
 function storeD(d){var k='D_'+d.id;DS[k]=d;return k}
 function getD(k){return DS[k]||null}
 
-// ════ PLATFORM LIST ════
 var PLAT_LIST=[
   {id:'dramabox',name:'DramaBox',badge:false},{id:'freereels',name:'FreeReels',badge:false},
   {id:'melolo',name:'MeloLo',badge:false},{id:'goodshort',name:'GoodShort',badge:true},
@@ -1005,7 +995,6 @@ function buildPlatGrid(currentSrc){
   document.getElementById('platGrid').innerHTML=h;
 }
 
-// ════ MAIN APP ════
 var App={
   el:null,src:'dramabox',tab:'foryou',pg:1,sort:1,
   qry:'',chaps:[],batch:[],curD:null,sTimer:null,
@@ -1388,10 +1377,14 @@ var App={
     h+='<button class="bfav'+(isSaved?' saved':'')+'" id="detailFavBtn" onclick="App._detailToggleWl(\''+k+'\',this)">'+(isSaved?'<i class="fas fa-bookmark"></i> Tersimpan':'<i class="far fa-bookmark"></i> Simpan')+'</button>';
     h+='</div></div></div></div>';
     if(cwItem&&cwItem.progress>0.02){var pct=Math.round(cwItem.progress*100);h+='<div class="cw-resume-banner" onclick="App.play(\''+k+'\','+cwItem.ep+')"><div class="cw-resume-icon"><i class="fas fa-play"></i></div><div class="cw-resume-text"><strong>Lanjut nonton Episode '+cwItem.ep+'</strong><span>Kamu sudah menonton '+pct+'%</span><div class="cw-resume-prog"><div class="cw-resume-prog-fill" style="width:'+pct+'%"></div></div></div><i class="fas fa-chevron-right" style="color:var(--text3)"></i></div>'}
-    h+='<div style="margin-top:18px"><div class="stitle"><i class="fas fa-list"></i> Episode ('+(chaps.length||d.eps||0)+')</div><div class="epgrid">';
+    h+='<div style="margin-top:18px"><div class="stitle"><i class="fas fa-list"></i> Episode ('+(chaps.length||d.eps||0)+')</div>';
+    var isAnon=FB._user&&FB._user.isAnonymous;
+    if(isAnon){h+='<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:var(--radius);margin-bottom:10px;font-size:.72rem;color:var(--gold)"><i class="fas fa-info-circle"></i> Tamu gratis nonton <b>Ep 1–3</b>. Login Google untuk akses semua episode. <button onclick="Auth.openModal()" style="margin-left:auto;padding:3px 10px;background:var(--gold);color:#000;border-radius:4px;font-size:.65rem;font-weight:700;border:none;cursor:pointer">Login</button></div>'}
+    h+='<div class="epgrid">';
     var lastEp=cwItem?cwItem.ep:null;
-    if(chaps.length)chaps.forEach(function(ch){h+='<button class="epc'+(lastEp&&ch.num==lastEp?' cw-ep-active':'')+'" onclick="App.play(\''+k+'\','+ch.num+')">Ep '+ch.num+'</button>'});
-    else if(d.eps){for(var i=1;i<=d.eps;i++)h+='<button class="epc'+(lastEp&&i==lastEp?' cw-ep-active':'')+'" onclick="App.play(\''+k+'\','+i+')">Ep '+i+'</button>'}
+    var isAnon=FB._user&&FB._user.isAnonymous;
+    if(chaps.length)chaps.forEach(function(ch){h+='<button class="epc'+(lastEp&&ch.num==lastEp?' cw-ep-active':'')+'" onclick="App.play(\''+k+'\','+ch.num+')">'+(isAnon&&ch.num>3?'🔒 ':'')+'Ep '+ch.num+'</button>'});
+    else if(d.eps){for(var i=1;i<=d.eps;i++)h+='<button class="epc'+(lastEp&&i==lastEp?' cw-ep-active':'')+'" onclick="App.play(\''+k+'\','+i+')">'+(isAnon&&i>3?'🔒 ':'')+'Ep '+i+'</button>'}
     else h+='<div class="empty"><p>Episode tidak tersedia</p></div>';
     h+='</div></div>';this.el.innerHTML=h;
   },
@@ -1404,11 +1397,18 @@ var App={
 
   play:function(dKey,ep){
     var d=getD(dKey);if(!d)return;
-    if(!FB._user||FB._user.isAnonymous){Auth._pendingPlay={dKey:dKey,ep:ep};Auth.openModal(true);return;}
+    // Belum login sama sekali → minta login
+    if(!FB._user){Auth._pendingPlay={dKey:dKey,ep:ep};Auth.openModal(true);return;}
+    // Tamu (anonymous) → boleh ep 1-3, ep 4+ minta login Google
+    if(FB._user.isAnonymous&&ep>3){
+      Auth._pendingPlay={dKey:dKey,ep:ep};
+      Auth.openModal('guest_limit');
+      return;
+    }
     this.curD=d;var total=this.chaps.length||d.eps||0;
     this.tk={dKey:dKey,ep:ep,total:total,d:d};this.tkCache={};this._tkRender();this._tkLoadEp(ep,'none');
   },
-  _gsUrlCache:{},  // Persistent GoodShort URL cache (tidak di-reset saat ganti ep)
+  _gsUrlCache:{},
   _tkRender:function(){
     var s=this.tk,d=s.d;var isSaved=Store.wlHas(d.id,this.src);
     var h='<div class="tk-vc" id="tkVC"><video id="tkVid" playsinline webkit-playsinline></video><div class="tk-grad-top"></div><div class="tk-grad-bot"></div>'+
@@ -1458,7 +1458,6 @@ var App={
     if(this.src==='goodshort'){
       var chap=null;for(var ci=0;ci<this.chaps.length;ci++){if(this.chaps[ci].num==ep){chap=this.chaps[ci];break}}
       var gsExtractUrl=function(res){
-        // Extract from cdnList or multiVideos first (most reliable)
         if(res.data&&res.data.list&&Array.isArray(res.data.list)){
           var epData=res.data.list[0]||res.data.list.find(function(x){return x.index===(ep-1)||x.chapterName===String(ep)});
           if(epData){
@@ -1474,10 +1473,8 @@ var App={
         if(res.data){u=res.data.m3u8||res.data.url||res.data.video_url||extractVideoUrl(res.data)||'';if(u)return u;}
         return extractVideoUrl(res)||'';
       };
-      // Always re-fetch chapters to get fresh non-expired URL
       var gsShowErr=function(){self._tkShowLoad(false);self._tkShowErr(true);};
       var gsPlayFromChapters=function(){
-        // Fallback: ambil URL dari /chapters endpoint
         GS.chapters(s.d.id).then(function(cres){
           var clist=[];
           if(cres.data&&cres.data.list&&Array.isArray(cres.data.list))clist=cres.data.list;
@@ -1496,7 +1493,6 @@ var App={
       var gsFetchFreshUrl=function(){
         var gsBookId=s.d.id;
         console.log('[GS DEBUG] bookId=',gsBookId,'ep=',ep,'cache=',JSON.stringify(App._gsUrlCache[gsBookId]?Object.keys(App._gsUrlCache[gsBookId]):'EMPTY'));
-        // Cek persistent cache dulu
         if(App._gsUrlCache[gsBookId]&&App._gsUrlCache[gsBookId][ep]){
           self._tkPlayUrl(App._gsUrlCache[gsBookId][ep]);return;
         }
@@ -1517,7 +1513,6 @@ var App={
           }).catch(gsPlayFromChapters);
         })(gsBookId,ep);
       };
-      // Cek persistent GS cache dulu
       var _gsBid=s.d.id;
       if(App._gsUrlCache[_gsBid]&&App._gsUrlCache[_gsBid][ep]){
         self._tkPlayUrl(App._gsUrlCache[_gsBid][ep]);
@@ -1537,8 +1532,16 @@ var App={
       var chap2=null;for(var i=0;i<this.chaps.length;i++){if(this.chaps[i].num==ep){chap2=this.chaps[i];break}}
       if(chap2&&chap2.streamId){ML.stream(chap2.streamId).then(function(res){var u=extractVideoUrl(res);if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}}).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)})}
       else{self._tkShowLoad(false);self._tkShowErr(true)}
+
+    // ══ FIX: FreeReels video URL extraction ══
     }else if(this.src==='freereels'){
-      FR.play(s.d.id,ep).then(function(res){var u=extractVideoUrl(res.data||res)||extractVideoUrl(res)||'';if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}else{self._tkShowLoad(false);self._tkShowErr(true)}}).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)});
+      FR.play(s.d.id,ep).then(function(res){
+        var r=res.data||res;
+        var u=r.video_url||r.m3u8_url||r.external_audio_h264_m3u8||extractVideoUrl(r)||'';
+        if(u){self.tkCache[ep]=u;self._tkPlayUrl(u)}
+        else{self._tkShowLoad(false);self._tkShowErr(true)}
+      }).catch(function(){self._tkShowLoad(false);self._tkShowErr(true)});
+
     }else if(this.src==='flextv'){
       var fxChap=null;for(var fxi=0;fxi<this.chaps.length;fxi++){if(this.chaps[fxi].num==ep){fxChap=this.chaps[fxi];break}}
       var fxEpId=fxChap?fxChap.streamId:String(ep);
@@ -1551,19 +1554,17 @@ var App={
 
   _tkPlayUrl:function(url){
     var vid=document.getElementById('tkVid');if(!vid)return;currentVideoUrl=url;
-    // Destroy previous HLS instance if any
     if(App._hls){App._hls.destroy();App._hls=null;}
     var isHLS=url.indexOf('.m3u8')>-1;
     vid.onerror=null;vid.oncanplay=null;
     App._tkShowErr(false);
-    App._hlsPlaying=false;// flag: HLS berhasil, block error dari async calls lain
+    App._hlsPlaying=false;
     if(isHLS&&typeof Hls!=='undefined'&&Hls.isSupported()){
       var hls=new Hls({enableWorker:false,maxBufferLength:60,maxMaxBufferLength:120,maxBufferSize:60*1000*1000,highWaterMark:0.5});
       App._hls=hls;
       hls.loadSource(url);
       hls.attachMedia(vid);
       hls.on(Hls.Events.MANIFEST_PARSED,function(){App._hlsPlaying=true;vid.play().catch(function(){});App._tkShowLoad(false);App._tkShowErr(false);});
-      // Tidak tampilkan spinner saat seek - video freeze sebentar lalu lanjut sendiri
       vid.onwaiting=function(){if(!App._hlsPlaying)App._tkShowLoad(true);};
       vid.onplaying=function(){App._tkShowLoad(false);};
       hls.on(Hls.Events.ERROR,function(e,data){if(data.fatal&&!App._hlsPlaying){App._tkShowLoad(false);App._tkShowErr(true);}});
@@ -1586,13 +1587,18 @@ var App={
   _tkPreload:function(ep){
     var s=this.tk;if(!s||ep<1||ep>s.total||this.tkCache[ep])return;
     if(this.src==='goodshort'){
-      // Pakai _gsUrlCache (persistent, tidak expired)
       var _bid=s.d.id;
       if(App._gsUrlCache[_bid]&&App._gsUrlCache[_bid][ep]){
         App.tkCache[ep]=App._gsUrlCache[_bid][ep];
       }
-    }else if(this.src==='freereels'){FR.play(s.d.id,ep).then(function(r){var u=extractVideoUrl(r.data||r)||extractVideoUrl(r)||'';if(u)App.tkCache[ep]=u}).catch(function(){})}
-    else if(this.src==='dramabite'){DB2.episode(s.d.id,ep).then(function(r){var u=extractVideoUrl(r.data||r)||extractVideoUrl(r)||'';if(u)App.tkCache[ep]=u}).catch(function(){})}
+    // ══ FIX: FreeReels preload URL extraction ══
+    }else if(this.src==='freereels'){
+      FR.play(s.d.id,ep).then(function(r){
+        var d=r.data||r;
+        var u=d.video_url||d.m3u8_url||d.external_audio_h264_m3u8||extractVideoUrl(d)||'';
+        if(u)App.tkCache[ep]=u;
+      }).catch(function(){});
+    }else if(this.src==='dramabite'){DB2.episode(s.d.id,ep).then(function(r){var u=extractVideoUrl(r.data||r)||extractVideoUrl(r)||'';if(u)App.tkCache[ep]=u}).catch(function(){})}
     else if(this.src==='netshort'){NS.episode(s.d.id,ep).then(function(r){var u='';if(r.data&&r.data.videos&&r.data.videos.length)u=r.data.videos[0].url||'';if(!u&&r.data)u=r.data.video_url||r.data.url||'';if(u)App.tkCache[ep]=u}).catch(function(){})}
     else if(this.src==='shortmax'){SM.play(s.d.id,ep).then(function(r){var u='';if(r.data&&r.data.video){var v=r.data.video;u=v.video_1080||v.video_720||v.url||''}if(!u)u=r.m3u8||r.url||'';if(u)App.tkCache[ep]=u}).catch(function(){})}
     else if(this.src==='melolo'){var chap=null;for(var i=0;i<this.chaps.length;i++){if(this.chaps[i].num==ep){chap=this.chaps[i];break}}if(chap&&chap.streamId){ML.stream(chap.streamId).then(function(r){var u=extractVideoUrl(r);if(u)App.tkCache[ep]=u}).catch(function(){})}}
@@ -1608,8 +1614,7 @@ var App={
     else{vid.pause();if(pp){pp.querySelector('i').className='fas fa-pause';pp.classList.add('show');setTimeout(function(){pp.classList.remove('show')},400)}}
   },
   _tkShowLoad:function(v){var e=document.getElementById('tkLoad');if(e)e.style.display=v?'flex':'none'},
-  _tkShowErr:function(v){if(v&&App._hlsPlaying)return;// Block error kalau HLS sedang main
-    var e=document.getElementById('tkErr');if(e)e.classList.toggle('show',v)},
+  _tkShowErr:function(v){if(v&&App._hlsPlaying)return;var e=document.getElementById('tkErr');if(e)e.classList.toggle('show',v)},
   tkToggleEps:function(){var p=document.getElementById('tkEpanel'),o=document.getElementById('tkOverlay');if(p){var open=p.classList.toggle('open');if(o)o.classList.toggle('show',open)}},
   tkClose:function(){
     var vid=document.getElementById('tkVid');
@@ -1735,25 +1740,20 @@ var TG={
 };
 window.addEventListener('load',function(){setTimeout(function(){TG.logVisitor()},1500)});
 
-// ===== ADMIN REMOTE CONTROL =====
 var AdminRC={
   _db:null,
   init:function(){
     try{
       var db=firebase.firestore();
-      // Listen disabled sources
       db.collection('admin').doc('config').onSnapshot(function(doc){
         if(!doc.exists)return;
         var data=doc.data();
-        // Disabled sources
         if(data.disabledSources){
           AdminRC._applyDisabled(data.disabledSources);
         }
-        // Broadcast message
         if(data.broadcast&&data.broadcast.active&&data.broadcast.message){
           AdminRC._showBroadcast(data.broadcast.message,data.broadcast.timestamp);
         }
-        // Banner override
         if(data.banner&&data.banner.active){
           AdminRC._updateBanner(data.banner);
         }
@@ -1771,7 +1771,6 @@ var AdminRC={
     setTimeout(function(){if(el.parentNode)el.remove()},8000);
   },
   _applyDisabled:function(disabled){
-    // Hide disabled platform tabs
     var tabs=document.querySelectorAll('[data-src]');
     tabs.forEach(function(t){
       var src=t.getAttribute('data-src');
@@ -1780,7 +1779,6 @@ var AdminRC={
     });
   },
   _updateBanner:function(banner){
-    // Update banner di carousel jika ada
     var bannerEl=document.getElementById('adminBanner');
     if(!bannerEl){
       bannerEl=document.createElement('div');
@@ -1794,7 +1792,8 @@ var AdminRC={
     btn.textContent=banner.btn;
     btn.onclick=function(){window.open(banner.link,'_blank');};
     bannerEl.innerHTML='<div><div style="font-weight:700;color:#fff">'+banner.title+'</div><div style="font-size:.8rem;color:rgba(255,255,255,.7)">'+banner.sub+'</div></div>';
-    bannerEl.appendChild(btn);  }
+    bannerEl.appendChild(btn);
+  }
 };
 document.addEventListener('DOMContentLoaded',function(){AdminRC.init();});
 (function(){var orig=App.openDetail.bind(App);App.openDetail=function(d){if(d&&d.name)TG.logDrama(d.name,App.src);return orig(d)}})();
