@@ -204,8 +204,16 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .seekbar-wrap{position:absolute;bottom:62px;left:14px;right:14px;z-index:30}
 .seekbar{-webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:2px;background:rgba(255,255,255,.28);outline:none;cursor:pointer}
 .seekbar::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#fff;cursor:pointer}
-.time-row{display:flex;justify-content:space-between;margin-top:5px}
+.time-row{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
 .time-row span{font-size:10px;color:rgba(255,255,255,.65);font-weight:600}
+
+/* Seek ±10s buttons */
+.seek-controls{display:flex;align-items:center;justify-content:center;gap:28px;margin-top:8px}
+.seek-btn{background:none;border:none;color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:0;font-family:inherit}
+.seek-btn-ring{width:40px;height:40px;border:1.8px solid rgba(255,255,255,.35);border-radius:50%;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);transition:background .15s}
+.seek-btn:active .seek-btn-ring{background:rgba(255,255,255,.18)}
+.seek-btn-ring svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.seek-btn span{font-size:9px;color:rgba(255,255,255,.7);font-weight:700;letter-spacing:.3px}
 
 /* Episode nav pills */
 .ep-nav{position:absolute;bottom:16px;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:center;gap:8px}
@@ -261,6 +269,10 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .toast.show{opacity:1}
 .cph{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;text-align:center;padding:8px;line-height:1.4}
 .cph svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:1.5;margin-bottom:4px;opacity:.7}
+
+/* Infinity scroll loader */
+.inf-loader{display:flex;justify-content:center;padding:24px;grid-column:1/-1}
+.inf-spinner{width:24px;height:24px;border:2.5px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
 </style>
 </head>
 <body>
@@ -310,10 +322,9 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
       <div class="hscroll" id="new-list"><div class="loader"><div class="spinner"></div></div></div>
     </div>
     <div style="height:14px"></div>
+    <div id="home-inf-sentinel" style="height:1px"></div>
   </div>
 </div>
-
-<!-- ══ SEARCH ══ -->
 <div class="screen" id="screen-search">
   <div class="topbar"><div class="logo">Drama<span>Cin</span></div></div>
   <div class="scroll">
@@ -359,10 +370,9 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
     <div class="sec"><div class="sec-hd"><div class="sec-title"><span class="sec-dot"></span>Ranking Drama</div></div></div>
     <div class="rlist" id="rank-list"><div class="loader"><div class="spinner"></div></div></div>
     <div style="height:14px"></div>
+    <div id="rank-inf-sentinel" style="height:1px"></div>
   </div>
 </div>
-
-<!-- ══ DETAIL ══ -->
 <div class="screen" id="screen-detail">
   <div class="scroll">
     <div class="det-hero">
@@ -505,6 +515,11 @@ let detailDrama = null;
 let currentDrama = null;
 let epSheetOpen = false;
 
+// Infinity scroll state
+let homePage=1, homeLoading=false, homeEnd=false;
+let rankPage=1, rankLoading=false, rankEnd=false;
+let homeNewPage=1, homeNewLoading=false, homeNewEnd=false;
+
 // Feed-specific: track slides built
 let feedSlides = [];   // array of {ep, videoUrl, loaded}
 let feedBuildId = null; // current drama's build session id (prevents stale builds)
@@ -596,6 +611,9 @@ function goBack(){
 // ═══════════════════════════════════════════════════════
 async function loadHome(){
   homeOk=true;
+  homePage=1; homeLoading=false; homeEnd=false;
+  homeNewPage=1; homeNewLoading=false; homeNewEnd=false;
+
   const d = await apiFetch(`foryou/1?lang=${LANG}`);
   const list = getList(d);
   if(list.length){
@@ -622,14 +640,9 @@ async function loadHome(){
         </div>`;
     }
 
-    document.getElementById('popular-list').innerHTML = list.slice(0,12).map(d=>{
-      const t=gf(d,'bookName','name','title'), sc=gf(d,'score','rating');
-      return `<div class="dcard" onclick='openDetail(${JSON.stringify(d)})'>
-        ${coverHtml(d)}
-        <div class="dcard-title">${t}</div>
-        ${sc?`<div class="dcard-sub">${sc} / 10</div>`:''}
-      </div>`;
-    }).join('');
+    // Render first page popular
+    const popEl = document.getElementById('popular-list');
+    popEl.innerHTML = renderDcards(list.slice(0,12));
   } else {
     document.getElementById('popular-list').innerHTML='<div class="empty"><div class="empty-ico"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.23h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.73a16 16 0 0 0 6.29 6.29l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div><div class="empty-txt">Gagal memuat</div></div>';
   }
@@ -637,15 +650,51 @@ async function loadHome(){
   const nd = await apiFetch(`new/1?lang=${LANG}`);
   const nlist = getList(nd);
   document.getElementById('new-list').innerHTML = nlist.length
-    ? nlist.slice(0,12).map(d=>{
-        const t=gf(d,'bookName','name','title'), sc=gf(d,'score','rating');
-        return `<div class="dcard" onclick='openDetail(${JSON.stringify(d)})'>
-          ${coverHtml(d)}
-          <div class="dcard-title">${t}</div>
-          ${sc?`<div class="dcard-sub">${sc} / 10</div>`:''}
-        </div>`;
-      }).join('')
+    ? renderDcards(nlist.slice(0,12))
     : '<div class="empty"><div class="empty-ico"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg></div><div class="empty-txt">Tidak ada data</div></div>';
+
+  // Setup infinity scroll for home
+  setupHomeInfScroll();
+}
+
+function renderDcards(list){
+  return list.map(d=>{
+    const t=gf(d,'bookName','name','title'), sc=gf(d,'score','rating');
+    return `<div class="dcard" onclick='openDetail(${JSON.stringify(d)})'>
+      ${coverHtml(d)}
+      <div class="dcard-title">${t}</div>
+      ${sc?`<div class="dcard-sub">${sc} / 10</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function setupHomeInfScroll(){
+  const scroll = document.getElementById('home-scroll');
+  const sentinel = document.getElementById('home-inf-sentinel');
+  const obs = new IntersectionObserver(async(entries)=>{
+    if(!entries[0].isIntersecting) return;
+    if(homeLoading || homeEnd) return;
+    homeLoading=true;
+
+    // Load next page popular
+    homePage++;
+    const d = await apiFetch(`foryou/${homePage}?lang=${LANG}`);
+    const list = getList(d);
+    if(!list.length){ homeEnd=true; homeLoading=false; return; }
+    const popEl = document.getElementById('popular-list');
+    popEl.insertAdjacentHTML('beforeend', renderDcards(list));
+
+    // Also load next page new
+    homeNewPage++;
+    const nd = await apiFetch(`new/${homeNewPage}?lang=${LANG}`);
+    const nlist = getList(nd);
+    if(nlist.length){
+      document.getElementById('new-list').insertAdjacentHTML('beforeend', renderDcards(nlist));
+    }
+
+    homeLoading=false;
+  },{rootMargin:'200px'});
+  obs.observe(sentinel);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -653,22 +702,48 @@ async function loadHome(){
 // ═══════════════════════════════════════════════════════
 async function loadRank(){
   rankOk=true;
+  rankPage=1; rankLoading=false; rankEnd=false;
   const d=await apiFetch(`rank/1?lang=${LANG}`);
   const list=getList(d);
   const el=document.getElementById('rank-list');
   if(!list.length){el.innerHTML='<div class="empty"><div class="empty-ico"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg></div><div class="empty-txt">Gagal memuat</div></div>';return}
-  el.innerHTML=list.slice(0,20).map((d,i)=>{
+  el.innerHTML=renderRcards(list, 0);
+  setupRankInfScroll();
+}
+
+function renderRcards(list, offset=0){
+  return list.map((d,i)=>{
+    const idx=i+offset;
     const t=gf(d,'bookName','name','title'), sc=gf(d,'score','rating'), ep=gf(d,'chapterCount','episodeCount');
-    const nc=i===0?'g':i===1?'s':i===2?'b':'n';
+    const nc=idx===0?'g':idx===1?'s':idx===2?'b':'n';
     const cov=gf(d,'coverUrl','cover','coverImg');
     return `<div class="rcard" onclick='openDetail(${JSON.stringify(d)})'>
-      <div class="rnum ${nc}">${i+1}</div>
+      <div class="rnum ${nc}">${idx+1}</div>
       ${cov?`<img class="rcov" src="${cov}" loading="lazy" onerror="this.style.background='${pal(t)}'">`:
         `<div class="rcov" style="background:${pal(t)}"></div>`}
       <div class="rinfo"><div class="rtitle">${t}</div><div class="rmeta">${ep?ep+' Episode':'Drama China'}</div></div>
       ${sc?`<div class="rscore">${sc}</div>`:''}
     </div>`;
   }).join('');
+}
+
+function setupRankInfScroll(){
+  const sentinel = document.getElementById('rank-inf-sentinel');
+  const el = document.getElementById('rank-list');
+  let totalLoaded = el.children.length;
+  const obs = new IntersectionObserver(async(entries)=>{
+    if(!entries[0].isIntersecting) return;
+    if(rankLoading || rankEnd) return;
+    rankLoading=true;
+    rankPage++;
+    const d=await apiFetch(`rank/${rankPage}?lang=${LANG}`);
+    const list=getList(d);
+    if(!list.length){ rankEnd=true; rankLoading=false; return; }
+    el.insertAdjacentHTML('beforeend', renderRcards(list, totalLoaded));
+    totalLoaded += list.length;
+    rankLoading=false;
+  },{rootMargin:'200px'});
+  obs.observe(sentinel);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -827,20 +902,20 @@ function buildFeed(id, startEp, title){
   feedBuildId = id+'_'+Date.now();
   const sessionId = feedBuildId;
 
-  // We create slides from startEp to maxEp (or +30 if maxEp unknown)
-  const total = maxEp || startEp+29;
+  const total = maxEp || startEp+99;
   const drama = currentDrama;
+  const batchSize = 10; // initial batch
 
-  for(let ep=startEp; ep<=Math.min(total, startEp+49); ep++){
+  for(let ep=startEp; ep<=Math.min(total, startEp+batchSize-1); ep++){
     const slide = createSlide(id, ep, title, drama, ep===startEp);
     wrap.appendChild(slide);
-    feedSlides.push({ep, el:slide, loaded:false, playing:false});
+    feedSlides.push({ep, el:slide});
   }
 
-  // Scroll to first slide (ep already at top)
+  // Scroll to first slide
   wrap.scrollTop=0;
 
-  // Observe slides for lazy video loading
+  // Observe slides for lazy video loading + infinity append
   startFeedObserver(id, title, sessionId);
 }
 
@@ -885,12 +960,26 @@ function createSlide(id, ep, title, drama, isFirst){
     <!-- Bottom gradient -->
     <div class="vgrad-bot"></div>
 
-    <!-- Seekbar -->
+    <!-- Seekbar + seek controls -->
     <div class="seekbar-wrap" style="bottom:68px">
       <input type="range" class="seekbar slide-seek" value="0" min="0" max="100" step="0.1"
         oninput="onSlideSeekInput(this)" onchange="onSlideSeekChange(this)">
       <div class="time-row">
         <span class="slide-time-cur">0:00</span>
+        <div class="seek-controls">
+          <button class="seek-btn" onclick="seekSlide(this,-10)">
+            <div class="seek-btn-ring">
+              <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/><text x="8" y="16" font-size="6" fill="white" stroke="none" font-family="sans-serif" font-weight="bold">10</text></svg>
+            </div>
+            <span>-10 dtk</span>
+          </button>
+          <button class="seek-btn" onclick="seekSlide(this,10)">
+            <div class="seek-btn-ring">
+              <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-4.5"/><text x="8" y="16" font-size="6" fill="white" stroke="none" font-family="sans-serif" font-weight="bold">10</text></svg>
+            </div>
+            <span>+10 dtk</span>
+          </button>
+        </div>
         <span class="slide-time-dur">0:00</span>
       </div>
     </div>
@@ -947,10 +1036,14 @@ function createSlide(id, ep, title, drama, isFirst){
   return slide;
 }
 
-// IntersectionObserver: play video when slide enters viewport
+// IntersectionObserver: play video when slide enters viewport + infinite append
 let feedObserver = null;
+let feedAppendObserver = null;
+
 function startFeedObserver(id, title, sessionId){
   if(feedObserver) feedObserver.disconnect();
+  if(feedAppendObserver) feedAppendObserver.disconnect();
+
   feedObserver = new IntersectionObserver((entries)=>{
     entries.forEach(entry=>{
       const slide = entry.target;
@@ -958,13 +1051,11 @@ function startFeedObserver(id, title, sessionId){
       const ep    = Number(slide.dataset.ep);
       if(entry.isIntersecting){
         curEp = ep;
-        // Load video if not already
         if(!vid.src && feedBuildId===sessionId){
           loadSlideVideo(vid, id, ep);
         } else if(vid.src){
           vid.play().catch(()=>{});
         }
-        // Pause all others
         document.querySelectorAll('.slide-video').forEach(v=>{
           if(v!==vid) v.pause();
         });
@@ -972,9 +1063,48 @@ function startFeedObserver(id, title, sessionId){
         vid.pause();
       }
     });
-  },{threshold:0.6});
+  },{threshold:0.55});
 
   document.querySelectorAll('.feed-slide').forEach(s=>feedObserver.observe(s));
+
+  // Infinity append: watch the last slide, append more when near
+  attachAppendObserver(id, title, sessionId);
+}
+
+function attachAppendObserver(id, title, sessionId){
+  if(feedAppendObserver) feedAppendObserver.disconnect();
+  const wrap = document.getElementById('feed-wrap');
+  const slides = wrap.querySelectorAll('.feed-slide');
+  if(!slides.length) return;
+  const lastSlide = slides[slides.length-1];
+
+  feedAppendObserver = new IntersectionObserver((entries)=>{
+    if(!entries[0].isIntersecting) return;
+    if(feedBuildId !== sessionId) return;
+    feedAppendObserver.disconnect();
+
+    // Append next batch of slides
+    const lastEp = Number(lastSlide.dataset.ep);
+    const total  = maxEp || lastEp+99;
+    const drama  = currentDrama;
+    const batchSize = 8;
+    let appended = 0;
+
+    for(let ep=lastEp+1; ep<=Math.min(total, lastEp+batchSize); ep++){
+      const slide = createSlide(id, ep, title, drama, false);
+      wrap.appendChild(slide);
+      feedObserver.observe(slide);
+      feedSlides.push({ep, el:slide});
+      appended++;
+    }
+
+    if(appended > 0){
+      // Watch the new last slide for next batch
+      attachAppendObserver(id, title, sessionId);
+    }
+  },{rootMargin:'0px 0px 200% 0px', threshold:0});
+
+  feedAppendObserver.observe(lastSlide);
 }
 
 async function loadSlideVideo(vid, id, ep){
@@ -1038,14 +1168,32 @@ function onSlideSeekChange(seek){
 }
 function fmtTime(s){const m=Math.floor((s||0)/60),sec=Math.floor((s||0)%60);return `${m}:${sec<10?'0':''}${sec}`}
 
-// Auto-next on ended
+// Seek ±10 seconds
+function seekSlide(btn, secs){
+  const slide = btn.closest('.feed-slide');
+  const vid   = slide.querySelector('.slide-video');
+  if(!vid.src || !vid.duration) return;
+  vid.currentTime = Math.max(0, Math.min(vid.duration, vid.currentTime + secs));
+}
+
+// Auto-next on ended — scroll to next slide in feed
 function onSlideEnded(vid){
   const slide=vid.closest('.feed-slide');
   const ep=Number(slide.dataset.ep);
-  // scroll to next slide
   const wrap=document.getElementById('feed-wrap');
+  // Try to find already-created next slide
   const nextSlide=wrap.querySelector(`.feed-slide[data-ep="${ep+1}"]`);
-  if(nextSlide) nextSlide.scrollIntoView({behavior:'smooth'});
+  if(nextSlide){
+    nextSlide.scrollIntoView({behavior:'smooth'});
+  } else if(maxEp===0 || ep < maxEp){
+    // Append the next slide immediately and scroll
+    const drama=currentDrama, id=bookId, title=vid.closest('.v-drama-title')?.textContent||'';
+    const ns = createSlide(id, ep+1, gf(drama,'bookName','name','title')||'', drama, false);
+    wrap.appendChild(ns);
+    if(feedObserver) feedObserver.observe(ns);
+    feedSlides.push({ep:ep+1, el:ns});
+    ns.scrollIntoView({behavior:'smooth'});
+  }
 }
 
 // Jump ep (prev/next button)
