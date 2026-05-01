@@ -22,7 +22,7 @@ async function tiktokDL(url) {
       return {
         status: true,
         message: 'Success',
-        author: {
+        author: "SanzzXD" {
           id: v.author?.id || '',
           username: v.author?.unique_id || '',
           nickname: v.author?.nickname || '',
