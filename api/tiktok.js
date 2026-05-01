@@ -27,7 +27,7 @@ class SnapTikClient {
     return $('input[name="token"]').val();
   }
 
-  async getScript(url) {
+  async getHtml(url) {
     const token = await this.getToken();
     if (!token) throw new Error('Gagal mengambil token dari SnapTik.');
 
@@ -44,58 +44,54 @@ class SnapTikClient {
       },
     });
 
-    return data;
-  }
+    // Snaptik returns an obfuscated JS script that contains the HTML inside a string.
+    // Instead of eval-ing it (blocked on Vercel), we extract the HTML with regex.
+    // The script sets innerHTML to a base64-encoded or raw HTML string.
+    
+    // Try: extract HTML string passed to innerHTML
+    let html = '';
 
-  async evalScript(script1) {
-    const script2 = await new Promise((resolve) =>
-      Function('eval', script1)(resolve)
-    );
+    // Pattern 1: innerHTML = "..." or innerHTML = decodeURIComponent("...")
+    const innerMatch = data.match(/innerHTML\s*=\s*decodeURIComponent\(["']([\s\S]+?)["']\)/);
+    if (innerMatch) {
+      try { html = decodeURIComponent(innerMatch[1]); } catch {}
+    }
 
-    return new Promise((resolve, reject) => {
-      let html = '';
-      const mocks = {
-        $: () => ({
-          remove() {},
-          style: { display: '' },
-          get innerHTML() { return html; },
-          set innerHTML(v) { html = v; },
-        }),
-        app: { showAlert: reject },
-        document: { getElementById: () => ({ src: '' }) },
-        fetch: (fetchUrl) => {
-          resolve({ html });
-          return { json: async () => ({}) };
-        },
-        XMLHttpRequest: function () {
-          return { open() {}, send() {} };
-        },
-        window: { location: { hostname: 'snaptik.app' } },
-        gtag() {},
-        Math,
-      };
+    if (!html) {
+      const innerMatch2 = data.match(/innerHTML\s*=\s*["']([\s\S]+?)["'];/);
+      if (innerMatch2) html = innerMatch2[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\'/g, "'");
+    }
 
-      try {
-        Function(...Object.keys(mocks), script2)(...Object.values(mocks));
-      } catch (e) {
-        reject(e);
+    // Pattern 2: extract all https links from the script (tikcdn/tiktok CDN links)
+    if (!html) {
+      const links = [];
+      const linkRe = /https:\/\/[^"'\s\\]+tikcdn[^"'\s\\]+/g;
+      let m;
+      while ((m = linkRe.exec(data)) !== null) {
+        links.push(m[0]);
       }
-    });
+      if (links.length) {
+        // Build fake html so parseHtml can work
+        html = links.map((l, i) => `<div class="video-links"><a href="${l}">Download ${i + 1}</a></div>`).join('');
+      }
+    }
+
+    if (!html) throw new Error('Gagal mengekstrak konten dari SnapTik.');
+    return html;
   }
 
-  async parseHtml(html) {
+  parseHtml(html) {
     const $ = cheerio.load(html);
     const title = $('.video-title').text().trim() || 'No Title';
     const author = $('.info span').text().trim() || 'Unknown';
-    const thumbnail =
-      $('.avatar').attr('src') || $('#thumbnail').attr('src') || null;
+    const thumbnail = $('.avatar').attr('src') || $('#thumbnail').attr('src') || null;
 
     const links = $('div.video-links a')
       .map((_, el) => $(el).attr('href'))
       .get()
       .filter(Boolean);
 
-    if (!links.length) throw new Error('Video tidak ditemukan.');
+    if (!links.length) throw new Error('Link download tidak ditemukan.');
 
     return {
       title,
@@ -106,9 +102,8 @@ class SnapTikClient {
   }
 
   async process(url) {
-    const script = await this.getScript(url);
-    const { html } = await this.evalScript(script);
-    return await this.parseHtml(html);
+    const html = await this.getHtml(url);
+    return this.parseHtml(html);
   }
 }
 
