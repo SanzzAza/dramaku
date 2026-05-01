@@ -9,7 +9,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Mount routes
 const tiktokHandler = require('./api/tiktok');
+const youtubeHandler = require('./api/youtube');
+const instagramHandler = require('./api/instagram');
+const facebookHandler = require('./api/facebook');
+
 app.get('/api/tiktok', tiktokHandler);
+app.get('/api/youtube', youtubeHandler);
+app.get('/api/instagram', instagramHandler);
+app.get('/api/facebook', facebookHandler);
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
