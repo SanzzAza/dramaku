@@ -1,22 +1,16 @@
 {
   "name": "shenira-api",
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "nodemon server.js",
-    "build": "echo 'No build step needed'",
-    "start": "node server.js"
+    "dev": "vercel dev",
+    "build": "echo 'Ready'",
+    "start": "vercel dev"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "helmet": "^7.1.0",
-    "multer": "^1.4.5-lts.1",
-    "dotenv": "^16.3.1",
-    "uuid": "^9.0.1",
+    "@vercel/node": "^3.2.7",
     "tesseract.js": "^4.1.1",
-    "google-tts-api": "^1.1.2"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.1"
+    "uuid": "^9.0.1",
+    "node-fetch": "^2.7.0"
   }
 }
