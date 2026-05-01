@@ -136,8 +136,9 @@
     </div>
     <div class="cat-label">Downloader</div>
     <div class="nav-item active" onclick="showSection('tiktok',this)"><div class="ni-icon">📥</div>TikTok DL</div>
-    <div class="nav-item" onclick="showSection('coming',this)"><div class="ni-icon">📸</div>Instagram DL</div>
-    <div class="nav-item" onclick="showSection('coming',this)"><div class="ni-icon">▶️</div>YouTube DL</div>
+    <div class="nav-item" onclick="showSection('youtube',this)"><div class="ni-icon">▶️</div>YouTube DL</div>
+    <div class="nav-item" onclick="showSection('instagram',this)"><div class="ni-icon">📸</div>Instagram DL</div>
+    <div class="nav-item" onclick="showSection('facebook',this)"><div class="ni-icon">📘</div>Facebook DL</div>
     <div class="cat-label">Coming Soon</div>
     <div class="nav-item" onclick="showSection('coming',this)" style="opacity:0.4"><div class="ni-icon">🤖</div>AI Chat</div>
     <div class="nav-item" onclick="showSection('coming',this)" style="opacity:0.4"><div class="ni-icon">🎨</div>AI Image</div>
@@ -153,7 +154,7 @@
         <p>Kumpulan API gratis yang bisa langsung kamu pakai. Tanpa login, tanpa ribet.</p>
       </div>
       <div class="stat-grid">
-        <div class="stat-card"><div class="num">1+</div><div class="lbl">Endpoints</div></div>
+        <div class="stat-card"><div class="num">4+</div><div class="lbl">Endpoints</div></div>
         <div class="stat-card"><div class="num">FREE</div><div class="lbl">No API Key</div></div>
         <div class="stat-card"><div class="num">JSON</div><div class="lbl">Response Format</div></div>
       </div>
@@ -209,6 +210,144 @@
       </div>
     </div>
 
+    <!-- YOUTUBE -->
+    <div class="section" id="section-youtube">
+      <div class="page-title">▶️ Downloader</div>
+      <div class="api-card">
+        <div class="api-card-header">
+          <div class="api-icon">▶️</div>
+          <div>
+            <div class="api-title">YouTube DL <span class="api-badge">DOWNLOADER</span></div>
+          </div>
+        </div>
+        <div class="api-desc">Download video YouTube dalam berbagai kualitas. Mendukung link youtube.com maupun youtu.be.</div>
+        <div class="field-group">
+          <div class="field-label">URL YouTube</div>
+          <input class="field-input" type="text" id="youtube-url" placeholder="https://youtu.be/dQw4w9WgXcQ">
+        </div>
+        <button class="btn-execute" id="youtube-btn" onclick="executeAPI('youtube')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          EXECUTE API
+        </button>
+        <div class="endpoint-url-bar" id="youtube-endpoint-bar">GET /api/youtube?url=</div>
+        <div class="response-box" id="youtube-response">
+          <div class="response-header">
+            <span class="response-label">Response Result</span>
+            <div class="response-actions">
+              <button class="res-btn" onclick="copyCurl()">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                COPY CURL
+              </button>
+              <button class="res-btn" onclick="copyCode()">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                CODE
+              </button>
+            </div>
+          </div>
+          <div class="json-viewer">
+            <div class="json-toolbar">
+              <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+              <span class="json-label">JSON RESPONSE</span>
+              <span class="status-badge" id="youtube-status"></span>
+            </div>
+            <pre class="json-output" id="youtube-json"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSTAGRAM -->
+    <div class="section" id="section-instagram">
+      <div class="page-title">📸 Downloader</div>
+      <div class="api-card">
+        <div class="api-card-header">
+          <div class="api-icon">📸</div>
+          <div>
+            <div class="api-title">Instagram DL <span class="api-badge">DOWNLOADER</span></div>
+          </div>
+        </div>
+        <div class="api-desc">Download video/foto dari Instagram. Mendukung post, reels, dan stories (stories harus public).</div>
+        <div class="field-group">
+          <div class="field-label">URL Instagram</div>
+          <input class="field-input" type="text" id="instagram-url" placeholder="https://www.instagram.com/p/xxxxx/">
+        </div>
+        <button class="btn-execute" id="instagram-btn" onclick="executeAPI('instagram')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          EXECUTE API
+        </button>
+        <div class="endpoint-url-bar" id="instagram-endpoint-bar">GET /api/instagram?url=</div>
+        <div class="response-box" id="instagram-response">
+          <div class="response-header">
+            <span class="response-label">Response Result</span>
+            <div class="response-actions">
+              <button class="res-btn" onclick="copyCurl()">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                COPY CURL
+              </button>
+              <button class="res-btn" onclick="copyCode()">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                CODE
+              </button>
+            </div>
+          </div>
+          <div class="json-viewer">
+            <div class="json-toolbar">
+              <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+              <span class="json-label">JSON RESPONSE</span>
+              <span class="status-badge" id="instagram-status"></span>
+            </div>
+            <pre class="json-output" id="instagram-json"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FACEBOOK -->
+    <div class="section" id="section-facebook">
+      <div class="page-title">📘 Downloader</div>
+      <div class="api-card">
+        <div class="api-card-header">
+          <div class="api-icon">📘</div>
+          <div>
+            <div class="api-title">Facebook DL <span class="api-badge">DOWNLOADER</span></div>
+          </div>
+        </div>
+        <div class="api-desc">Download video Facebook dalam kualitas HD atau SD. Mendukung link facebook.com dan fb.watch. Video harus public.</div>
+        <div class="field-group">
+          <div class="field-label">URL Facebook</div>
+          <input class="field-input" type="text" id="facebook-url" placeholder="https://www.facebook.com/watch?v=xxxxx">
+        </div>
+        <button class="btn-execute" id="facebook-btn" onclick="executeAPI('facebook')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          EXECUTE API
+        </button>
+        <div class="endpoint-url-bar" id="facebook-endpoint-bar">GET /api/facebook?url=</div>
+        <div class="response-box" id="facebook-response">
+          <div class="response-header">
+            <span class="response-label">Response Result</span>
+            <div class="response-actions">
+              <button class="res-btn" onclick="copyCurl()">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                COPY CURL
+              </button>
+              <button class="res-btn" onclick="copyCode()">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                CODE
+              </button>
+            </div>
+          </div>
+          <div class="json-viewer">
+            <div class="json-toolbar">
+              <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+              <span class="json-label">JSON RESPONSE</span>
+              <span class="status-badge" id="facebook-status"></span>
+            </div>
+            <pre class="json-output" id="facebook-json"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- COMING SOON -->
     <div class="section" id="section-coming">
       <div style="text-align:center; padding: 60px 20px;">
@@ -252,12 +391,12 @@ async function executeAPI(id) {
   const statusEl = document.getElementById(id + '-status');
   const endpointBar = document.getElementById(id + '-endpoint-bar');
 
-  const url = document.getElementById('tiktok-url').value.trim();
-  if (!url) { alert('Masukkan URL TikTok dulu!'); return; }
+  const url = document.getElementById(id + '-url').value.trim();
+  if (!url) { alert('Masukkan URL dulu!'); return; }
 
-  const endpointUrl = `${BASE_URL}/api/tiktok?url=${encodeURIComponent(url)}`;
+  const endpointUrl = `${BASE_URL}/api/${id}?url=${encodeURIComponent(url)}`;
   lastEndpointUrl = endpointUrl;
-  endpointBar.textContent = endpointUrl || `/api/tiktok?url=${encodeURIComponent(url)}`;
+  endpointBar.textContent = endpointUrl || `/api/${id}?url=${encodeURIComponent(url)}`;
 
   // Loading
   btn.disabled = true;
