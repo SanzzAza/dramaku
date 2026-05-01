@@ -1,93 +1,138 @@
 const axios = require('axios');
+const { CookieJar } = require('tough-cookie');
+const cheerio = require('cheerio');
+const FormData = require('form-data');
+const { wrapper } = require('axios-cookiejar-support');
 
-async function tiktokDL(url) {
-  // Provider 1: tikwm.com
-  try {
-    const res = await axios.post(
-      'https://www.tikwm.com/api/',
-      `url=${encodeURIComponent(url)}&web=1&hd=1`,
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
-          'Referer': 'https://www.tikwm.com/',
-          'Origin': 'https://www.tikwm.com'
-        },
-        timeout: 15000
-      }
+class SnapTikClient {
+  constructor() {
+    this.jar = new CookieJar();
+    this.client = wrapper(axios.create({
+      baseURL: 'https://snaptik.app',
+      jar: this.jar,
+      withCredentials: true,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Mobile Safari/537.36',
+        'Upgrade-Insecure-Requests': '1',
+      },
+      timeout: 30000,
+    }));
+  }
+
+  async getToken() {
+    const { data } = await this.client.get('/en2', {
+      headers: { Referer: 'https://snaptik.app/en2' },
+    });
+    const $ = cheerio.load(data);
+    return $('input[name="token"]').val();
+  }
+
+  async getScript(url) {
+    const token = await this.getToken();
+    if (!token) throw new Error('Gagal mengambil token dari SnapTik.');
+
+    const form = new FormData();
+    form.append('url', url);
+    form.append('lang', 'en2');
+    form.append('token', token);
+
+    const { data } = await this.client.post('/abc2.php', form, {
+      headers: {
+        ...form.getHeaders(),
+        referer: 'https://snaptik.app/en2',
+        origin: 'https://snaptik.app',
+      },
+    });
+
+    return data;
+  }
+
+  async evalScript(script1) {
+    const script2 = await new Promise((resolve) =>
+      Function('eval', script1)(resolve)
     );
-    const d = res.data;
-    if (d && d.code === 0 && d.data) {
-      const v = d.data;
-      return {
-        status: true,
-        message: 'Success',
-        author: {
-          id: v.author?.id || '',
-          username: v.author?.unique_id || '',
-          nickname: v.author?.nickname || '',
-          avatar: v.author?.avatar ? `https://www.tikwm.com${v.author.avatar}` : ''
+
+    return new Promise((resolve, reject) => {
+      let html = '';
+      const mocks = {
+        $: () => ({
+          remove() {},
+          style: { display: '' },
+          get innerHTML() { return html; },
+          set innerHTML(v) { html = v; },
+        }),
+        app: { showAlert: reject },
+        document: { getElementById: () => ({ src: '' }) },
+        fetch: (fetchUrl) => {
+          resolve({ html });
+          return { json: async () => ({}) };
         },
-        title: v.title || '',
-        duration: (v.duration || 0) + 's',
-        cover: v.cover ? `https://www.tikwm.com${v.cover}` : '',
-        music: {
-          title: v.music_info?.title || '',
-          author: v.music_info?.author || '',
-          url: v.music ? `https://www.tikwm.com${v.music}` : ''
+        XMLHttpRequest: function () {
+          return { open() {}, send() {} };
         },
-        stats: {
-          play: v.play_count || 0,
-          like: v.digg_count || 0,
-          comment: v.comment_count || 0,
-          share: v.share_count || 0
-        },
-        download: {
-          no_watermark: v.play ? `https://www.tikwm.com${v.play}` : '',
-          watermark: v.wmplay ? `https://www.tikwm.com${v.wmplay}` : '',
-          audio: v.music ? `https://www.tikwm.com${v.music}` : ''
-        }
+        window: { location: { hostname: 'snaptik.app' } },
+        gtag() {},
+        Math,
       };
-    }
-  } catch (err) { /* lanjut */ }
 
-  // Provider 2: savetik fallback
-  try {
-    const res = await axios.post(
-      'https://savetik.co/api/ajaxSearch',
-      `q=${encodeURIComponent(url)}&lang=id`,
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'User-Agent': 'Mozilla/5.0',
-          'Referer': 'https://savetik.co/'
-        },
-        timeout: 12000
+      try {
+        Function(...Object.keys(mocks), script2)(...Object.values(mocks));
+      } catch (e) {
+        reject(e);
       }
-    );
-    const d = res.data;
-    if (d && d.status === 'ok') {
-      return { status: true, message: 'Success', title: d.vid_title || '', thumbnail: d.thumbnail || '' };
-    }
-  } catch (err) { /* lanjut */ }
+    });
+  }
 
-  throw new Error('Semua provider gagal. Pastikan URL TikTok valid dan coba lagi.');
+  async parseHtml(html) {
+    const $ = cheerio.load(html);
+    const title = $('.video-title').text().trim() || 'No Title';
+    const author = $('.info span').text().trim() || 'Unknown';
+    const thumbnail =
+      $('.avatar').attr('src') || $('#thumbnail').attr('src') || null;
+
+    const links = $('div.video-links a')
+      .map((_, el) => $(el).attr('href'))
+      .get()
+      .filter(Boolean);
+
+    if (!links.length) throw new Error('Video tidak ditemukan.');
+
+    return {
+      title,
+      author,
+      thumbnail,
+      links: [...new Set(links)],
+    };
+  }
+
+  async process(url) {
+    const script = await this.getScript(url);
+    const { html } = await this.evalScript(script);
+    return await this.parseHtml(html);
+  }
 }
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const url = (req.query.url || '').trim();
-  if (!url) return res.status(400).json({ status: false, message: 'Parameter url wajib diisi', example: '/api/tiktok?url=https://vt.tiktok.com/xxx' });
-  if (!url.includes('tiktok')) return res.status(400).json({ status: false, message: 'URL harus dari TikTok' });
+  const url = (req.query.url || (req.body && req.body.url) || '').trim();
+
+  if (!url) {
+    return res.status(400).json({
+      status: false,
+      message: 'Parameter url wajib diisi',
+      example: '/api/tiktok?url=https://vt.tiktok.com/xxx',
+    });
+  }
 
   try {
-    const data = await tiktokDL(url);
-    return res.status(200).json(data);
-  } catch (err) {
-    return res.status(500).json({ status: false, message: err.message });
+    const client = new SnapTikClient();
+    const result = await client.process(url);
+    return res.status(200).json({ status: true, data: result });
+  } catch (error) {
+    return res.status(500).json({ status: false, message: error.message });
   }
 };
