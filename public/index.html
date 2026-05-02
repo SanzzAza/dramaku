@@ -929,12 +929,25 @@
     });
 
     // ── YOUTUBE EXECUTE ──
+    // Update curl box realtime saat user ketik URL
+    document.getElementById('yt-url-input').addEventListener('input', e => {
+      const val = e.target.value.trim();
+      const curlUrl = val
+        ? `${baseUrl}/api/youtube?url=${encodeURIComponent(val)}`
+        : `${baseUrl}/api/youtube?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ`;
+      document.getElementById('yt-curl-text').textContent = `curl "${curlUrl}"`;
+    });
+
     async function executeYtAPI() {
       const urlVal = document.getElementById('yt-url-input').value.trim();
       if (!urlVal) {
         alert('Masukkan URL YouTube terlebih dahulu!');
         return;
       }
+
+      // Update curl box dengan URL yang dipakai
+      document.getElementById('yt-curl-text').textContent =
+        `curl "${baseUrl}/api/youtube?url=${encodeURIComponent(urlVal)}"`;
 
       const btn = document.getElementById('btn-exec-yt');
       btn.disabled = true;
@@ -986,6 +999,23 @@
 
     document.getElementById('yt-url-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') executeYtAPI();
+    });
+
+    // Update curl TikTok & Instagram realtime juga
+    document.getElementById('tiktok-url-input').addEventListener('input', e => {
+      const val = e.target.value.trim();
+      const curlUrl = val
+        ? baseUrl + '/api/tiktok?url=' + encodeURIComponent(val)
+        : baseUrl + '/api/tiktok?url=https://vt.tiktok.com/ZS9mu8NkJ/';
+      document.getElementById('curl-text').textContent = 'curl "' + curlUrl + '"';
+    });
+
+    document.getElementById('ig-url-input').addEventListener('input', e => {
+      const val = e.target.value.trim();
+      const curlUrl = val
+        ? baseUrl + '/api/instagram?url=' + encodeURIComponent(val)
+        : baseUrl + '/api/instagram?url=https://www.instagram.com/p/ABC123/';
+      document.getElementById('ig-curl-text').textContent = 'curl "' + curlUrl + '"';
     });
 
   </script>
