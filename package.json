@@ -1,14 +1,16 @@
 {
-  "name": "tiktok-downloader-api",
+  "name": "dramaku-api",
   "version": "1.0.0",
-  "description": "TikTok Downloader API - No Watermark",
+  "description": "TikTok, Instagram & YouTube Downloader API",
   "private": true,
   "scripts": {
     "dev": "vercel dev",
     "deploy": "vercel --prod"
   },
-  "dependencies": {},
+  "dependencies": {
+    "yt-dlp-exec": "^1.0.2"
+  },
   "engines": {
-    "node": "24.x"
+    "node": "20.x"
   }
 }
