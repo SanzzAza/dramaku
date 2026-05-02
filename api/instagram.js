@@ -1,11 +1,7 @@
 /**
- * Instagram Downloader API
- * Pakai: cheerio (HTML parser) + Instagram embed endpoint
- *
+ * Instagram Downloader API — via api.danzy.web.id
  * GET /api/instagram?url=https://www.instagram.com/reel/...
  */
-
-import * as cheerio from "cheerio";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -13,8 +9,6 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type",
   "Content-Type": "application/json",
 };
-
-const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
@@ -49,133 +43,72 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await fetchViaEmbed(url);
+    const result = await fetchViaDanzy(url);
     return res.status(200).json(result);
   } catch (err) {
     console.error("[Instagram]", err.message);
     return res.status(500).json({
       status: false,
       code: 500,
-      message: err.message || "Gagal mengambil data media.",
+      message: err.message || "Gagal mengambil media.",
     });
   }
 }
 
-async function fetchViaEmbed(url) {
-  // Normalisasi: buang query string, pastikan tidak ada trailing slash ganda
-  const cleanUrl = url.split("?")[0].replace(/\/$/, "");
-  const embedUrl = `${cleanUrl}/embed/captioned/`;
+async function fetchViaDanzy(url) {
+  const apiUrl = `https://api.danzy.web.id/instagram?url=${encodeURIComponent(url)}`;
 
-  const resp = await fetch(embedUrl, {
+  const resp = await fetch(apiUrl, {
+    method: "GET",
     headers: {
-      "User-Agent": UA,
-      "Accept": "text/html,application/xhtml+xml",
-      "Accept-Language": "en-US,en;q=0.9",
-      "Referer": "https://www.instagram.com/",
+      "User-Agent": "Mozilla/5.0 (Android 10; Mobile; rv:131.0) Gecko/131.0 Firefox/131.0",
+      "Accept": "application/json",
     },
   });
 
-  if (!resp.ok) throw new Error(`Instagram embed HTTP ${resp.status}`);
+  if (!resp.ok) {
+    throw new Error(`Danzy API responded ${resp.status}`);
+  }
 
-  const html = await resp.text();
-  const $ = cheerio.load(html);
+  const data = await resp.json();
 
-  // ── Cari video ──────────────────────────────────────────
-  // 1. video_url di dalam JSON (paling reliable)
-  let videoUrl = null;
-  const scriptTags = $("script").toArray();
-  for (const script of scriptTags) {
-    const content = $(script).html() || "";
-    const match = content.match(/"video_url"\s*:\s*"([^"]+)"/);
-    if (match) {
-      videoUrl = decodeUnicode(match[1]);
-      break;
+  // Validasi response dari danzy
+  if (!data.status || !data.result) {
+    throw new Error("Gagal mendapatkan data dari sumber. Coba beberapa saat lagi.");
+  }
+
+  const { type, username, thumb, videos, images, mp3 } = data.result;
+
+  // Bangun result berdasarkan tipe media
+  const result = { type, username: username || null };
+
+  if (type === "video") {
+    if (!videos || videos.length === 0) {
+      throw new Error("URL video tidak ditemukan dalam response.");
     }
+    result.url = videos[0];
+    result.download_url = videos[0];
+    result.thumbnail = thumb || null;
+    result.all_videos = videos; // kalau ada multiple quality
+    result.mp3 = mp3?.[0]?.url || null;
+
+  } else if (type === "image") {
+    if (!images || images.length === 0) {
+      throw new Error("URL gambar tidak ditemukan dalam response.");
+    }
+    result.url = images[0];
+    result.download_url = images[0];
+    result.thumbnail = thumb || null;
+    result.all_images = images; // support carousel/multiple images
+
+  } else {
+    throw new Error(`Tipe media tidak dikenali: ${type}`);
   }
 
-  // 2. <video src> atau <source src>
-  if (!videoUrl) {
-    videoUrl = $("video source").attr("src") || $("video").attr("src") || null;
-  }
-
-  // 3. href ke .mp4
-  if (!videoUrl) {
-    $("a[href]").each((_, el) => {
-      const href = $(el).attr("href") || "";
-      if (href.includes(".mp4")) { videoUrl = href; return false; }
-    });
-  }
-
-  if (videoUrl) {
-    const thumbnail =
-      $("video").attr("poster") ||
-      extractFromScript(scriptTags, $, "thumbnail_url") ||
-      null;
-
-    return {
-      status: true,
-      code: 200,
-      message: "Berhasil mengambil data media.",
-      result: {
-        type: "video",
-        url: videoUrl,
-        download_url: videoUrl,
-        thumbnail: thumbnail ? decodeUnicode(thumbnail) : null,
-      },
-    };
-  }
-
-  // ── Cari image ──────────────────────────────────────────
-  // 1. display_url di script
-  let imgUrl = extractFromScript(scriptTags, $, "display_url");
-
-  // 2. .EmbeddedMediaImage
-  if (!imgUrl) {
-    imgUrl = $("img.EmbeddedMediaImage").attr("src") || null;
-  }
-
-  // 3. img src terbesar
-  if (!imgUrl) {
-    $("img[src]").each((_, el) => {
-      const src = $(el).attr("src") || "";
-      if (src.startsWith("https://") && !src.includes("profile")) {
-        imgUrl = src;
-        return false;
-      }
-    });
-  }
-
-  if (imgUrl) {
-    return {
-      status: true,
-      code: 200,
-      message: "Berhasil mengambil data media.",
-      result: {
-        type: "image",
-        url: decodeUnicode(imgUrl),
-        download_url: decodeUnicode(imgUrl),
-        thumbnail: null,
-      },
-    };
-  }
-
-  throw new Error("Media tidak ditemukan di embed Instagram. Pastikan postingan bersifat publik.");
-}
-
-function extractFromScript(scriptTags, $, key) {
-  for (const script of scriptTags) {
-    const content = $(script).html() || "";
-    const match = content.match(new RegExp(`"${key}"\\s*:\\s*"([^"]+)"`));
-    if (match) return match[1];
-  }
-  return null;
-}
-
-function decodeUnicode(str) {
-  return str
-    .replace(/\\u0026/g, "&")
-    .replace(/\\u003C/g, "<")
-    .replace(/\\u003E/g, ">")
-    .replace(/\\\//g, "/")
-    .replace(/&amp;/g, "&");
+  return {
+    status: true,
+    code: 200,
+    message: "Berhasil mengambil data media.",
+    result,
+  };
 }
