@@ -1,7 +1,9 @@
 /**
- * Instagram Downloader API — via api.danzy.web.id
+ * Instagram Downloader API — via Cobalt (self-hosted on Railway)
  * GET /api/instagram?url=https://www.instagram.com/reel/...
  */
+
+const COBALT_URL = "https://cobalt-api-production-2914.up.railway.app";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -43,7 +45,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await fetchViaDanzy(url);
+    const result = await fetchViaCobalt(url);
     return res.status(200).json(result);
   } catch (err) {
     console.error("[Instagram]", err.message);
@@ -55,60 +57,57 @@ export default async function handler(req, res) {
   }
 }
 
-async function fetchViaDanzy(url) {
-  const apiUrl = `https://api.danzy.web.id/instagram?url=${encodeURIComponent(url)}`;
-
-  const resp = await fetch(apiUrl, {
-    method: "GET",
+async function fetchViaCobalt(url) {
+  const resp = await fetch(COBALT_URL, {
+    method: "POST",
     headers: {
-      "User-Agent": "Mozilla/5.0 (Android 10; Mobile; rv:131.0) Gecko/131.0 Firefox/131.0",
+      "Content-Type": "application/json",
       "Accept": "application/json",
     },
+    body: JSON.stringify({ url }),
   });
 
   if (!resp.ok) {
-    throw new Error(`Danzy API responded ${resp.status}`);
+    throw new Error(`Cobalt responded ${resp.status}`);
   }
 
   const data = await resp.json();
 
-  // Validasi response dari danzy
-  if (!data.status || !data.result) {
-    throw new Error("Gagal mendapatkan data dari sumber. Coba beberapa saat lagi.");
+  // status: "tunnel" atau "redirect" = sukses, langsung ada URL-nya
+  if (data.status === "tunnel" || data.status === "redirect") {
+    return {
+      status: true,
+      code: 200,
+      message: "Berhasil mengambil data media.",
+      result: {
+        type: "video",
+        url: data.url,
+        download_url: data.url,
+        filename: data.filename ?? null,
+        thumbnail: null,
+      },
+    };
   }
 
-  const { type, username, thumb, videos, images, mp3 } = data.result;
+  // status: "picker" = multiple media (carousel/slideshow)
+  if (data.status === "picker") {
+    const items = data.picker ?? [];
 
-  // Bangun result berdasarkan tipe media
-  const result = { type, username: username || null };
-
-  if (type === "video") {
-    if (!videos || videos.length === 0) {
-      throw new Error("URL video tidak ditemukan dalam response.");
-    }
-    result.url = videos[0];
-    result.download_url = videos[0];
-    result.thumbnail = thumb || null;
-    result.all_videos = videos; // kalau ada multiple quality
-    result.mp3 = mp3?.[0]?.url || null;
-
-  } else if (type === "image") {
-    if (!images || images.length === 0) {
-      throw new Error("URL gambar tidak ditemukan dalam response.");
-    }
-    result.url = images[0];
-    result.download_url = images[0];
-    result.thumbnail = thumb || null;
-    result.all_images = images; // support carousel/multiple images
-
-  } else {
-    throw new Error(`Tipe media tidak dikenali: ${type}`);
+    return {
+      status: true,
+      code: 200,
+      message: "Berhasil mengambil data media.",
+      result: {
+        type: items[0]?.type ?? "image",
+        url: items[0]?.url ?? null,
+        download_url: items[0]?.url ?? null,
+        thumbnail: null,
+        all_items: items.map(i => ({ type: i.type, url: i.url })),
+      },
+    };
   }
 
-  return {
-    status: true,
-    code: 200,
-    message: "Berhasil mengambil data media.",
-    result,
-  };
+  // status: "error"
+  const errCode = data.error?.code ?? "unknown";
+  throw new Error(`Cobalt error: ${errCode}`);
 }
