@@ -1,6 +1,6 @@
 /**
  * Instagram Downloader API — No external dependencies
- * Supports: Post, Reel, Story, IGTV
+ * Supports: Post, Reel, IGTV
  * GET /api/instagram?url=https://www.instagram.com/p/...
  */
 
@@ -30,7 +30,7 @@ export default async function handler(req, res) {
       status: false,
       code: 400,
       message: "Parameter 'url' wajib diisi.",
-      example: "/api/instagram?url=https://www.instagram.com/p/ABC123/",
+      example: "/api/instagram?url=https://www.instagram.com/reel/ABC123/",
     });
   }
 
@@ -43,8 +43,7 @@ export default async function handler(req, res) {
     });
   }
 
-  // Try each fetcher in order, return first success
-  const fetchers = [fetchViaIgram, fetchViaSnapinsta];
+  const fetchers = [fetchViaCobaDL, fetchViaInstaAPI];
 
   for (const fetcher of fetchers) {
     try {
@@ -58,98 +57,102 @@ export default async function handler(req, res) {
   return res.status(500).json({
     status: false,
     code: 500,
-    message: "Semua sumber gagal. Pastikan link benar dan akun tidak private.",
+    message: "Gagal mengambil media. Coba lagi beberapa saat.",
   });
 }
 
-// ── FETCHER 1: igram.world ──
-async function fetchViaIgram(url) {
-  const apiUrl = "https://igram.world/api/convert";
-
-  const resp = await fetch(apiUrl, {
+// FETCHER 1: cobalt (co.wuk.sh) - supports Instagram
+async function fetchViaCobaDL(url) {
+  const resp = await fetch("https://co.wuk.sh/api/json", {
     method: "POST",
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "Origin": "https://igram.world",
-      "Referer": "https://igram.world/",
+      "Content-Type": "application/json",
+      "Accept": "application/json",
     },
-    body: new URLSearchParams({ url }),
+    body: JSON.stringify({
+      url,
+      vCodec: "h264",
+      vQuality: "720",
+      aFormat: "mp3",
+      filenamePattern: "classic",
+      isAudioOnly: false,
+      disableMetadata: false,
+    }),
   });
 
-  if (!resp.ok) throw new Error(`igram responded ${resp.status}`);
+  if (!resp.ok) throw new Error(`cobalt responded ${resp.status}`);
 
   const json = await resp.json();
 
-  if (!json || !json.items || json.items.length === 0) {
-    throw new Error("No media found from igram");
+  if (json.status === "error") throw new Error(json.text || "cobalt error");
+
+  if (json.status === "picker") {
+    const items = json.picker.map((item, i) => ({
+      index: i + 1,
+      type: item.type || "video",
+      url: item.url,
+      thumbnail: item.thumb || null,
+    }));
+    return buildResponse(url, items);
   }
 
-  const items = json.items.map((item, i) => ({
-    index: i + 1,
-    type: item.type === "video" ? "video" : "image",
-    url: item.url || null,
-    thumbnail: item.thumbnail || null,
-  }));
+  if (["stream", "redirect", "tunnel"].includes(json.status)) {
+    return buildResponse(url, [{ index: 1, type: "video", url: json.url, thumbnail: null }]);
+  }
 
-  return buildResponse(url, items);
+  throw new Error(`Unknown cobalt status: ${json.status}`);
 }
 
-// ── FETCHER 2: snapinsta.app ──
-async function fetchViaSnapinsta(url) {
-  // Step 1: get token
-  const homeResp = await fetch("https://snapinsta.app/", {
+// FETCHER 2: Instagram internal API (mobile UA)
+async function fetchViaInstaAPI(url) {
+  const match = url.match(/\/(p|reel|tv)\/([A-Za-z0-9_-]+)/);
+  if (!match) throw new Error("Cannot extract shortcode");
+  const shortcode = match[2];
+
+  const resp = await fetch(`https://www.instagram.com/p/${shortcode}/?__a=1&__d=dis`, {
     headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "User-Agent": "Instagram 275.0.0.27.98 Android",
+      "Accept": "application/json",
+      "x-ig-app-id": "936619743392459",
     },
   });
 
-  const homeHtml = await homeResp.text();
-  const tokenMatch = homeHtml.match(/name="_token"\s+value="([^"]+)"/);
-  if (!tokenMatch) throw new Error("Token not found");
-
-  const token = tokenMatch[1];
-
-  // Step 2: POST with token
-  const resp = await fetch("https://snapinsta.app/action.php", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "Origin": "https://snapinsta.app",
-      "Referer": "https://snapinsta.app/",
-      "X-Requested-With": "XMLHttpRequest",
-    },
-    body: new URLSearchParams({ url, _token: token }),
-  });
-
-  if (!resp.ok) throw new Error(`snapinsta responded ${resp.status}`);
+  if (!resp.ok) throw new Error(`Instagram API responded ${resp.status}`);
 
   const json = await resp.json();
+  const media = json?.items?.[0] ?? json?.graphql?.shortcode_media;
+  if (!media) throw new Error("No media in response");
 
-  // Parse HTML response from snapinsta
-  const html = json.data || "";
-  const videoUrls = [...html.matchAll(/href="(https:\/\/[^"]+\.mp4[^"]*)"/g)].map(m => m[1]);
-  const imageUrls = [...html.matchAll(/href="(https:\/\/[^"]+\.(jpg|jpeg|webp)[^"]*)"/g)].map(m => m[1]);
+  const items = [];
 
-  const allUrls = videoUrls.length > 0 ? videoUrls : imageUrls;
-  if (allUrls.length === 0) throw new Error("No media found from snapinsta");
+  if (media.carousel_media) {
+    media.carousel_media.forEach((node, i) => {
+      const isVid = node.media_type === 2;
+      items.push({
+        index: i + 1,
+        type: isVid ? "video" : "image",
+        url: isVid ? node.video_versions?.[0]?.url : node.image_versions2?.candidates?.[0]?.url,
+        thumbnail: node.image_versions2?.candidates?.[0]?.url || null,
+      });
+    });
+  } else {
+    const isVid = media.media_type === 2;
+    items.push({
+      index: 1,
+      type: isVid ? "video" : "image",
+      url: isVid ? media.video_versions?.[0]?.url : media.image_versions2?.candidates?.[0]?.url,
+      thumbnail: media.image_versions2?.candidates?.[0]?.url || null,
+    });
+  }
 
-  const items = allUrls.map((u, i) => ({
-    index: i + 1,
-    type: videoUrls.length > 0 ? "video" : "image",
-    url: u,
-    thumbnail: null,
-  }));
-
+  if (!items[0]?.url) throw new Error("No URLs found");
   return buildResponse(url, items);
 }
 
-// ── BUILD UNIFIED RESPONSE ──
+// BUILD RESPONSE
 function buildResponse(sourceUrl, items) {
   const isVideo = items.some(i => i.type === "video");
   const isMulti = items.length > 1;
-
   return {
     status: true,
     code: 200,
