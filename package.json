@@ -1,16 +1,16 @@
 {
-  "name": "shenira-api",
+  "name": "tiktok-downloader-api",
   "version": "1.0.0",
-  "type": "module",
+  "description": "TikTok Downloader API - No Watermark",
+  "private": true,
   "scripts": {
     "dev": "vercel dev",
-    "build": "echo 'Ready'",
-    "start": "vercel dev"
+    "deploy": "vercel --prod"
   },
   "dependencies": {
-    "@vercel/node": "^3.2.7",
-    "tesseract.js": "^4.1.1",
-    "uuid": "^9.0.1",
-    "node-fetch": "^2.7.0"
+    "@tobyg74/tiktok-api-dl": "^3.1.5"
+  },
+  "engines": {
+    "node": "18.x"
   }
 }
