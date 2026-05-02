@@ -64,12 +64,21 @@ const server = createServer(async (req, res) => {
 
   // â”€â”€ Route API â”€â”€
   const apiMap = {
-    "/api/tiktok":    "./api/tiktok.js",
-    "/api/instagram": "./api/instagram.js",
-    "/api/youtube":   "./api/youtube.js",
-    "/api/qrcode":    "./api/qrcode.js",
-    "/api/aiimage":   "./api/aiimage.js",
-    "/api/shorturl":  "./api/shorturl.js",
+    "/api/tiktok":     "./api/tiktok.js",
+    "/api/instagram":  "./api/instagram.js",
+    "/api/youtube":    "./api/youtube.js",
+    "/api/qrcode":     "./api/qrcode.js",
+    "/api/aiimage":    "./api/aiimage.js",
+    "/api/shorturl":   "./api/shorturl.js",
+    "/api/cuaca":      "./api/cuaca.js",
+    "/api/cekno":      "./api/cekno.js",
+    "/api/kurs":       "./api/kurs.js",
+    "/api/quote":      "./api/quote.js",
+    "/api/anime":      "./api/anime.js",
+    "/api/facebook":   "./api/facebook.js",
+    "/api/pinterest":  "./api/pinterest.js",
+    "/api/screenshot": "./api/screenshot.js",
+    "/api/tts":        "./api/tts.js",
   };
 
   if (apiMap[pathname]) {
