@@ -3,995 +3,754 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SanzXD API — Download Anything</title>
+<title>SanzXD API</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#050508;
-  --surface:#0c0c14;
-  --surface2:#111120;
-  --border:rgba(255,255,255,0.06);
-  --border-glow:rgba(120,100,255,0.3);
-  --primary:#7c5cfc;
-  --primary-dim:#5a3fd4;
-  --accent:#00e5ff;
-  --accent2:#ff4d8d;
-  --green:#00ff9d;
-  --yellow:#ffe066;
+  --bg:#0d0d1a;
+  --bg2:#12122b;
+  --surface:#181830;
+  --surface2:#1e1e3a;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(139,92,246,0.25);
+  --primary:#7c3aed;
+  --primary-light:#8b5cf6;
+  --primary-glow:rgba(124,58,237,0.35);
   --text:#f0eeff;
-  --muted:#6b6880;
-  --muted2:#9b96b8;
-  --mono:'Space Mono',monospace;
-  --sans:'Syne',sans-serif;
+  --text2:#a09cc0;
+  --muted:#5a5680;
+  --sans:'Plus Jakarta Sans',sans-serif;
 }
-
 html{scroll-behavior:smooth}
-body{
-  font-family:var(--sans);
-  background:var(--bg);
-  color:var(--text);
-  overflow-x:hidden;
-  min-height:100vh;
-}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 
-/* ─── NOISE OVERLAY ─── */
 body::before{
-  content:'';
-  position:fixed;
-  inset:0;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-  opacity:0.025;
-  pointer-events:none;
-  z-index:0;
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(124,58,237,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(109,40,217,0.1) 0%, transparent 50%);
 }
 
-/* ─── GLOW ORBS ─── */
-.orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0}
-.orb-1{width:600px;height:600px;background:radial-gradient(circle,rgba(124,92,252,0.18) 0%,transparent 70%);top:-200px;left:-100px}
-.orb-2{width:500px;height:500px;background:radial-gradient(circle,rgba(0,229,255,0.1) 0%,transparent 70%);bottom:-100px;right:-100px}
-.orb-3{width:400px;height:400px;background:radial-gradient(circle,rgba(255,77,141,0.08) 0%,transparent 70%);top:40%;left:40%}
-
-/* ─── NAV ─── */
-nav{
+/* ── NAVBAR ── */
+.navbar{
   position:fixed;top:0;left:0;right:0;z-index:100;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:20px 48px;
+  display:flex;align-items:center;gap:16px;
+  padding:0 24px;height:60px;
+  background:rgba(13,13,26,0.85);
+  backdrop-filter:blur(16px);
   border-bottom:1px solid var(--border);
-  background:rgba(5,5,8,0.75);
-  backdrop-filter:blur(20px);
 }
-.nav-logo{
-  display:flex;align-items:center;gap:10px;
-  font-weight:800;font-size:18px;letter-spacing:-0.02em;
-  text-decoration:none;color:var(--text);
-}
-.logo-icon{
-  width:32px;height:32px;
-  background:linear-gradient(135deg,var(--primary),var(--accent));
-  border-radius:8px;
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0}
+.nav-logo-img{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,#7c3aed,#a855f7);
   display:flex;align-items:center;justify-content:center;
-  font-size:16px;
-  box-shadow:0 0 20px rgba(124,92,252,0.4);
+  font-size:15px;font-weight:800;color:#fff;
+  box-shadow:0 0 16px rgba(124,58,237,0.5);
 }
-.logo-text span{color:var(--primary)}
-.nav-links{display:flex;align-items:center;gap:32px}
+.nav-logo-text{font-size:15px;font-weight:800;color:var(--text);letter-spacing:-0.01em}
+.nav-logo-text span{color:var(--primary-light)}
+.nav-links{display:flex;align-items:center;gap:4px;flex:1;justify-content:center}
 .nav-links a{
-  font-size:13px;font-weight:600;color:var(--muted2);
-  text-decoration:none;letter-spacing:0.03em;
-  transition:color 0.2s;
+  font-size:13px;font-weight:600;color:var(--text2);
+  text-decoration:none;padding:6px 14px;border-radius:8px;
+  transition:all 0.15s;letter-spacing:0.02em;
 }
-.nav-links a:hover{color:var(--text)}
-.nav-badge{
-  display:flex;align-items:center;gap:6px;
-  background:rgba(0,255,157,0.08);
-  border:1px solid rgba(0,255,157,0.2);
-  color:var(--green);
-  font-family:var(--mono);font-size:10px;font-weight:700;
-  padding:6px 14px;border-radius:100px;
-  letter-spacing:0.08em;
+.nav-links a:hover,.nav-links a.active{color:var(--text);background:rgba(255,255,255,0.05)}
+.nav-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.nav-btn{
+  background:var(--primary);color:#fff;
+  font-family:var(--sans);font-size:13px;font-weight:700;
+  padding:8px 18px;border-radius:10px;border:none;cursor:pointer;
+  text-decoration:none;white-space:nowrap;
+  box-shadow:0 0 20px var(--primary-glow);
+  transition:all 0.2s;
 }
-.nav-badge::before{
-  content:'';width:6px;height:6px;background:var(--green);
-  border-radius:50%;animation:pulse 2s infinite;
-}
+.nav-btn:hover{background:#6d28d9}
 
-/* ─── HERO ─── */
-.hero{
-  position:relative;z-index:1;
-  min-height:100vh;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:120px 24px 80px;
-  text-align:center;
+/* ── PAGES ── */
+.page{display:none;position:relative;z-index:1;min-height:100vh;padding-top:60px}
+.page.active{display:block}
+
+/* ══ HOME ══════════════════════════════════════════ */
+.home-hero{
+  display:flex;flex-direction:column;align-items:center;
+  text-align:center;padding:64px 24px 48px;
 }
-.hero-eyebrow{
-  display:inline-flex;align-items:center;gap:8px;
-  background:rgba(124,92,252,0.08);
-  border:1px solid rgba(124,92,252,0.25);
-  border-radius:100px;padding:7px 18px;
-  font-family:var(--mono);font-size:11px;font-weight:700;
-  color:var(--primary);letter-spacing:0.12em;text-transform:uppercase;
-  margin-bottom:32px;
-  animation:fadeUp 0.6s ease both;
+.hero-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(124,58,237,0.1);border:1px solid rgba(139,92,246,0.3);
+  border-radius:100px;padding:6px 16px;
+  font-size:12px;font-weight:600;color:#a78bfa;
+  margin-bottom:28px;letter-spacing:0.04em;
+}
+.hero-avatar{
+  width:72px;height:72px;border-radius:18px;
+  background:linear-gradient(135deg,#7c3aed,#a855f7,#6366f1);
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;margin-bottom:28px;
+  box-shadow:0 0 48px rgba(124,58,237,0.45),0 0 0 1px rgba(139,92,246,0.3);
 }
 .hero h1{
-  font-size:clamp(3rem,8vw,7rem);
-  font-weight:800;
-  letter-spacing:-0.04em;
-  line-height:0.95;
-  margin-bottom:12px;
-  animation:fadeUp 0.6s 0.1s ease both;
-}
-.hero h1 .line-2{
-  display:block;
-  background:linear-gradient(135deg,var(--primary) 0%,var(--accent) 50%,var(--accent2) 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
-.hero-sub{
-  font-size:clamp(15px,2vw,18px);
-  color:var(--muted2);line-height:1.7;
-  max-width:520px;margin:24px auto 48px;
-  animation:fadeUp 0.6s 0.2s ease both;
-}
-.hero-sub strong{color:var(--text);font-weight:700}
-
-/* ─── CTA BUTTONS ─── */
-.hero-cta{
-  display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
-  animation:fadeUp 0.6s 0.3s ease both;
-  margin-bottom:72px;
-}
-.btn-primary{
-  display:flex;align-items:center;gap:8px;
-  background:linear-gradient(135deg,var(--primary),var(--primary-dim));
-  color:#fff;font-family:var(--sans);font-weight:700;font-size:14px;
-  padding:14px 28px;border-radius:12px;border:none;cursor:pointer;
-  text-decoration:none;
-  box-shadow:0 0 30px rgba(124,92,252,0.35),inset 0 1px 0 rgba(255,255,255,0.1);
-  transition:all 0.2s;
-  letter-spacing:0.01em;
-}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 0 40px rgba(124,92,252,0.5),inset 0 1px 0 rgba(255,255,255,0.1)}
-.btn-ghost{
-  display:flex;align-items:center;gap:8px;
-  background:transparent;
-  border:1px solid var(--border-glow);
-  color:var(--muted2);font-family:var(--sans);font-weight:600;font-size:14px;
-  padding:14px 28px;border-radius:12px;cursor:pointer;
-  text-decoration:none;
-  transition:all 0.2s;
-}
-.btn-ghost:hover{border-color:var(--primary);color:var(--text);background:rgba(124,92,252,0.06)}
-
-/* ─── PLATFORM CARDS ─── */
-.hero-platforms{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
-  max-width:700px;width:100%;
-  animation:fadeUp 0.6s 0.4s ease both;
-}
-.platform-card{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:16px;padding:24px 20px;
-  text-align:left;
-  cursor:pointer;
-  transition:all 0.25s;
-  position:relative;overflow:hidden;
-}
-.platform-card::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,var(--card-color,transparent) 0%,transparent 60%);
-  opacity:0;transition:opacity 0.25s;
-}
-.platform-card:hover{border-color:var(--card-border,var(--border-glow));transform:translateY(-3px)}
-.platform-card:hover::before{opacity:0.06}
-.card-tt{--card-color:#ffffff;--card-border:rgba(255,255,255,0.15)}
-.card-ig{--card-color:#e1306c;--card-border:rgba(225,48,108,0.3)}
-.card-yt{--card-color:#ff0000;--card-border:rgba(255,0,0,0.2)}
-.platform-icon{font-size:28px;margin-bottom:14px}
-.platform-name{font-size:14px;font-weight:800;margin-bottom:4px}
-.platform-desc{font-size:12px;color:var(--muted);line-height:1.5}
-.platform-tag{
-  display:inline-flex;margin-top:12px;
-  font-family:var(--mono);font-size:10px;font-weight:700;
-  padding:3px 8px;border-radius:5px;
-  background:rgba(124,92,252,0.1);color:var(--primary);
-  border:1px solid rgba(124,92,252,0.2);
-}
-
-/* ─── SECTION SHARED ─── */
-section{position:relative;z-index:1;padding:80px 24px}
-.section-inner{max-width:1100px;margin:0 auto}
-.section-label{
-  font-family:var(--mono);font-size:10px;font-weight:700;
-  color:var(--primary);letter-spacing:0.2em;text-transform:uppercase;
-  margin-bottom:16px;
-}
-.section-title{
-  font-size:clamp(1.8rem,4vw,3rem);font-weight:800;
+  font-size:clamp(2rem,8vw,3rem);font-weight:800;
   letter-spacing:-0.03em;line-height:1.1;margin-bottom:16px;
 }
-.section-sub{font-size:15px;color:var(--muted2);line-height:1.7;max-width:480px}
+.hero h1 .grad{color:var(--primary-light)}
+.hero-sub{font-size:14px;color:var(--text2);line-height:1.7;max-width:400px;margin-bottom:32px}
+.hero-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:56px}
+.btn-primary{
+  background:var(--primary);color:#fff;
+  font-family:var(--sans);font-size:13px;font-weight:700;
+  padding:12px 24px;border-radius:10px;border:none;cursor:pointer;
+  text-decoration:none;display:inline-block;
+  box-shadow:0 0 24px var(--primary-glow);transition:all 0.2s;
+}
+.btn-primary:hover{background:#6d28d9}
+.btn-outline{
+  background:transparent;color:var(--text2);
+  font-family:var(--sans);font-size:13px;font-weight:700;
+  padding:12px 24px;border-radius:10px;
+  border:1px solid var(--border2);cursor:pointer;
+  text-decoration:none;display:inline-block;transition:all 0.2s;
+}
+.btn-outline:hover{color:var(--text);border-color:rgba(139,92,246,0.5);background:rgba(124,58,237,0.05)}
 
-/* ─── FEATURES GRID ─── */
-.features{background:transparent;border-top:1px solid var(--border)}
-.features-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
-  background:var(--border);
-  border:1px solid var(--border);border-radius:20px;overflow:hidden;
-  margin-top:56px;
+/* FEATURE CARDS */
+.home-features{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+  padding:0 24px 48px;max-width:780px;margin:0 auto;
 }
-.feat-cell{
-  background:var(--bg);
-  padding:36px 32px;
-  position:relative;overflow:hidden;
-  transition:background 0.2s;
+.feat-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:24px 20px;
+  transition:border-color 0.2s,transform 0.2s;
 }
-.feat-cell:hover{background:var(--surface)}
-.feat-cell::after{
-  content:attr(data-num);
-  position:absolute;right:24px;top:20px;
-  font-family:var(--mono);font-size:11px;color:var(--border);
-  font-weight:700;
-}
+.feat-card:hover{border-color:var(--border2);transform:translateY(-2px)}
 .feat-icon{
-  width:44px;height:44px;border-radius:12px;
+  width:40px;height:40px;border-radius:10px;
+  background:rgba(124,58,237,0.12);border:1px solid rgba(139,92,246,0.2);
   display:flex;align-items:center;justify-content:center;
-  font-size:20px;margin-bottom:20px;
+  font-size:18px;margin-bottom:14px;
 }
-.feat-icon-1{background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.2)}
-.feat-icon-2{background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.15)}
-.feat-icon-3{background:rgba(0,255,157,0.08);border:1px solid rgba(0,255,157,0.15)}
-.feat-icon-4{background:rgba(255,77,141,0.08);border:1px solid rgba(255,77,141,0.15)}
-.feat-icon-5{background:rgba(255,224,102,0.08);border:1px solid rgba(255,224,102,0.15)}
-.feat-icon-6{background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.2)}
-.feat-cell h3{font-size:15px;font-weight:800;margin-bottom:8px;letter-spacing:-0.01em}
-.feat-cell p{font-size:13px;color:var(--muted2);line-height:1.65}
+.feat-card h3{font-size:14px;font-weight:700;margin-bottom:6px}
+.feat-card p{font-size:12px;color:var(--text2);line-height:1.6}
 
-/* ─── ENDPOINTS SECTION ─── */
-.endpoints{border-top:1px solid var(--border)}
-.endpoints-layout{
-  display:grid;grid-template-columns:280px 1fr;gap:32px;
-  margin-top:56px;align-items:start;
-}
-.ep-nav{
+/* FAQ */
+.home-faq{padding:0 24px 64px;max-width:680px;margin:0 auto}
+.home-faq h2{font-size:22px;font-weight:800;text-align:center;margin-bottom:8px;letter-spacing:-0.02em}
+.faq-sub{font-size:13px;color:var(--text2);text-align:center;margin-bottom:28px}
+.faq-item{
   background:var(--surface);border:1px solid var(--border);
-  border-radius:16px;overflow:hidden;position:sticky;top:100px;
+  border-radius:14px;padding:18px 20px;margin-bottom:10px;
+  cursor:pointer;transition:border-color 0.2s;
 }
-.ep-nav-item{
-  display:flex;align-items:center;gap:12px;
-  padding:16px 20px;cursor:pointer;
-  border-bottom:1px solid var(--border);
-  transition:background 0.15s;
-  user-select:none;
-}
-.ep-nav-item:last-child{border-bottom:none}
-.ep-nav-item:hover{background:rgba(255,255,255,0.03)}
-.ep-nav-item.active{background:rgba(124,92,252,0.08)}
-.ep-nav-item.active .ep-nav-dot{background:var(--primary);box-shadow:0 0 8px var(--primary)}
-.ep-nav-dot{
-  width:8px;height:8px;border-radius:50%;
-  background:var(--muted);flex-shrink:0;
-  transition:all 0.2s;
-}
-.ep-nav-info{}
-.ep-nav-name{font-size:13px;font-weight:700}
-.ep-nav-path{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px}
+.faq-item:hover{border-color:var(--border2)}
+.faq-q{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600}
+.faq-q::before{content:'›';color:var(--primary-light);font-size:18px;font-weight:700;transition:transform 0.2s;display:inline-block}
+.faq-item.open .faq-q::before{transform:rotate(90deg)}
+.faq-a{font-size:13px;color:var(--text2);line-height:1.65;margin-top:10px;padding-left:22px;display:none}
+.faq-item.open .faq-a{display:block}
 
-/* ─── ENDPOINT PANEL ─── */
-.ep-panel{display:none}
-.ep-panel.active{display:block;animation:fadeUp 0.2s ease}
-.ep-header{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:16px;padding:28px 32px;margin-bottom:20px;
+/* FOOTER */
+.footer{
+  position:relative;z-index:1;
+  border-top:1px solid var(--border);
+  padding:40px 24px;
+  display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:32px;
+  max-width:860px;margin:0 auto;
 }
-.ep-method-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
-.badge-method{
-  font-family:var(--mono);font-size:11px;font-weight:700;
-  padding:5px 12px;border-radius:7px;
-  background:rgba(0,255,157,0.1);color:var(--green);
-  border:1px solid rgba(0,255,157,0.2);
+.footer-brand-name{font-size:15px;font-weight:800}
+.footer-brand-name span{color:var(--primary-light)}
+.footer-brand p{font-size:12px;color:var(--muted);line-height:1.6;margin-top:8px}
+.footer-logo-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.footer-col h4{font-size:13px;font-weight:700;margin-bottom:12px}
+.footer-col a{display:block;font-size:13px;color:var(--text2);text-decoration:none;margin-bottom:8px;transition:color 0.15s}
+.footer-col a:hover{color:var(--text)}
+.footer-bottom{
+  text-align:center;padding:16px 24px 32px;
+  font-size:12px;color:var(--muted);
+  position:relative;z-index:1;
+  border-top:1px solid var(--border);
 }
-.ep-path{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--text)}
-.ep-desc{font-size:14px;color:var(--muted2);margin-top:8px}
 
-.ep-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:16px;overflow:hidden;margin-bottom:20px;
+/* ══ DOCS ══════════════════════════════════════════ */
+.docs-inner{padding:24px 20px 60px;max-width:720px;margin:0 auto}
+.docs-search-wrap{margin-bottom:24px}
+.docs-search{
+  width:100%;background:var(--surface);
+  border:1px solid var(--border);border-radius:12px;
+  padding:13px 16px 13px 44px;
+  color:var(--text);font-family:var(--sans);font-size:14px;
+  outline:none;transition:border-color 0.2s;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 20 20' fill='%235a5680'%3E%3Cpath fill-rule='evenodd' d='M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z' clip-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:16px center;
 }
-.ep-card-header{
-  padding:14px 20px;border-bottom:1px solid var(--border);
+.docs-search::placeholder{color:var(--muted)}
+.docs-search:focus{border-color:var(--border2)}
+
+.cat-label{
+  font-size:12px;font-weight:800;color:var(--primary-light);
+  text-transform:uppercase;letter-spacing:0.12em;
+  margin-bottom:12px;margin-top:28px;
+  display:flex;align-items:center;gap:10px;
+}
+.cat-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.api-list{display:flex;flex-direction:column;gap:8px}
+.api-item{
+  display:flex;align-items:center;gap:14px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:14px 16px;
+  cursor:pointer;transition:all 0.15s;
+}
+.api-item:hover{border-color:var(--border2);background:var(--surface2)}
+.api-icon{
+  width:38px;height:38px;border-radius:10px;
+  background:rgba(124,58,237,0.1);border:1px solid rgba(139,92,246,0.15);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.api-info{flex:1;min-width:0}
+.api-name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px}
+.api-name{font-size:14px;font-weight:700;color:var(--text)}
+.api-badge{
+  font-size:10px;font-weight:700;
+  padding:2px 8px;border-radius:5px;letter-spacing:0.04em;
+  background:rgba(124,58,237,0.15);color:#a78bfa;
+  border:1px solid rgba(139,92,246,0.2);text-transform:uppercase;
+}
+.api-desc{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.api-chevron{color:var(--muted);font-size:18px;flex-shrink:0}
+
+/* ══ DETAIL ══════════════════════════════════════════ */
+.detail-inner{padding:20px 20px 60px;max-width:720px;margin:0 auto}
+.back-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;font-weight:600;color:var(--text2);
+  cursor:pointer;margin-bottom:24px;
+  border:none;background:none;padding:0;font-family:var(--sans);
+  transition:color 0.15s;
+}
+.back-btn:hover{color:var(--text)}
+.detail-header{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:24px;margin-bottom:14px;
+}
+.detail-icon-row{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.detail-icon{
+  width:48px;height:48px;border-radius:12px;
+  background:rgba(124,58,237,0.12);border:1px solid rgba(139,92,246,0.2);
+  display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;
+}
+.detail-title{font-size:20px;font-weight:800;letter-spacing:-0.02em}
+.detail-badge-green{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);
+  color:#34d399;font-size:11px;font-weight:700;
+  padding:4px 12px;border-radius:100px;font-family:monospace;
+}
+.detail-path{
+  font-family:monospace;font-size:13px;
+  background:rgba(0,0,0,0.3);border-radius:8px;
+  padding:10px 14px;color:#a78bfa;
+  border:1px solid var(--border);margin-bottom:10px;word-break:break-all;
+}
+.detail-desc{font-size:13px;color:var(--text2);line-height:1.65}
+
+.detail-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;margin-bottom:14px;
+}
+.detail-card-header{
   display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;border-bottom:1px solid var(--border);
 }
-.ep-card-title{
-  font-family:var(--mono);font-size:10px;font-weight:700;
-  color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;
+.detail-card-title{
+  font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:0.12em;font-family:monospace;
 }
-.ep-card-body{padding:20px}
+.btn-copy{
+  background:none;border:1px solid var(--border2);
+  color:var(--text2);font-family:var(--sans);font-size:11px;font-weight:700;
+  padding:5px 12px;border-radius:7px;cursor:pointer;
+  transition:all 0.15s;
+}
+.btn-copy:hover{color:var(--primary-light);border-color:var(--primary-light)}
 
-/* ─── PARAMS TABLE ─── */
-.params-table{width:100%;border-collapse:collapse}
-.params-table th{
-  text-align:left;padding:10px 16px;
-  font-family:var(--mono);font-size:10px;text-transform:uppercase;
-  letter-spacing:0.1em;color:var(--muted);font-weight:700;
+.param-table{width:100%;border-collapse:collapse}
+.param-table th{
+  text-align:left;padding:10px 20px;
+  font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:0.08em;font-family:monospace;
   border-bottom:1px solid var(--border);
 }
-.params-table td{
-  padding:13px 16px;border-bottom:1px solid rgba(255,255,255,0.03);
-  font-size:13px;color:var(--muted2);vertical-align:top;
+.param-table td{
+  padding:13px 20px;border-bottom:1px solid rgba(255,255,255,0.03);
+  font-size:13px;color:var(--text2);vertical-align:top;
 }
-.params-table tr:last-child td{border-bottom:none}
-.param-name{font-family:var(--mono);color:#a78bfa}
-.param-type{font-family:var(--mono);color:var(--yellow);font-size:12px}
-.badge-req{
-  font-family:var(--mono);font-size:10px;font-weight:700;
-  padding:3px 8px;border-radius:5px;
-  background:rgba(255,77,141,0.1);color:var(--accent2);
-  border:1px solid rgba(255,77,141,0.2);
-}
-.badge-opt{
-  font-family:var(--mono);font-size:10px;font-weight:700;
-  padding:3px 8px;border-radius:5px;
-  background:rgba(124,92,252,0.1);color:var(--primary);
-  border:1px solid rgba(124,92,252,0.2);
-}
+.param-table tr:last-child td{border-bottom:none}
+.p-name{font-family:monospace;color:#a78bfa}
+.p-type{font-family:monospace;color:#fbbf24;font-size:12px}
+.b-req{font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.2);font-family:monospace}
+.b-opt{font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;background:rgba(124,58,237,0.12);color:#a78bfa;border:1px solid rgba(139,92,246,0.2);font-family:monospace}
 
-/* ─── CURL BOX ─── */
 .curl-box{
-  background:rgba(0,0,0,0.4);border-radius:10px;
-  padding:16px 20px;
-  font-family:var(--mono);font-size:12px;color:var(--muted2);
-  display:flex;gap:12px;align-items:flex-start;
-  overflow-x:auto;
+  padding:16px 20px;font-family:monospace;font-size:13px;color:var(--text2);
+  display:flex;gap:10px;align-items:flex-start;overflow-x:auto;
+  background:rgba(0,0,0,0.25);
 }
-.curl-box span{flex:1;word-break:break-all;line-height:1.7}
-.curl-dollar{color:var(--primary);flex-shrink:0;font-weight:700}
-.btn-copy{
-  background:none;border:1px solid var(--border-glow);
-  color:var(--muted2);font-family:var(--mono);font-size:10px;
-  font-weight:700;padding:5px 12px;border-radius:7px;cursor:pointer;
-  letter-spacing:0.05em;flex-shrink:0;
-  transition:all 0.2s;
-}
-.btn-copy:hover{color:var(--primary);border-color:var(--primary)}
+.curl-dollar{color:var(--primary-light);flex-shrink:0;font-weight:700}
+.curl-text{flex:1;word-break:break-all;line-height:1.7}
 
-/* ─── TRY IT ─── */
+.try-body{padding:20px}
+.yt-options{padding:16px 20px 0}
+.opt-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;font-family:monospace}
+.opt-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.opt-btn{
+  font-family:monospace;font-size:11px;font-weight:700;
+  padding:6px 14px;border-radius:7px;cursor:pointer;
+  border:1px solid var(--border);background:transparent;
+  color:var(--text2);transition:all 0.15s;
+}
+.opt-btn.active{background:rgba(124,58,237,0.15);color:var(--primary-light);border-color:var(--border2)}
+
 .try-row{display:flex;gap:10px;flex-wrap:wrap}
 .url-input{
-  flex:1;min-width:200px;
-  background:rgba(0,0,0,0.4);
-  border:1px solid var(--border-glow);
-  border-radius:10px;padding:12px 18px;
-  color:var(--text);font-family:var(--mono);font-size:13px;
-  outline:none;transition:border-color 0.2s;
+  flex:1;min-width:180px;
+  background:rgba(0,0,0,0.3);
+  border:1px solid var(--border2);border-radius:10px;
+  padding:12px 16px;color:var(--text);
+  font-family:monospace;font-size:13px;outline:none;
+  transition:border-color 0.2s;
 }
 .url-input::placeholder{color:var(--muted)}
-.url-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(124,92,252,0.1)}
+.url-input:focus{border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(124,58,237,0.1)}
 .btn-exec{
-  display:flex;align-items:center;gap:8px;
-  background:linear-gradient(135deg,var(--primary),var(--primary-dim));
-  color:#fff;font-family:var(--sans);font-weight:700;font-size:13px;
-  padding:12px 22px;border-radius:10px;border:none;cursor:pointer;
-  box-shadow:0 0 20px rgba(124,92,252,0.25);
-  transition:all 0.2s;flex-shrink:0;
+  display:flex;align-items:center;gap:7px;
+  background:var(--primary);color:#fff;
+  font-family:var(--sans);font-weight:700;font-size:13px;
+  padding:12px 20px;border-radius:10px;border:none;cursor:pointer;
+  transition:all 0.2s;flex-shrink:0;white-space:nowrap;
+  box-shadow:0 0 20px var(--primary-glow);
 }
-.btn-exec:hover:not(:disabled){opacity:0.85;transform:translateY(-1px)}
+.btn-exec:hover:not(:disabled){background:#6d28d9}
 .btn-exec:disabled{opacity:0.5;cursor:not-allowed}
-.exec-icon{width:14px;height:14px}
 
-/* ─── RESPONSE ─── */
-.res-wrap{margin-top:16px;display:none}
-.res-wrap.show{display:block;animation:fadeUp 0.2s ease}
+.res-wrap{margin-top:14px;display:none}
+.res-wrap.show{display:block}
 .res-topbar{
-  display:flex;align-items:center;gap:8px;
+  display:flex;align-items:center;gap:6px;
   padding:10px 16px;
   background:rgba(0,0,0,0.3);
-  border:1px solid var(--border);
-  border-bottom:none;
+  border:1px solid var(--border);border-bottom:none;
   border-radius:10px 10px 0 0;
 }
 .dot{width:10px;height:10px;border-radius:50%}
 .dot-r{background:#ff5f57}.dot-y{background:#ffbd2e}.dot-g{background:#28ca41}
-.res-label{font-family:var(--mono);font-size:10px;color:var(--muted);flex:1;letter-spacing:0.08em;text-transform:uppercase}
-.badge-ok{
-  font-family:var(--mono);font-size:10px;font-weight:700;
-  padding:3px 10px;border-radius:5px;
-  background:rgba(0,255,157,0.1);color:var(--green);
-  border:1px solid rgba(0,255,157,0.2);
-}
-.badge-err{
-  font-family:var(--mono);font-size:10px;font-weight:700;
-  padding:3px 10px;border-radius:5px;
-  background:rgba(255,77,141,0.1);color:var(--accent2);
-  border:1px solid rgba(255,77,141,0.2);
-}
+.res-label{font-family:monospace;font-size:10px;color:var(--muted);flex:1;text-transform:uppercase;letter-spacing:0.08em}
+.badge-ok{font-family:monospace;font-size:10px;font-weight:700;padding:3px 10px;border-radius:5px;background:rgba(52,211,153,0.1);color:#34d399;border:1px solid rgba(52,211,153,0.2)}
+.badge-err{font-family:monospace;font-size:10px;font-weight:700;padding:3px 10px;border-radius:5px;background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2)}
 .res-code{
-  background:rgba(0,0,0,0.4);
-  border:1px solid var(--border);
+  background:rgba(0,0,0,0.35);border:1px solid var(--border);
   border-top:none;border-radius:0 0 10px 10px;
-  padding:18px 20px;
-  font-family:var(--mono);font-size:12px;line-height:1.8;
-  color:var(--muted2);max-height:420px;overflow-y:auto;
-  white-space:pre;
+  padding:16px;font-family:monospace;font-size:12px;line-height:1.8;
+  color:var(--text2);max-height:400px;overflow-y:auto;white-space:pre;
 }
 .res-code::-webkit-scrollbar{width:4px}
 .res-code::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-/* JSON syntax colors */
-.jk{color:#a78bfa}.js{color:#86efac}.jn{color:var(--yellow)}.jb{color:var(--accent2)}.jl{color:var(--muted)}
+.jk{color:#a78bfa}.js{color:#86efac}.jn{color:#fbbf24}.jb{color:#f87171}.jl{color:var(--muted)}
+.spinner{width:12px;height:12px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block}
 
-/* ─── STATS SECTION ─── */
-.stats-section{border-top:1px solid var(--border);text-align:center}
-.stats-grid{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:24px;
-  margin-top:56px;
-}
-.stat-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:20px;padding:36px 24px;
-  position:relative;overflow:hidden;
-  transition:border-color 0.2s;
-}
-.stat-card:hover{border-color:var(--border-glow)}
-.stat-card::before{
-  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
-  width:60%;height:1px;
-  background:linear-gradient(90deg,transparent,var(--primary),transparent);
-}
-.stat-val{
-  font-size:48px;font-weight:800;letter-spacing:-0.03em;
-  line-height:1;margin-bottom:8px;
-  background:linear-gradient(135deg,var(--text),var(--muted2));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
-.stat-lbl{font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em}
-
-/* ─── FORMAT SELECTORS (YouTube) ─── */
-.format-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.format-btn{
-  font-family:var(--mono);font-size:11px;font-weight:700;
-  padding:7px 14px;border-radius:8px;cursor:pointer;
-  border:1px solid var(--border);background:transparent;
-  color:var(--muted2);transition:all 0.15s;
-}
-.format-btn.active{background:rgba(124,92,252,0.12);color:var(--primary);border-color:var(--border-glow)}
-
-/* ─── FOOTER ─── */
-footer{
-  position:relative;z-index:1;
-  border-top:1px solid var(--border);
-  padding:48px;
-  display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:16px;
-}
-.footer-logo{font-weight:800;font-size:18px;letter-spacing:-0.02em}
-.footer-logo span{color:var(--primary)}
-.footer-copy{font-size:13px;color:var(--muted);font-family:var(--mono)}
-.footer-links{display:flex;gap:24px}
-.footer-links a{font-size:12px;color:var(--muted);text-decoration:none;transition:color 0.2s;font-family:var(--mono)}
-.footer-links a:hover{color:var(--text)}
-
-/* ─── SPINNER ─── */
-.spinner{
-  width:13px;height:13px;
-  border:2px solid rgba(255,255,255,0.2);
-  border-top-color:#fff;border-radius:50%;
-  animation:spin 0.6s linear infinite;display:inline-block;
-}
-
-/* ─── ANIMATIONS ─── */
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeUp 0.2s ease both}
 
-/* ─── SCROLLBAR ─── */
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:var(--muted)}
 
-/* ─── RESPONSIVE ─── */
-@media(max-width:900px){
-  nav{padding:16px 24px}
+@media(max-width:640px){
   .nav-links{display:none}
-  .endpoints-layout{grid-template-columns:1fr}
-  .ep-nav{position:relative;top:0;display:flex;overflow-x:auto}
-  .ep-nav-item{flex-direction:column;align-items:flex-start;min-width:160px;border-bottom:none;border-right:1px solid var(--border)}
-  .features-grid{grid-template-columns:1fr}
-  .hero-platforms{grid-template-columns:1fr}
-  .stats-grid{grid-template-columns:repeat(2,1fr)}
-  footer{flex-direction:column;text-align:center;padding:32px 24px}
-  .footer-links{justify-content:center}
+  .home-features{grid-template-columns:1fr;max-width:400px}
+  .footer{grid-template-columns:1fr 1fr;gap:24px}
+  .param-table th:last-child,.param-table td:last-child{display:none}
+}
+@media(max-width:380px){
+  .footer{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
 
-<div class="orb orb-1"></div>
-<div class="orb orb-2"></div>
-<div class="orb orb-3"></div>
-
-<!-- NAV -->
-<nav>
-  <a href="#" class="nav-logo">
-    <div class="logo-icon">⚡</div>
-    <span class="logo-text">Sanz<span>XD</span></span>
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="#" class="nav-logo" onclick="showPage('home');return false">
+    <div class="nav-logo-img">⚡</div>
+    <span class="nav-logo-text">Sanz<span>XD</span></span>
   </a>
   <div class="nav-links">
-    <a href="#features">Features</a>
-    <a href="#endpoints">API Docs</a>
-    <a href="#stats">Stats</a>
+    <a href="#" id="nav-home" class="active" onclick="showPage('home');setNav('home');return false">HOME</a>
+    <a href="#" id="nav-docs" onclick="showPage('docs');setNav('docs');return false">DOCS</a>
   </div>
-  <div class="nav-badge">LIVE</div>
+  <div class="nav-right">
+    <a class="nav-btn" href="#" onclick="showPage('docs');setNav('docs');return false">GET STARTED</a>
+  </div>
 </nav>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-eyebrow">⚡ Free · No Auth Required · JSON</div>
-  <h1>
-    Download<br>
-    <span class="line-2">Anything.</span>
-  </h1>
-  <p class="hero-sub">
-    API downloader untuk <strong>TikTok</strong>, <strong>Instagram</strong>, dan <strong>YouTube</strong>. Tanpa watermark, tanpa auth, langsung pakai. Gratis selamanya.
-  </p>
-  <div class="hero-cta">
-    <a href="#endpoints" class="btn-primary">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
-      Coba Sekarang
-    </a>
-    <a href="#features" class="btn-ghost">Lihat Fitur</a>
-  </div>
-
-  <div class="hero-platforms">
-    <div class="platform-card card-tt" onclick="scrollToEp('tiktok')">
-      <div class="platform-icon">🎵</div>
-      <div class="platform-name">TikTok</div>
-      <div class="platform-desc">Download video tanpa watermark + HD quality</div>
-      <div class="platform-tag">NO WATERMARK</div>
-    </div>
-    <div class="platform-card card-ig" onclick="scrollToEp('instagram')">
-      <div class="platform-icon">📸</div>
-      <div class="platform-name">Instagram</div>
-      <div class="platform-desc">Reel, Post, Carousel & IGTV</div>
-      <div class="platform-tag">MULTI MEDIA</div>
-    </div>
-    <div class="platform-card card-yt" onclick="scrollToEp('youtube')">
-      <div class="platform-icon">▶️</div>
-      <div class="platform-name">YouTube</div>
-      <div class="platform-desc">Video, Shorts & convert MP3</div>
-      <div class="platform-tag">MP3 + MP4</div>
+<!-- ═══════════ HOME ═══════════ -->
+<div id="page-home" class="page active">
+  <div class="home-hero">
+    <div class="hero-badge">✦ THE FUTURE OF REST API</div>
+    <div class="hero-avatar">⚡</div>
+    <h1>Powerful API for<br><span class="grad">Modern Developers</span></h1>
+    <p class="hero-sub">Akses endpoint <strong>TikTok</strong>, <strong>Instagram</strong>, dan <strong>YouTube</strong> downloader dalam satu platform yang cepat, aman, dan mudah digunakan.</p>
+    <div class="hero-cta">
+      <a class="btn-primary" href="#" onclick="showPage('docs');setNav('docs');return false">START DOWNLOADING NOW</a>
+      <a class="btn-outline" href="#" onclick="showPage('docs');setNav('docs');return false">VIEW DOCUMENTATION</a>
     </div>
   </div>
-</section>
 
-<!-- FEATURES -->
-<section class="features" id="features">
-  <div class="section-inner">
-    <div class="section-label">Kenapa Pilih SanzXD?</div>
-    <h2 class="section-title">Didesain untuk<br>Developer Modern</h2>
-    <p class="section-sub">Semua yang kamu butuhkan dalam satu API — cepat, bersih, dan selalu online.</p>
-
-    <div class="features-grid">
-      <div class="feat-cell" data-num="01">
-        <div class="feat-icon feat-icon-1">🚫</div>
-        <h3>No Watermark</h3>
-        <p>Download TikTok dalam kualitas original HD tanpa watermark. Tersedia juga versi SD dan dengan watermark.</p>
-      </div>
-      <div class="feat-cell" data-num="02">
-        <div class="feat-icon feat-icon-2">⚡</div>
-        <h3>Ultra Fast Response</h3>
-        <p>Server dengan auto-retry dan load balancing. TikTok &lt;1 detik, YouTube dengan polling otomatis.</p>
-      </div>
-      <div class="feat-cell" data-num="03">
-        <div class="feat-icon feat-icon-3">🔓</div>
-        <h3>Zero Auth</h3>
-        <p>Tidak perlu daftar, tidak perlu API key. Langsung hit endpoint dan dapatkan data.</p>
-      </div>
-      <div class="feat-cell" data-num="04">
-        <div class="feat-icon feat-icon-4">🌐</div>
-        <h3>CORS Friendly</h3>
-        <p>CORS sudah diaktifkan untuk semua origin. Cocok untuk web apps, mobile apps, maupun CLI.</p>
-      </div>
-      <div class="feat-cell" data-num="05">
-        <div class="feat-icon feat-icon-5">📦</div>
-        <h3>JSON Structured</h3>
-        <p>Response terstruktur rapi — author, video, audio, stats. Konsisten di semua endpoint.</p>
-      </div>
-      <div class="feat-cell" data-num="06">
-        <div class="feat-icon feat-icon-6">☁️</div>
-        <h3>Deploy ke Vercel</h3>
-        <p>Siap deploy ke Vercel dalam hitungan menit. Bisa juga run lokal dengan <code style="font-family:var(--mono);color:var(--primary);font-size:12px">node server.js</code>.</p>
-      </div>
+  <div class="home-features">
+    <div class="feat-card">
+      <div class="feat-icon">⚡</div>
+      <h3>Ultra Fast</h3>
+      <p>Response cepat dengan auto-retry untuk hasil yang konsisten setiap saat.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🔓</div>
+      <h3>No Auth Needed</h3>
+      <p>Tidak perlu API key atau registrasi. Langsung hit endpoint dan pakai.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🌐</div>
+      <h3>CORS Ready</h3>
+      <p>CORS sudah aktif untuk semua origin. Cocok untuk web & mobile apps.</p>
     </div>
   </div>
-</section>
 
-<!-- ENDPOINTS -->
-<section class="endpoints" id="endpoints">
-  <div class="section-inner">
-    <div class="section-label">API Reference</div>
-    <h2 class="section-title">Dokumentasi<br>Endpoint</h2>
-    <p class="section-sub">Pilih platform, masukkan URL, dan coba langsung dari browser.</p>
+  <div class="home-faq">
+    <h2>Frequently Asked Questions</h2>
+    <p class="faq-sub">Semua yang perlu kamu ketahui tentang SanzXD API.</p>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">Apa itu SanzXD API?</div>
+      <div class="faq-a">SanzXD API adalah platform REST API modern yang menyediakan layanan download TikTok, Instagram, dan YouTube. Gratis, tanpa watermark, dan tanpa API key.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">Apakah API ini gratis?</div>
+      <div class="faq-a">Ya, sepenuhnya gratis. Tidak ada biaya tersembunyi, tidak perlu registrasi, dan tidak ada batasan ketat. Langsung pakai.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">Bagaimana cara integrasinya?</div>
+      <div class="faq-a">Sangat mudah! Cukup kirim GET request ke endpoint yang tersedia dengan parameter <code style="font-family:monospace;color:#a78bfa">url</code> berisi link video yang ingin didownload.</div>
+    </div>
+  </div>
 
-    <div class="endpoints-layout">
-      <!-- Sidebar nav -->
-      <div class="ep-nav">
-        <div class="ep-nav-item active" id="nav-tiktok" onclick="switchEp('tiktok')">
-          <div class="ep-nav-dot"></div>
-          <div class="ep-nav-info">
-            <div class="ep-nav-name">🎵 TikTok DL</div>
-            <div class="ep-nav-path">/api/tiktok</div>
-          </div>
-        </div>
-        <div class="ep-nav-item" id="nav-instagram" onclick="switchEp('instagram')">
-          <div class="ep-nav-dot"></div>
-          <div class="ep-nav-info">
-            <div class="ep-nav-name">📸 Instagram DL</div>
-            <div class="ep-nav-path">/api/instagram</div>
-          </div>
-        </div>
-        <div class="ep-nav-item" id="nav-youtube" onclick="switchEp('youtube')">
-          <div class="ep-nav-dot"></div>
-          <div class="ep-nav-info">
-            <div class="ep-nav-name">▶️ YouTube DL</div>
-            <div class="ep-nav-path">/api/youtube</div>
-          </div>
-        </div>
+  <div class="footer">
+    <div class="footer-col">
+      <div class="footer-logo-row">
+        <div class="nav-logo-img">⚡</div>
+        <span class="footer-brand-name">Sanz<span>XD</span></span>
       </div>
+      <p class="footer-brand" style="font-size:12px;color:var(--muted);line-height:1.6;margin-top:8px">Platform REST API terbaik untuk kebutuhan download dan otomasi. Cepat, aman, dan handal.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <a href="#" onclick="showPage('docs');return false">Features</a>
+      <a href="#" onclick="showPage('docs');return false">Documentation</a>
+    </div>
+    <div class="footer-col">
+      <h4>API</h4>
+      <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('tiktok'),10);return false">TikTok DL</a>
+      <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('instagram'),10);return false">Instagram DL</a>
+      <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('youtube'),10);return false">YouTube DL</a>
+    </div>
+    <div class="footer-col">
+      <h4>Social</h4>
+      <a href="#">@SanzXD</a>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2025 SANZXD API. All rights reserved. Author @SanzXD</div>
+</div>
 
-      <!-- Panels -->
-      <div>
+<!-- ═══════════ DOCS ═══════════ -->
+<div id="page-docs" class="page">
+  <div class="docs-inner">
+    <div class="docs-search-wrap">
+      <input class="docs-search" id="docs-search" placeholder="Search APIs by name, category, or description..." oninput="filterApis(this.value)"/>
+    </div>
 
-        <!-- TikTok -->
-        <div class="ep-panel active" id="panel-tiktok">
-          <div class="ep-header">
-            <div class="ep-method-row">
-              <span class="badge-method">GET</span>
-              <span class="ep-path">/api/tiktok</span>
-            </div>
-            <div class="ep-desc">Download video TikTok tanpa watermark. Mendukung link vt.tiktok.com, vm.tiktok.com, dan www.tiktok.com.</div>
+    <div class="cat-label">DOWNLOADER</div>
+    <div class="api-list">
+      <div class="api-item" data-name="TikTok DL" data-desc="Download TikTok videos without watermark." data-cat="downloader" onclick="openEndpoint('tiktok')">
+        <div class="api-icon">📥</div>
+        <div class="api-info">
+          <div class="api-name-row">
+            <span class="api-name">TikTok DL</span>
+            <span class="api-badge">DOWNLOADER</span>
           </div>
-
-          <div class="ep-card">
-            <div class="ep-card-header">
-              <span class="ep-card-title">Parameters</span>
-            </div>
-            <div class="ep-card-body" style="padding:0">
-              <table class="params-table">
-                <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
-                <tbody>
-                  <tr>
-                    <td class="param-name">url</td>
-                    <td class="param-type">string</td>
-                    <td><span class="badge-req">Required</span></td>
-                    <td>URL video TikTok</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="ep-card">
-            <div class="ep-card-header">
-              <span class="ep-card-title">cURL</span>
-              <button class="btn-copy" onclick="copyCurl('curl-tt',this)">COPY</button>
-            </div>
-            <div class="ep-card-body">
-              <div class="curl-box">
-                <span class="curl-dollar">$</span>
-                <span id="curl-tt"></span>
-              </div>
-            </div>
-          </div>
-
-          <div class="ep-card">
-            <div class="ep-card-header">
-              <span class="ep-card-title">Try It Live</span>
-            </div>
-            <div class="ep-card-body">
-              <div class="try-row" style="margin-bottom:0">
-                <input class="url-input" id="tt-input" placeholder="https://vt.tiktok.com/ZS9mu8NkJ/"/>
-                <button class="btn-exec" id="tt-btn" onclick="execApi('tt')">
-                  <svg class="exec-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
-                  Execute
-                </button>
-              </div>
-              <div class="res-wrap" id="tt-res">
-                <div class="res-topbar">
-                  <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-                  <span class="res-label">JSON Response</span>
-                  <span id="tt-badge"></span>
-                  <button class="btn-copy" onclick="copyRes('tt-code',this)" style="margin-left:8px">COPY</button>
-                </div>
-                <div class="res-code" id="tt-code"></div>
-              </div>
-            </div>
-          </div>
+          <div class="api-desc">Download TikTok videos without watermark.</div>
         </div>
-
-        <!-- Instagram -->
-        <div class="ep-panel" id="panel-instagram">
-          <div class="ep-header">
-            <div class="ep-method-row">
-              <span class="badge-method">GET</span>
-              <span class="ep-path">/api/instagram</span>
-            </div>
-            <div class="ep-desc">Download media Instagram — Reels, Post, Carousel, hingga IGTV. Mendukung multi-media carousel secara otomatis.</div>
+        <span class="api-chevron">›</span>
+      </div>
+      <div class="api-item" data-name="Instagram DL" data-desc="Download Instagram media." data-cat="downloader" onclick="openEndpoint('instagram')">
+        <div class="api-icon">📸</div>
+        <div class="api-info">
+          <div class="api-name-row">
+            <span class="api-name">Instagram DL</span>
+            <span class="api-badge">DOWNLOADER</span>
           </div>
-
-          <div class="ep-card">
-            <div class="ep-card-header">
-              <span class="ep-card-title">Parameters</span>
-            </div>
-            <div class="ep-card-body" style="padding:0">
-              <table class="params-table">
-                <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
-                <tbody>
-                  <tr>
-                    <td class="param-name">url</td>
-                    <td class="param-type">string</td>
-                    <td><span class="badge-req">Required</span></td>
-                    <td>URL Instagram Post, Reel, IGTV, atau Story</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="ep-card">
-            <div class="ep-card-header">
-              <span class="ep-card-title">cURL</span>
-              <button class="btn-copy" onclick="copyCurl('curl-ig',this)">COPY</button>
-            </div>
-            <div class="ep-card-body">
-              <div class="curl-box">
-                <span class="curl-dollar">$</span>
-                <span id="curl-ig"></span>
-              </div>
-            </div>
-          </div>
-
-          <div class="ep-card">
-            <div class="ep-card-header">
-              <span class="ep-card-title">Try It Live</span>
-            </div>
-            <div class="ep-card-body">
-              <div class="try-row" style="margin-bottom:0">
-                <input class="url-input" id="ig-input" placeholder="https://www.instagram.com/reel/ABC123/"/>
-                <button class="btn-exec" id="ig-btn" onclick="execApi('ig')">
-                  <svg class="exec-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
-                  Execute
-                </button>
-              </div>
-              <div class="res-wrap" id="ig-res">
-                <div class="res-topbar">
-                  <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-                  <span class="res-label">JSON Response</span>
-                  <span id="ig-badge"></span>
-                  <button class="btn-copy" onclick="copyRes('ig-code',this)" style="margin-left:8px">COPY</button>
-                </div>
-                <div class="res-code" id="ig-code"></div>
-              </div>
-            </div>
-          </div>
+          <div class="api-desc">Download Instagram media.</div>
         </div>
-
-        <!-- YouTube -->
-        <div class="ep-panel" id="panel-youtube">
-          <div class="ep-header">
-            <div class="ep-method-row">
-              <span class="badge-method">GET</span>
-              <span class="ep-path">/api/youtube</span>
-            </div>
-            <div class="ep-desc">Download video YouTube, Shorts, atau konversi ke MP3. Pilih format dan kualitas sesuai kebutuhan.</div>
+        <span class="api-chevron">›</span>
+      </div>
+      <div class="api-item" data-name="YouTube DL" data-desc="Download YouTube videos to MP3/MP4." data-cat="downloader" onclick="openEndpoint('youtube')">
+        <div class="api-icon">▶️</div>
+        <div class="api-info">
+          <div class="api-name-row">
+            <span class="api-name">YouTube DL</span>
+            <span class="api-badge">DOWNLOADER</span>
           </div>
-
-          <div class="ep-card">
-            <div class="ep-card-header">
-              <span class="ep-card-title">Parameters</span>
-            </div>
-            <div class="ep-card-body" style="padding:0">
-              <table class="params-table">
-                <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
-                <tbody>
-                  <tr>
-                    <td class="param-name">url</td>
-                    <td class="param-type">string</td>
-                    <td><span class="badge-req">Required</span></td>
-                    <td>URL YouTube, Shorts, atau youtu.be</td>
-                  </tr>
-                  <tr>
-                    <td class="param-name">format</td>
-                    <td class="param-type">string</td>
-                    <td><span class="badge-opt">Optional</span></td>
-                    <td>mp3 atau mp4 — default: mp3</td>
-                  </tr>
-                  <tr>
-                    <td class="param-name">quality</td>
-                    <td class="param-type">string</td>
-                    <td><span class="badge-opt">Optional</span></td>
-                    <td>128 / 192 / 320 (mp3) atau 360 / 480 / 720 / 1080 (mp4)</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="ep-card">
-            <div class="ep-card-header">
-              <span class="ep-card-title">cURL</span>
-              <button class="btn-copy" onclick="copyCurl('curl-yt',this)">COPY</button>
-            </div>
-            <div class="ep-card-body">
-              <div class="curl-box">
-                <span class="curl-dollar">$</span>
-                <span id="curl-yt"></span>
-              </div>
-            </div>
-          </div>
-
-          <div class="ep-card">
-            <div class="ep-card-header">
-              <span class="ep-card-title">Try It Live</span>
-            </div>
-            <div class="ep-card-body">
-              <div style="margin-bottom:14px">
-                <div style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px">Format</div>
-                <div class="format-row" id="yt-format-row">
-                  <button class="format-btn active" data-format="mp3" onclick="setYtFormat('mp3',this)">MP3</button>
-                  <button class="format-btn" data-format="mp4" onclick="setYtFormat('mp4',this)">MP4</button>
-                </div>
-                <div id="yt-quality-wrap">
-                  <div style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px;margin-top:14px">Quality</div>
-                  <div class="format-row" id="yt-quality-row">
-                    <button class="format-btn active" data-q="128" onclick="setYtQuality('128',this)">128kbps</button>
-                    <button class="format-btn" data-q="192" onclick="setYtQuality('192',this)">192kbps</button>
-                    <button class="format-btn" data-q="320" onclick="setYtQuality('320',this)">320kbps</button>
-                  </div>
-                </div>
-              </div>
-              <div class="try-row" style="margin-bottom:0">
-                <input class="url-input" id="yt-input" placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"/>
-                <button class="btn-exec" id="yt-btn" onclick="execApi('yt')">
-                  <svg class="exec-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
-                  Execute
-                </button>
-              </div>
-              <div class="res-wrap" id="yt-res">
-                <div class="res-topbar">
-                  <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-                  <span class="res-label">JSON Response</span>
-                  <span id="yt-badge"></span>
-                  <button class="btn-copy" onclick="copyRes('yt-code',this)" style="margin-left:8px">COPY</button>
-                </div>
-                <div class="res-code" id="yt-code"></div>
-              </div>
-            </div>
-          </div>
+          <div class="api-desc">Download YouTube videos to MP3/MP4.</div>
         </div>
-
+        <span class="api-chevron">›</span>
       </div>
     </div>
   </div>
-</section>
+</div>
 
-<!-- STATS -->
-<section class="stats-section" id="stats">
-  <div class="section-inner">
-    <div class="section-label" style="text-align:center">By the Numbers</div>
-    <h2 class="section-title" style="text-align:center">Simpel tapi<br>Powerful</h2>
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-val">3</div>
-        <div class="stat-lbl">Endpoints</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val">0</div>
-        <div class="stat-lbl">API Key Needed</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val">∞</div>
-        <div class="stat-lbl">Free Forever</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val">HD</div>
-        <div class="stat-lbl">Quality Output</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-logo">Sanz<span>XD</span></div>
-  <div class="footer-copy">© 2025 @SanzXD — Built with ❤️ for developers</div>
-  <div class="footer-links">
-    <a href="#features">Features</a>
-    <a href="#endpoints">API Docs</a>
-    <a href="#stats">Stats</a>
-  </div>
-</footer>
+<!-- ═══════════ DETAIL ═══════════ -->
+<div id="page-detail" class="page">
+  <div class="detail-inner fade-in" id="detail-content"></div>
+</div>
 
 <script>
 const base = window.location.origin;
-
-// ── Config ──
-const cfg = {
-  tt: { path:'/api/tiktok',    ex:'https://vt.tiktok.com/ZS9mu8NkJ/',            curlId:'curl-tt' },
-  ig: { path:'/api/instagram', ex:'https://www.instagram.com/p/ABC123/',          curlId:'curl-ig' },
-  yt: { path:'/api/youtube',   ex:'https://www.youtube.com/watch?v=dQw4w9WgXcQ', curlId:'curl-yt' },
-};
-
 let ytFormat = 'mp3', ytQuality = '128';
 
-// ── Init cURLs ──
-function updateCurl(key) {
-  const c = cfg[key];
-  const val = document.getElementById(key+'-input')?.value.trim() || c.ex;
-  let url = `curl "${base}${c.path}?url=${val}`;
-  if (key === 'yt') url += `&format=${ytFormat}&quality=${ytQuality}`;
-  url += '"';
-  document.getElementById(c.curlId).textContent = url;
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  window.scrollTo(0,0);
 }
 
-for (const key of Object.keys(cfg)) {
-  updateCurl(key);
-  const inp = document.getElementById(key+'-input');
-  if (inp) {
-    inp.addEventListener('input', () => updateCurl(key));
-    inp.addEventListener('keydown', e => { if(e.key==='Enter') execApi(key); });
+function setNav(active) {
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  const el = document.getElementById('nav-' + active);
+  if (el) el.classList.add('active');
+}
+
+function toggleFaq(el) { el.classList.toggle('open'); }
+
+function filterApis(q) {
+  const query = q.toLowerCase();
+  document.querySelectorAll('.api-item').forEach(item => {
+    const n = item.dataset.name?.toLowerCase() || '';
+    const d = item.dataset.desc?.toLowerCase() || '';
+    const c = item.dataset.cat?.toLowerCase() || '';
+    item.style.display = (!query || n.includes(query) || d.includes(query) || c.includes(query)) ? '' : 'none';
+  });
+}
+
+const EP = {
+  tiktok: {
+    icon:'📥', name:'TikTok DL', badge:'DOWNLOADER', method:'GET', path:'/api/tiktok', key:'tt',
+    desc:'Download video TikTok tanpa watermark. Mendukung link vt.tiktok.com, vm.tiktok.com, dan www.tiktok.com.',
+    placeholder:'https://vt.tiktok.com/ZS9mu8NkJ/',
+    params:[{name:'url',type:'string',req:true,desc:'URL video TikTok'}]
+  },
+  instagram: {
+    icon:'📸', name:'Instagram DL', badge:'DOWNLOADER', method:'GET', path:'/api/instagram', key:'ig',
+    desc:'Download media Instagram — Reels, Post, Carousel, hingga IGTV.',
+    placeholder:'https://www.instagram.com/reel/ABC123/',
+    params:[{name:'url',type:'string',req:true,desc:'URL Instagram Post, Reel, IGTV, atau Story'}]
+  },
+  youtube: {
+    icon:'▶️', name:'YouTube DL', badge:'DOWNLOADER', method:'GET', path:'/api/youtube', key:'yt',
+    desc:'Download video YouTube, Shorts, atau konversi ke MP3. Pilih format dan kualitas sesuai kebutuhan.',
+    placeholder:'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    params:[
+      {name:'url',type:'string',req:true,desc:'URL YouTube, Shorts, atau youtu.be'},
+      {name:'format',type:'string',req:false,desc:'mp3 atau mp4 — default: mp3'},
+      {name:'quality',type:'string',req:false,desc:'128 / 192 / 320 (mp3) atau 360 / 480 / 720 / 1080 (mp4)'}
+    ]
   }
+};
+
+function buildCurl(ep, val) {
+  val = val || ep.placeholder;
+  let s = `curl "${base}${ep.path}?url=${val}`;
+  if (ep.key === 'yt') s += `&format=${ytFormat}&quality=${ytQuality}`;
+  return s + '"';
 }
 
-// ── YouTube Format/Quality ──
-function setYtFormat(f, btn) {
+function openEndpoint(id) {
+  const ep = EP[id];
+  ytFormat = 'mp3'; ytQuality = '128';
+
+  const rows = ep.params.map(p => `
+    <tr>
+      <td class="p-name">${p.name}</td>
+      <td class="p-type">${p.type}</td>
+      <td><span class="${p.req?'b-req':'b-opt'}">${p.req?'Required':'Optional'}</span></td>
+      <td>${p.desc}</td>
+    </tr>`).join('');
+
+  const ytOpts = id === 'youtube' ? `
+    <div class="yt-options">
+      <div class="opt-label">Format</div>
+      <div class="opt-row" id="fmt-row">
+        <button class="opt-btn active" onclick="setFmt('mp3',this,'${id}')">MP3</button>
+        <button class="opt-btn" onclick="setFmt('mp4',this,'${id}')">MP4</button>
+      </div>
+      <div class="opt-label">Quality</div>
+      <div class="opt-row" id="qual-row">
+        <button class="opt-btn active" onclick="setQual('128',this,'${id}')">128kbps</button>
+        <button class="opt-btn" onclick="setQual('192',this,'${id}')">192kbps</button>
+        <button class="opt-btn" onclick="setQual('320',this,'${id}')">320kbps</button>
+      </div>
+    </div>` : '';
+
+  document.getElementById('detail-content').innerHTML = `
+    <button class="back-btn" onclick="showPage('docs');setNav('docs')">‹ &nbsp;Kembali ke Docs</button>
+    <div class="detail-header">
+      <div class="detail-icon-row">
+        <div class="detail-icon">${ep.icon}</div>
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">
+            <div class="detail-title">${ep.name}</div>
+            <span class="api-badge">${ep.badge}</span>
+          </div>
+          <span class="detail-badge-green">● ${ep.method}</span>
+        </div>
+      </div>
+      <div class="detail-path">${base}${ep.path}?url={url}</div>
+      <div class="detail-desc">${ep.desc}</div>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <span class="detail-card-title">Parameters</span>
+      </div>
+      <table class="param-table">
+        <thead><tr><th>Param</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <span class="detail-card-title">cURL Example</span>
+        <button class="btn-copy" onclick="copyEl('curl-${ep.key}',this)">COPY</button>
+      </div>
+      <div class="curl-box">
+        <span class="curl-dollar">$</span>
+        <span class="curl-text" id="curl-${ep.key}">${buildCurl(ep)}</span>
+      </div>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <span class="detail-card-title">Try It Live</span>
+      </div>
+      ${ytOpts}
+      <div class="try-body">
+        <div class="try-row">
+          <input class="url-input" id="inp-${ep.key}" placeholder="${ep.placeholder}"
+            oninput="liveUpdateCurl('${id}')"
+            onkeydown="if(event.key==='Enter')execApi('${id}')"/>
+          <button class="btn-exec" id="btn-${ep.key}" onclick="execApi('${id}')">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
+            Execute
+          </button>
+        </div>
+        <div class="res-wrap" id="res-${ep.key}">
+          <div class="res-topbar">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            <span class="res-label">JSON Response</span>
+            <span id="badge-${ep.key}"></span>
+            <button class="btn-copy" onclick="copyEl('code-${ep.key}',this)" style="margin-left:6px">COPY</button>
+          </div>
+          <div class="res-code" id="code-${ep.key}"></div>
+        </div>
+      </div>
+    </div>`;
+
+  showPage('detail');
+  window._curEpId = id;
+}
+
+function liveUpdateCurl(id) {
+  const ep = EP[id];
+  const val = document.getElementById('inp-' + ep.key)?.value.trim() || ep.placeholder;
+  const el = document.getElementById('curl-' + ep.key);
+  if (el) el.textContent = buildCurl(ep, val);
+}
+
+function setFmt(f, btn, id) {
   ytFormat = f;
-  document.querySelectorAll('#yt-format-row .format-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#fmt-row .opt-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  // Update quality options
-  const qRow = document.getElementById('yt-quality-row');
+  const qRow = document.getElementById('qual-row');
   if (f === 'mp3') {
     qRow.innerHTML = `
-      <button class="format-btn active" data-q="128" onclick="setYtQuality('128',this)">128kbps</button>
-      <button class="format-btn" data-q="192" onclick="setYtQuality('192',this)">192kbps</button>
-      <button class="format-btn" data-q="320" onclick="setYtQuality('320',this)">320kbps</button>`;
+      <button class="opt-btn active" onclick="setQual('128',this,'${id}')">128kbps</button>
+      <button class="opt-btn" onclick="setQual('192',this,'${id}')">192kbps</button>
+      <button class="opt-btn" onclick="setQual('320',this,'${id}')">320kbps</button>`;
     ytQuality = '128';
   } else {
     qRow.innerHTML = `
-      <button class="format-btn active" data-q="360" onclick="setYtQuality('360',this)">360p</button>
-      <button class="format-btn" data-q="480" onclick="setYtQuality('480',this)">480p</button>
-      <button class="format-btn" data-q="720" onclick="setYtQuality('720',this)">720p</button>
-      <button class="format-btn" data-q="1080" onclick="setYtQuality('1080',this)">1080p</button>`;
+      <button class="opt-btn active" onclick="setQual('360',this,'${id}')">360p</button>
+      <button class="opt-btn" onclick="setQual('480',this,'${id}')">480p</button>
+      <button class="opt-btn" onclick="setQual('720',this,'${id}')">720p</button>
+      <button class="opt-btn" onclick="setQual('1080',this,'${id}')">1080p</button>`;
     ytQuality = '360';
   }
-  updateCurl('yt');
+  liveUpdateCurl(id);
 }
 
-function setYtQuality(q, btn) {
+function setQual(q, btn, id) {
   ytQuality = q;
-  document.querySelectorAll('#yt-quality-row .format-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#qual-row .opt-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  updateCurl('yt');
+  liveUpdateCurl(id);
 }
 
-// ── Endpoint switcher ──
-function switchEp(name) {
-  document.querySelectorAll('.ep-panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.ep-nav-item').forEach(n=>n.classList.remove('active'));
-  document.getElementById('panel-'+name).classList.add('active');
-  document.getElementById('nav-'+name).classList.add('active');
+async function execApi(id) {
+  const ep = EP[id];
+  const val = document.getElementById('inp-' + ep.key)?.value.trim();
+  if (!val) { alert('Masukkan URL terlebih dahulu!'); return; }
+
+  const btn = document.getElementById('btn-' + ep.key);
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Loading...';
+
+  const rw = document.getElementById('res-' + ep.key);
+  const rc = document.getElementById('code-' + ep.key);
+  const rb = document.getElementById('badge-' + ep.key);
+  rw.classList.add('show');
+  rc.textContent = 'Fetching...';
+  rb.innerHTML = '';
+
+  try {
+    let url = `${base}${ep.path}?url=${encodeURIComponent(val)}`;
+    if (id === 'youtube') url += `&format=${ytFormat}&quality=${ytQuality}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    rc.innerHTML = hl(JSON.stringify(data, null, 2));
+    rb.innerHTML = (resp.ok && data.status)
+      ? `<span class="badge-ok">${resp.status} OK</span>`
+      : `<span class="badge-err">${resp.status} Error</span>`;
+  } catch(err) {
+    rc.textContent = `Error: ${err.message}`;
+    rb.innerHTML = `<span class="badge-err">Network Error</span>`;
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>Execute';
 }
 
-function scrollToEp(name) {
-  switchEp(name);
-  document.getElementById('endpoints').scrollIntoView({behavior:'smooth'});
-}
-
-// ── JSON highlight ──
-function highlight(json) {
+function hl(json) {
   return json.replace(/(\"(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*\"(\s*:)?|\b(true|false|null)\b|-?\d+\.?\d*([eE][+\-]?\d+)?)/g, m => {
     if (/^"/.test(m)) return /:$/.test(m) ? `<span class="jk">${m}</span>` : `<span class="js">${m}</span>`;
     if (/true|false/.test(m)) return `<span class="jb">${m}</span>`;
@@ -1000,53 +759,7 @@ function highlight(json) {
   });
 }
 
-// ── Execute API ──
-async function execApi(key) {
-  const c = cfg[key];
-  const val = document.getElementById(key+'-input').value.trim();
-  if (!val) { alert('Masukkan URL terlebih dahulu!'); return; }
-
-  const btn = document.getElementById(key+'-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Loading...';
-
-  const rw = document.getElementById(key+'-res');
-  const rc = document.getElementById(key+'-code');
-  const rb = document.getElementById(key+'-badge');
-  rw.classList.add('show');
-  rc.textContent = 'Fetching...';
-  rb.innerHTML = '';
-
-  try {
-    let endpoint = `${base}${c.path}?url=${encodeURIComponent(val)}`;
-    if (key === 'yt') endpoint += `&format=${ytFormat}&quality=${ytQuality}`;
-
-    const resp = await fetch(endpoint);
-    const data = await resp.json();
-    rc.innerHTML = highlight(JSON.stringify(data, null, 2));
-
-    if (resp.ok && data.status) {
-      rb.innerHTML = `<span class="badge-ok">${resp.status} OK</span>`;
-    } else {
-      rb.innerHTML = `<span class="badge-err">${resp.status} Error</span>`;
-    }
-  } catch(err) {
-    rc.textContent = `Error: ${err.message}`;
-    rb.innerHTML = `<span class="badge-err">Network Error</span>`;
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = '<svg class="exec-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>Execute';
-}
-
-// ── Copy helpers ──
-function copyCurl(id, btn) {
-  navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
-    const o = btn.textContent; btn.textContent = '✓ COPIED';
-    setTimeout(() => btn.textContent = o, 1500);
-  });
-}
-function copyRes(id, btn) {
+function copyEl(id, btn) {
   navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
     const o = btn.textContent; btn.textContent = '✓ COPIED';
     setTimeout(() => btn.textContent = o, 1500);
