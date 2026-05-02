@@ -1,9 +1,13 @@
 /**
- * YouTube Downloader API — via hub.ytconvert.org
- * GET  /api/youtube?url=https://www.youtube.com/watch?v=...
- * GET  /api/youtube?url=...&format=mp3|mp4
- * GET  /api/youtube?url=...&quality=128|192|320        (audio)
- * GET  /api/youtube?url=...&quality=360|480|720|1080   (video)
+ * YouTube Downloader API — Multi-format, return semua stream sekaligus
+ *
+ * GET /api/youtube?url=https://www.youtube.com/watch?v=...
+ *
+ * Response: semua format tersedia (video + audio) dalam array medias[]
+ * Filter opsional:
+ *   &type=video|audio          → filter berdasarkan tipe
+ *   &ext=mp4|webm|m4a|opus     → filter berdasarkan ekstensi
+ *   &quality=720p|1080p|...    → filter berdasarkan qualityLabel
  */
 
 const CORS_HEADERS = {
@@ -13,19 +17,32 @@ const CORS_HEADERS = {
   "Content-Type": "application/json",
 };
 
-const API_BASE = "https://hub.ytconvert.org";
-const UA =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+// ── Provider list (dicoba urut, fallback ke berikutnya jika gagal) ─────────────
+// Keduanya pakai endpoint yang sudah ada di project, format response sama
+const PROVIDERS = [
+  {
+    name: "ytdl.y2mp3.co",
+    buildUrl: (videoId) => `https://ytdl.y2mp3.co/api/info?v=${videoId}`,
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+      "Referer": "https://ytconvert.org/",
+      "Origin": "https://ytconvert.org",
+      "Accept": "application/json",
+    },
+  },
+  {
+    name: "hub.ytconvert.org",
+    buildUrl: (videoId) => `https://hub.ytconvert.org/api/info?v=${videoId}`,
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+      "Referer": "https://ytconvert.org/",
+      "Origin": "https://ytconvert.org",
+      "Accept": "application/json",
+    },
+  },
+];
 
-const HEADERS = {
-  "User-Agent": UA,
-  "Referer": "https://ytconvert.org/",
-  "Origin": "https://ytconvert.org",
-  "Content-Type": "application/json",
-  "Accept": "application/json",
-};
-
-// ─── Handler ────────────────────────────────────────────────────────────────
+// ─── Handler ──────────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
@@ -39,16 +56,18 @@ export default async function handler(req, res) {
     return res.status(405).json({ status: false, code: 405, message: "Method Not Allowed." });
   }
 
-  const url     = req.query.url     || req.body?.url;
-  const format  = req.query.format  || req.body?.format  || "mp3";
-  const quality = req.query.quality || req.body?.quality || "128";
+  const url        = req.query.url     || req.body?.url;
+  const typeFilter = req.query.type    || req.body?.type    || null; // "video" | "audio"
+  const extFilter  = req.query.ext     || req.body?.ext     || null; // "mp4" | "webm" | "m4a" | "opus"
+  const qualFilter = req.query.quality || req.body?.quality || null; // "720p" | "1080p" | ...
 
   if (!url) {
     return res.status(400).json({
       status: false,
       code: 400,
       message: "Parameter 'url' wajib diisi.",
-      example: "/api/youtube?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ&format=mp3&quality=128",
+      example: "/api/youtube?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      filters: "Opsional: &type=video|audio  &ext=mp4|webm|m4a|opus  &quality=720p|1080p",
     });
   }
 
@@ -62,162 +81,170 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await fetchYoutube(url, format, quality);
+    const result = await fetchAllFormats(url, { typeFilter, extFilter, qualFilter });
     return res.status(200).json(result);
   } catch (err) {
     console.error("[YouTube]", err.message);
     return res.status(500).json({
       status: false,
       code: 500,
-      message: err.message || "Gagal mengambil media.",
+      message: err.message || "Gagal mengambil data media.",
     });
   }
 }
 
-// ─── Core fetcher ────────────────────────────────────────────────────────────
+// ─── Core ─────────────────────────────────────────────────────────────────────
 
-async function fetchYoutube(url, format, quality) {
+async function fetchAllFormats(url, { typeFilter, extFilter, qualFilter } = {}) {
   const videoId = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/)?.[1];
   if (!videoId) throw new Error("Tidak dapat mengambil video ID dari URL.");
 
-  const audioOnly = format !== "mp4";
-  const outputType = audioOnly ? "audio" : "video";
   const isShorts  = /\/shorts\//i.test(url);
   const thumbHQ   = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   const thumbMQ   = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
   const sourceUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
-  // ── Step 1: Submit conversion job ──
-  const payload = {
-    url: sourceUrl,
-    output: {
-      type: outputType,
-      format,
-      quality,
-    },
-  };
+  // ── Coba provider satu per satu ──
+  let raw = null;
+  let usedProvider = null;
+  const errors = [];
 
-  console.log("[YouTube] Submitting:", sourceUrl);
+  for (const provider of PROVIDERS) {
+    try {
+      const apiUrl = provider.buildUrl(videoId);
+      console.log(`[YouTube] Trying ${provider.name}: ${apiUrl}`);
 
-  const submitResp = await fetch(`${API_BASE}/api/download`, {
-    method: "POST",
-    headers: HEADERS,
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(30_000),
+      const resp = await fetch(apiUrl, {
+        headers: provider.headers,
+        signal: AbortSignal.timeout(15_000),
+      });
+
+      if (!resp.ok) {
+        errors.push(`${provider.name}: HTTP ${resp.status}`);
+        continue;
+      }
+
+      const data = await resp.json();
+
+      // Support dua format response:
+      // 1. { result: { medias: [...] } }  ← format @shenira16x / ytdl.y2mp3.co
+      // 2. { medias: [...] }              ← format flat
+      const result = data?.result ?? data;
+      const medias = result?.medias ?? result?.formats ?? [];
+
+      if (!Array.isArray(medias) || medias.length === 0) {
+        errors.push(`${provider.name}: medias kosong`);
+        continue;
+      }
+
+      raw = { data, result, medias };
+      usedProvider = provider.name;
+      break;
+    } catch (err) {
+      errors.push(`${provider.name}: ${err.message}`);
+    }
+  }
+
+  if (!raw) {
+    throw new Error(`Semua provider gagal. Detail: ${errors.join(" | ")}`);
+  }
+
+  const { result, medias } = raw;
+
+  // ── Terapkan filter ──
+  let filtered = medias;
+
+  if (typeFilter) {
+    filtered = filtered.filter((m) => m.type === typeFilter);
+  }
+  if (extFilter) {
+    filtered = filtered.filter((m) => m.extension === extFilter);
+  }
+  if (qualFilter) {
+    filtered = filtered.filter(
+      (m) => m.qualityLabel?.toLowerCase() === qualFilter.toLowerCase()
+    );
+  }
+
+  // ── Sort: kualitas tertinggi dulu, lalu bitrate ──
+  const qualityOrder = [
+    "QUALITY_ORDINAL_2160P",
+    "QUALITY_ORDINAL_1440P",
+    "QUALITY_ORDINAL_1080P",
+    "QUALITY_ORDINAL_720P",
+    "QUALITY_ORDINAL_480P",
+    "QUALITY_ORDINAL_360P",
+    "QUALITY_ORDINAL_240P",
+    "QUALITY_ORDINAL_144P",
+    "QUALITY_ORDINAL_UNKNOWN",
+  ];
+
+  filtered.sort((a, b) => {
+    const ai = qualityOrder.indexOf(a.qualityOrdinal ?? "QUALITY_ORDINAL_UNKNOWN");
+    const bi = qualityOrder.indexOf(b.qualityOrdinal ?? "QUALITY_ORDINAL_UNKNOWN");
+    if (ai !== bi) return ai - bi;
+    return (b.bitrate ?? 0) - (a.bitrate ?? 0);
   });
 
-  if (!submitResp.ok) {
-    throw new Error(`Submit gagal: ${submitResp.status} — ${await submitResp.text()}`);
-  }
+  // ── Normalisasi tiap media item ──
+  const normalizedMedias = filtered.map((m) => ({
+    itag:           m.itag          ?? null,
+    type:           m.type          ?? "unknown",
+    extension:      m.extension     ?? null,
+    mimeType:       m.mimeType      ?? null,
+    quality:        m.quality       ?? m.qualityLabel ?? null,
+    qualityLabel:   m.qualityLabel  ?? null,
+    label:          m.label         ?? null,
+    width:          m.width         ?? null,
+    height:         m.height        ?? null,
+    fps:            m.fps           ?? null,
+    bitrate:        m.bitrate       ?? m.averageBitrate ?? null,
+    // has_audio true = stream video yang sudah include audio (misal itag 18 = 360p+audio)
+    has_audio:      m.is_audio      ?? false,
+    // is_audio true = pure audio stream (m4a, opus, webm audio)
+    is_audio:       m.type === "audio",
+    audio_quality:  m.audioQuality  ?? null,
+    audio_sample:   m.audioSampleRate ?? null,
+    content_length: m.contentLength ?? null,
+    duration_ms:    m.approxDurationMs ?? null,
+    url:            m.url,
+  }));
 
-  const submitData = await submitResp.json();
-  console.log("[YouTube] Submit response:", JSON.stringify(submitData));
-
-  // Kalau langsung completed
-  if (submitData?.status === "completed" && submitData?.downloadUrl) {
-    return buildResponse({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality, audioOnly, data: submitData });
-  }
-
-  // ── Step 2: Polling via statusUrl ──
-  const statusUrl = submitData?.statusUrl;
-  if (!statusUrl) {
-    throw new Error("Tidak ada statusUrl dari server. Response: " + JSON.stringify(submitData));
-  }
-
-  console.log("[YouTube] Polling:", statusUrl);
-
-  // Vercel maxDuration = 20s → sisakan ~17s untuk polling (submit sudah ~3s)
-  // 7 percobaan × 2 detik = 14 detik aman
-  const MAX_ATTEMPTS = 7;
-  const POLL_DELAY   = 2_000;
-
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    await sleep(POLL_DELAY);
-
-    const statusResp = await fetch(statusUrl, {
-      headers: HEADERS,
-      signal: AbortSignal.timeout(8_000),
-    });
-
-    if (!statusResp.ok) {
-      console.warn(`[YouTube] Poll ${attempt + 1} gagal: ${statusResp.status}`);
-      continue;
-    }
-
-    const statusData = await statusResp.json();
-    const status = statusData?.status;
-    console.log(`[YouTube] Poll ${attempt + 1}: status=${status}`);
-
-    if (status === "completed" && statusData?.downloadUrl) {
-      return buildResponse({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality, audioOnly, data: { ...submitData, ...statusData } });
-    }
-
-    if (status === "failed" || status === "error") {
-      throw new Error(statusData?.message || "Konversi gagal di server.");
-    }
-
-    // masih processing → lanjut poll
-  }
-
-  throw new Error("Timeout: konversi memakan waktu terlalu lama. Coba lagi sebentar.");
-}
-
-// ─── Response builder ────────────────────────────────────────────────────────
-
-function buildResponse({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality, audioOnly, data }) {
-  const title     = data?.title    || null;
-  const duration  = data?.duration || null;
-  const fileSize  = data?.fileSize || null;
-  const safeTitle = (title || `youtube_${videoId}`)
-    .slice(0, 80)
-    .replace(/[\\/:*?"<>|]/g, "_")
-    .trim();
+  // ── Summary ──
+  const videoFormats = normalizedMedias.filter((m) => m.type === "video");
+  const audioFormats = normalizedMedias.filter((m) => m.is_audio);
 
   return {
     status: true,
     code: 200,
-    message: "Berhasil mengambil data media.",
-    author: {
-      username: null,
-      avatar: null,
-      channel_url: null,
-    },
+    message: "Berhasil mengambil semua format media.",
+    provider: usedProvider,
     video: {
-      id: videoId,
-      title,
-      duration,
-      type: isShorts ? "shorts" : "video",
-      quality: audioOnly ? null : quality,
-      play: audioOnly ? null : data?.downloadUrl,
-      audio_only: audioOnly ? data?.downloadUrl : null,
-      cover: thumbHQ,
-      filename: `${safeTitle}.${format}`,
-      file_size: fileSize,
-    },
-    audio: {
-      play: audioOnly ? data?.downloadUrl : null,
-      quality: audioOnly ? `${quality}kbps` : null,
-      author: null,
-    },
-    stats: {
-      view_count: null,
-      like_count: null,
-      comment_count: null,
-    },
-    meta: {
-      video_id: videoId,
-      source_url: sourceUrl,
+      id:           videoId,
+      title:        result?.title    ?? null,
+      author:       result?.author   ?? null,
+      duration:     result?.duration ?? null,
+      type:         isShorts ? "shorts" : "video",
+      source_url:   sourceUrl,
       thumbnail_hq: thumbHQ,
       thumbnail_mq: thumbMQ,
-      is_shorts: isShorts,
-      format,
-      provider: "hub.ytconvert.org",
+      is_shorts:    isShorts,
     },
+    summary: {
+      total_formats:        normalizedMedias.length,
+      video_formats:        videoFormats.length,
+      audio_formats:        audioFormats.length,
+      qualities_available:  [...new Set(videoFormats.map((m) => m.qualityLabel).filter(Boolean))],
+      extensions_available: [...new Set(normalizedMedias.map((m) => m.extension).filter(Boolean))],
+    },
+    // Shortcut format terbaik tiap kategori
+    best: {
+      video_1080p: videoFormats.find((m) => m.qualityLabel === "1080p" && m.extension === "mp4") ?? null,
+      video_720p:  videoFormats.find((m) => m.qualityLabel === "720p"  && m.extension === "mp4") ?? null,
+      video_360p:  videoFormats.find((m) => m.qualityLabel === "360p"  && m.extension === "mp4" && m.has_audio) ?? null,
+      audio_m4a:   audioFormats.find((m) => m.extension === "m4a")  ?? null,
+      audio_opus:  audioFormats.find((m) => m.extension === "opus") ?? null,
+    },
+    medias: normalizedMedias,
   };
-}
-
-// ─── Util ────────────────────────────────────────────────────────────────────
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
