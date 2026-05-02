@@ -176,7 +176,18 @@ async function fetchInstagram(url) {
       height: bestVideo?.height || null,
       filename: `instagram_${shortcode}.mp4`,
     },
-    audio: { play: null, title: item.music_metadata?.music_info?.music_asset_info?.title || null, author: null },
+    audio: {
+      play: null,
+      title: item.music_metadata?.music_info?.music_asset_info?.title
+          || item.clips_metadata?.original_sound_info?.original_audio_title
+          || null,
+      author: item.music_metadata?.music_info?.music_asset_info?.display_artist
+           || item.clips_metadata?.original_sound_info?.ig_artist?.username
+           || user.username
+           || null,
+      cover: item.music_metadata?.music_info?.music_asset_info?.cover_artwork_uri
+          || null,
+    },
     stats: {
       play_count: item.play_count || null,
       like_count: item.like_count || null,
