@@ -67,6 +67,9 @@ const server = createServer(async (req, res) => {
     "/api/tiktok":    "./api/tiktok.js",
     "/api/instagram": "./api/instagram.js",
     "/api/youtube":   "./api/youtube.js",
+    "/api/qrcode":    "./api/qrcode.js",
+    "/api/aiimage":   "./api/aiimage.js",
+    "/api/shorturl":  "./api/shorturl.js",
   };
 
   if (apiMap[pathname]) {
