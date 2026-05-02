@@ -685,6 +685,87 @@
 
       </div>
     </div>
+    <!-- YOUTUBE ENDPOINT -->
+    <div class="endpoint-card" id="card-youtube">
+      <div class="endpoint-header" onclick="toggleCard('card-youtube')">
+        <span class="method-badge method-get">GET</span>
+        <span class="endpoint-path">/api/youtube</span>
+        <span class="endpoint-desc">Download YouTube Video & Shorts</span>
+        <span class="toggle-icon">▾</span>
+      </div>
+      <div class="endpoint-body">
+
+        <!-- PARAMS -->
+        <p class="params-title">Parameters</p>
+        <table class="params-table">
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="param-name">url</td>
+              <td class="param-type">string</td>
+              <td><span class="badge-req">Required</span></td>
+              <td>URL YouTube, YouTube Shorts, atau youtu.be</td>
+            </tr>
+            <tr>
+              <td class="param-name">quality</td>
+              <td class="param-type">string</td>
+              <td><span class="badge-opt">Optional</span></td>
+              <td>Kualitas video: 144, 360, 480, 720, 1080 (default: 1080)</td>
+            </tr>
+            <tr>
+              <td class="param-name">audio_only</td>
+              <td class="param-type">boolean</td>
+              <td><span class="badge-opt">Optional</span></td>
+              <td>Set true untuk download audio saja (MP3)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- CURL -->
+        <p class="params-title">cURL</p>
+        <div class="curl-box">
+          <span id="yt-curl-text">curl "https://your-project.vercel.app/api/youtube?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ"</span>
+          <button class="btn-curl-copy" onclick="copyYtCurl()">COPY</button>
+        </div>
+
+        <!-- TRY IT -->
+        <p class="params-title">Try It</p>
+        <div class="try-section">
+          <div class="input-group">
+            <input
+              type="text"
+              class="url-input"
+              id="yt-url-input"
+              placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+            />
+            <button class="btn-execute" id="btn-exec-yt" onclick="executeYtAPI()">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
+              EXECUTE
+            </button>
+          </div>
+          <div class="response-box" id="yt-response-box">
+            <div class="response-topbar">
+              <span class="dot dot-r"></span>
+              <span class="dot dot-y"></span>
+              <span class="dot dot-g"></span>
+              <span class="response-label">JSON Response</span>
+              <span class="status-badge" id="yt-status-badge"></span>
+              <button class="copy-btn" onclick="copyYtResponse()">COPY</button>
+            </div>
+            <div class="response-code" id="yt-response-code"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <footer>
       <p>Built with ☕ · Powered by <a href="https://vercel.com" target="_blank">Vercel</a></p>
     </footer>
@@ -698,6 +779,8 @@
       `curl "${baseUrl}/api/tiktok?url=https://vt.tiktok.com/ZS9mu8NkJ/"`;
     document.getElementById('ig-curl-text').textContent =
       `curl "${baseUrl}/api/instagram?url=https://www.instagram.com/p/ABC123/"`;
+    document.getElementById('yt-curl-text').textContent =
+      `curl "${baseUrl}/api/youtube?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ"`;
 
     // ── TOGGLE CARD ──
     function toggleCard(id) {
@@ -843,6 +926,66 @@
 
     document.getElementById('ig-url-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') executeIgAPI();
+    });
+
+    // ── YOUTUBE EXECUTE ──
+    async function executeYtAPI() {
+      const urlVal = document.getElementById('yt-url-input').value.trim();
+      if (!urlVal) {
+        alert('Masukkan URL YouTube terlebih dahulu!');
+        return;
+      }
+
+      const btn = document.getElementById('btn-exec-yt');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Loading...';
+
+      const resBox   = document.getElementById('yt-response-box');
+      const resCode  = document.getElementById('yt-response-code');
+      const resBadge = document.getElementById('yt-status-badge');
+
+      resBox.classList.add('visible');
+      resCode.textContent = 'Fetching data...';
+      resBadge.className = 'status-badge';
+      resBadge.textContent = '';
+
+      try {
+        const endpoint = `${baseUrl}/api/youtube?url=${encodeURIComponent(urlVal)}`;
+        const resp = await fetch(endpoint);
+        const data = await resp.json();
+
+        const pretty = JSON.stringify(data, null, 2);
+        resCode.innerHTML = highlight(pretty);
+
+        if (resp.ok && data.status) {
+          resBadge.className = 'status-badge status-ok';
+          resBadge.textContent = `${resp.status} OK`;
+        } else {
+          resBadge.className = 'status-badge status-err';
+          resBadge.textContent = `${resp.status} Error`;
+        }
+      } catch (err) {
+        resCode.textContent = `Error: ${err.message}`;
+        resBadge.className = 'status-badge status-err';
+        resBadge.textContent = 'Network Error';
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg> EXECUTE';
+    }
+
+    function copyYtResponse() {
+      const text = document.getElementById('yt-response-code').textContent;
+      navigator.clipboard.writeText(text).then(() => alert('Response di-copy!'));
+    }
+
+    function copyYtCurl() {
+      const text = document.getElementById('yt-curl-text').textContent;
+      navigator.clipboard.writeText(text).then(() => alert('cURL di-copy!'));
+    }
+
+    document.getElementById('yt-url-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') executeYtAPI();
     });
 
   </script>
