@@ -3,394 +3,1053 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SanzXD API</title>
+<title>SanzXD API — Download Anything</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden}
 :root{
-  --bg:#07090f;--sidebar:#0b0e1a;--surface:#0f1322;--surface2:#131829;
-  --border:rgba(255,255,255,0.07);--border2:rgba(99,102,241,0.25);
-  --indigo:#6366f1;--violet:#8b5cf6;--cyan:#22d3ee;
-  --green:#10b981;--rose:#f43f5e;--amber:#f59e0b;
-  --text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8;
-  --mono:'JetBrains Mono',monospace;--sans:'Outfit',sans-serif;
+  --bg:#050508;
+  --surface:#0c0c14;
+  --surface2:#111120;
+  --border:rgba(255,255,255,0.06);
+  --border-glow:rgba(120,100,255,0.3);
+  --primary:#7c5cfc;
+  --primary-dim:#5a3fd4;
+  --accent:#00e5ff;
+  --accent2:#ff4d8d;
+  --green:#00ff9d;
+  --yellow:#ffe066;
+  --text:#f0eeff;
+  --muted:#6b6880;
+  --muted2:#9b96b8;
+  --mono:'Space Mono',monospace;
+  --sans:'Syne',sans-serif;
 }
-body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex;flex-direction:column}
 
-/* TOPBAR */
-.topbar{display:flex;align-items:center;gap:16px;padding:0 20px;height:54px;background:var(--sidebar);border-bottom:1px solid var(--border);flex-shrink:0;z-index:50}
-.topbar-logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:16px;letter-spacing:-0.02em;white-space:nowrap;text-decoration:none;color:var(--text)}
-.logo-box{width:28px;height:28px;background:linear-gradient(135deg,var(--indigo),var(--violet));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
-.logo-txt span{color:var(--indigo)}
-.topbar-search{flex:1;max-width:380px;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0 14px;height:34px}
-.topbar-search input{background:none;border:none;outline:none;color:var(--text);font-family:var(--sans);font-size:13px;width:100%}
-.topbar-search input::placeholder{color:var(--muted)}
-.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-.live-badge{display:flex;align-items:center;gap:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:var(--green);font-size:11px;font-family:var(--mono);font-weight:700;padding:5px 12px;border-radius:100px}
-.live-badge::before{content:'';width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
-.topbar-author{font-size:12px;color:var(--muted);font-family:var(--mono)}
-.topbar-author span{color:var(--indigo)}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text);
+  overflow-x:hidden;
+  min-height:100vh;
+}
 
-/* LAYOUT */
-.main{display:flex;flex:1;overflow:hidden}
+/* ─── NOISE OVERLAY ─── */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity:0.025;
+  pointer-events:none;
+  z-index:0;
+}
 
-/* SIDEBAR */
-.sidebar{width:280px;flex-shrink:0;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
-.sidebar-inner{overflow-y:auto;flex:1;padding:12px 0}
-.sidebar-inner::-webkit-scrollbar{width:4px}
-.sidebar-inner::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-.sidebar-cat{font-size:10px;font-family:var(--mono);font-weight:700;color:var(--indigo);text-transform:uppercase;letter-spacing:0.15em;padding:10px 18px 6px}
-.sidebar-item{display:flex;align-items:center;gap:12px;padding:9px 18px;cursor:pointer;transition:background 0.15s;position:relative}
-.sidebar-item:hover{background:rgba(255,255,255,0.04)}
-.sidebar-item.active{background:rgba(99,102,241,0.1)}
-.sidebar-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--indigo);border-radius:0 2px 2px 0}
-.si-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.si-home{background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.2)}
-.si-tiktok{background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08)}
-.si-ig{background:rgba(225,48,108,0.12);border:1px solid rgba(225,48,108,0.15)}
-.si-yt{background:rgba(255,0,0,0.1);border:1px solid rgba(255,0,0,0.15)}
-.si-info{flex:1;min-width:0}
-.si-name{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.si-desc{font-size:11.5px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.si-badge{font-size:9px;font-weight:700;font-family:var(--mono);padding:2px 6px;border-radius:4px;background:rgba(99,102,241,0.12);color:var(--indigo);border:1px solid var(--border2);flex-shrink:0;letter-spacing:0.04em}
+/* ─── GLOW ORBS ─── */
+.orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0}
+.orb-1{width:600px;height:600px;background:radial-gradient(circle,rgba(124,92,252,0.18) 0%,transparent 70%);top:-200px;left:-100px}
+.orb-2{width:500px;height:500px;background:radial-gradient(circle,rgba(0,229,255,0.1) 0%,transparent 70%);bottom:-100px;right:-100px}
+.orb-3{width:400px;height:400px;background:radial-gradient(circle,rgba(255,77,141,0.08) 0%,transparent 70%);top:40%;left:40%}
 
-/* CONTENT */
-.content{flex:1;overflow-y:auto;background:var(--bg)}
-.content::-webkit-scrollbar{width:5px}
-.content::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+/* ─── NAV ─── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 48px;
+  border-bottom:1px solid var(--border);
+  background:rgba(5,5,8,0.75);
+  backdrop-filter:blur(20px);
+}
+.nav-logo{
+  display:flex;align-items:center;gap:10px;
+  font-weight:800;font-size:18px;letter-spacing:-0.02em;
+  text-decoration:none;color:var(--text);
+}
+.logo-icon{
+  width:32px;height:32px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;
+  box-shadow:0 0 20px rgba(124,92,252,0.4);
+}
+.logo-text span{color:var(--primary)}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{
+  font-size:13px;font-weight:600;color:var(--muted2);
+  text-decoration:none;letter-spacing:0.03em;
+  transition:color 0.2s;
+}
+.nav-links a:hover{color:var(--text)}
+.nav-badge{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(0,255,157,0.08);
+  border:1px solid rgba(0,255,157,0.2);
+  color:var(--green);
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  padding:6px 14px;border-radius:100px;
+  letter-spacing:0.08em;
+}
+.nav-badge::before{
+  content:'';width:6px;height:6px;background:var(--green);
+  border-radius:50%;animation:pulse 2s infinite;
+}
 
-/* HOME */
-.home-page{padding:48px 48px 80px;max-width:720px}
-.home-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(99,102,241,0.08);border:1px solid var(--border2);border-radius:100px;padding:5px 14px;font-size:11px;font-family:var(--mono);color:var(--indigo);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:24px}
-.home-page h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;letter-spacing:-0.04em;line-height:1.1;margin-bottom:16px}
-.grad{background:linear-gradient(135deg,var(--indigo),var(--violet),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.home-sub{font-size:15px;color:var(--muted2);line-height:1.7;max-width:520px;margin-bottom:36px}
-.home-sub strong{color:var(--text);font-weight:600}
-.home-stats{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:48px}
-.hstat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 28px;text-align:center;min-width:90px}
-.hstat-val{font-size:22px;font-weight:800;font-family:var(--mono);color:var(--indigo)}
-.hstat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-top:4px;font-weight:600}
-.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.hfeat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;transition:border-color 0.2s}
-.hfeat:hover{border-color:var(--border2)}
-.hfeat-icon{font-size:22px;margin-bottom:10px}
-.hfeat h3{font-size:14px;font-weight:700;margin-bottom:4px}
-.hfeat p{font-size:12.5px;color:var(--muted2);line-height:1.5}
+/* ─── HERO ─── */
+.hero{
+  position:relative;z-index:1;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:120px 24px 80px;
+  text-align:center;
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(124,92,252,0.08);
+  border:1px solid rgba(124,92,252,0.25);
+  border-radius:100px;padding:7px 18px;
+  font-family:var(--mono);font-size:11px;font-weight:700;
+  color:var(--primary);letter-spacing:0.12em;text-transform:uppercase;
+  margin-bottom:32px;
+  animation:fadeUp 0.6s ease both;
+}
+.hero h1{
+  font-size:clamp(3rem,8vw,7rem);
+  font-weight:800;
+  letter-spacing:-0.04em;
+  line-height:0.95;
+  margin-bottom:12px;
+  animation:fadeUp 0.6s 0.1s ease both;
+}
+.hero h1 .line-2{
+  display:block;
+  background:linear-gradient(135deg,var(--primary) 0%,var(--accent) 50%,var(--accent2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-sub{
+  font-size:clamp(15px,2vw,18px);
+  color:var(--muted2);line-height:1.7;
+  max-width:520px;margin:24px auto 48px;
+  animation:fadeUp 0.6s 0.2s ease both;
+}
+.hero-sub strong{color:var(--text);font-weight:700}
 
-/* ENDPOINT */
-.ep-page{padding:32px 40px 80px}
-.ep-breadcrumb{font-size:11px;font-family:var(--mono);color:var(--muted);margin-bottom:12px}
-.ep-breadcrumb span{color:var(--muted2)}
-.ep-title-row{display:flex;align-items:center;gap:14px;margin-bottom:8px}
-.ep-method{font-family:var(--mono);font-size:12px;font-weight:700;padding:5px 12px;border-radius:7px;background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.25);flex-shrink:0}
-.ep-title-path{font-family:var(--mono);font-size:20px;font-weight:700}
-.ep-subtitle{font-size:14px;color:var(--muted2);margin-bottom:28px}
-.ep-section{margin-bottom:28px}
-.ep-sec-lbl{font-size:10px;font-family:var(--mono);font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;display:flex;align-items:center;gap:10px}
-.ep-sec-lbl::after{content:'';flex:1;height:1px;background:var(--border)}
+/* ─── CTA BUTTONS ─── */
+.hero-cta{
+  display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
+  animation:fadeUp 0.6s 0.3s ease both;
+  margin-bottom:72px;
+}
+.btn-primary{
+  display:flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dim));
+  color:#fff;font-family:var(--sans);font-weight:700;font-size:14px;
+  padding:14px 28px;border-radius:12px;border:none;cursor:pointer;
+  text-decoration:none;
+  box-shadow:0 0 30px rgba(124,92,252,0.35),inset 0 1px 0 rgba(255,255,255,0.1);
+  transition:all 0.2s;
+  letter-spacing:0.01em;
+}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 0 40px rgba(124,92,252,0.5),inset 0 1px 0 rgba(255,255,255,0.1)}
+.btn-ghost{
+  display:flex;align-items:center;gap:8px;
+  background:transparent;
+  border:1px solid var(--border-glow);
+  color:var(--muted2);font-family:var(--sans);font-weight:600;font-size:14px;
+  padding:14px 28px;border-radius:12px;cursor:pointer;
+  text-decoration:none;
+  transition:all 0.2s;
+}
+.btn-ghost:hover{border-color:var(--primary);color:var(--text);background:rgba(124,92,252,0.06)}
 
-/* TABLE */
-.pt{width:100%;border-collapse:collapse;font-size:13px}
-.pt th{text-align:left;padding:8px 14px;font-size:10px;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:700;border-bottom:1px solid var(--border)}
-.pt td{padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--muted2);vertical-align:top}
-.pt tr:last-child td{border-bottom:none}
-.p-name{font-family:var(--mono);color:var(--indigo);font-size:13px}
-.p-type{font-family:var(--mono);color:var(--amber);font-size:12px}
-.b-req{background:rgba(244,63,94,0.1);color:var(--rose);border:1px solid rgba(244,63,94,0.2);font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:4px}
-.b-opt{background:rgba(99,102,241,0.1);color:var(--indigo);border:1px solid var(--border2);font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:4px}
+/* ─── PLATFORM CARDS ─── */
+.hero-platforms{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+  max-width:700px;width:100%;
+  animation:fadeUp 0.6s 0.4s ease both;
+}
+.platform-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;padding:24px 20px;
+  text-align:left;
+  cursor:pointer;
+  transition:all 0.25s;
+  position:relative;overflow:hidden;
+}
+.platform-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--card-color,transparent) 0%,transparent 60%);
+  opacity:0;transition:opacity 0.25s;
+}
+.platform-card:hover{border-color:var(--card-border,var(--border-glow));transform:translateY(-3px)}
+.platform-card:hover::before{opacity:0.06}
+.card-tt{--card-color:#ffffff;--card-border:rgba(255,255,255,0.15)}
+.card-ig{--card-color:#e1306c;--card-border:rgba(225,48,108,0.3)}
+.card-yt{--card-color:#ff0000;--card-border:rgba(255,0,0,0.2)}
+.platform-icon{font-size:28px;margin-bottom:14px}
+.platform-name{font-size:14px;font-weight:800;margin-bottom:4px}
+.platform-desc{font-size:12px;color:var(--muted);line-height:1.5}
+.platform-tag{
+  display:inline-flex;margin-top:12px;
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  padding:3px 8px;border-radius:5px;
+  background:rgba(124,92,252,0.1);color:var(--primary);
+  border:1px solid rgba(124,92,252,0.2);
+}
 
-/* CURL */
-.curl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-family:var(--mono);font-size:12.5px;color:var(--muted2);display:flex;gap:12px;align-items:flex-start;overflow-x:auto}
-.curl-wrap span{flex:1;word-break:break-all}
-.btn-copy{background:none;border:1px solid var(--border2);color:var(--muted2);font-family:var(--mono);font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;cursor:pointer;letter-spacing:0.05em;flex-shrink:0;transition:color 0.2s,border-color 0.2s}
-.btn-copy:hover{color:var(--indigo);border-color:var(--indigo)}
+/* ─── SECTION SHARED ─── */
+section{position:relative;z-index:1;padding:80px 24px}
+.section-inner{max-width:1100px;margin:0 auto}
+.section-label{
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  color:var(--primary);letter-spacing:0.2em;text-transform:uppercase;
+  margin-bottom:16px;
+}
+.section-title{
+  font-size:clamp(1.8rem,4vw,3rem);font-weight:800;
+  letter-spacing:-0.03em;line-height:1.1;margin-bottom:16px;
+}
+.section-sub{font-size:15px;color:var(--muted2);line-height:1.7;max-width:480px}
 
-/* TRY IT */
-.try-row{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
-.url-input{flex:1;min-width:200px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:11px 16px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;transition:border-color 0.2s}
+/* ─── FEATURES GRID ─── */
+.features{background:transparent;border-top:1px solid var(--border)}
+.features-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);border-radius:20px;overflow:hidden;
+  margin-top:56px;
+}
+.feat-cell{
+  background:var(--bg);
+  padding:36px 32px;
+  position:relative;overflow:hidden;
+  transition:background 0.2s;
+}
+.feat-cell:hover{background:var(--surface)}
+.feat-cell::after{
+  content:attr(data-num);
+  position:absolute;right:24px;top:20px;
+  font-family:var(--mono);font-size:11px;color:var(--border);
+  font-weight:700;
+}
+.feat-icon{
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;margin-bottom:20px;
+}
+.feat-icon-1{background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.2)}
+.feat-icon-2{background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.15)}
+.feat-icon-3{background:rgba(0,255,157,0.08);border:1px solid rgba(0,255,157,0.15)}
+.feat-icon-4{background:rgba(255,77,141,0.08);border:1px solid rgba(255,77,141,0.15)}
+.feat-icon-5{background:rgba(255,224,102,0.08);border:1px solid rgba(255,224,102,0.15)}
+.feat-icon-6{background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.2)}
+.feat-cell h3{font-size:15px;font-weight:800;margin-bottom:8px;letter-spacing:-0.01em}
+.feat-cell p{font-size:13px;color:var(--muted2);line-height:1.65}
+
+/* ─── ENDPOINTS SECTION ─── */
+.endpoints{border-top:1px solid var(--border)}
+.endpoints-layout{
+  display:grid;grid-template-columns:280px 1fr;gap:32px;
+  margin-top:56px;align-items:start;
+}
+.ep-nav{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;position:sticky;top:100px;
+}
+.ep-nav-item{
+  display:flex;align-items:center;gap:12px;
+  padding:16px 20px;cursor:pointer;
+  border-bottom:1px solid var(--border);
+  transition:background 0.15s;
+  user-select:none;
+}
+.ep-nav-item:last-child{border-bottom:none}
+.ep-nav-item:hover{background:rgba(255,255,255,0.03)}
+.ep-nav-item.active{background:rgba(124,92,252,0.08)}
+.ep-nav-item.active .ep-nav-dot{background:var(--primary);box-shadow:0 0 8px var(--primary)}
+.ep-nav-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--muted);flex-shrink:0;
+  transition:all 0.2s;
+}
+.ep-nav-info{}
+.ep-nav-name{font-size:13px;font-weight:700}
+.ep-nav-path{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ─── ENDPOINT PANEL ─── */
+.ep-panel{display:none}
+.ep-panel.active{display:block;animation:fadeUp 0.2s ease}
+.ep-header{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:28px 32px;margin-bottom:20px;
+}
+.ep-method-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.badge-method{
+  font-family:var(--mono);font-size:11px;font-weight:700;
+  padding:5px 12px;border-radius:7px;
+  background:rgba(0,255,157,0.1);color:var(--green);
+  border:1px solid rgba(0,255,157,0.2);
+}
+.ep-path{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--text)}
+.ep-desc{font-size:14px;color:var(--muted2);margin-top:8px}
+
+.ep-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;margin-bottom:20px;
+}
+.ep-card-header{
+  padding:14px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.ep-card-title{
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;
+}
+.ep-card-body{padding:20px}
+
+/* ─── PARAMS TABLE ─── */
+.params-table{width:100%;border-collapse:collapse}
+.params-table th{
+  text-align:left;padding:10px 16px;
+  font-family:var(--mono);font-size:10px;text-transform:uppercase;
+  letter-spacing:0.1em;color:var(--muted);font-weight:700;
+  border-bottom:1px solid var(--border);
+}
+.params-table td{
+  padding:13px 16px;border-bottom:1px solid rgba(255,255,255,0.03);
+  font-size:13px;color:var(--muted2);vertical-align:top;
+}
+.params-table tr:last-child td{border-bottom:none}
+.param-name{font-family:var(--mono);color:#a78bfa}
+.param-type{font-family:var(--mono);color:var(--yellow);font-size:12px}
+.badge-req{
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  padding:3px 8px;border-radius:5px;
+  background:rgba(255,77,141,0.1);color:var(--accent2);
+  border:1px solid rgba(255,77,141,0.2);
+}
+.badge-opt{
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  padding:3px 8px;border-radius:5px;
+  background:rgba(124,92,252,0.1);color:var(--primary);
+  border:1px solid rgba(124,92,252,0.2);
+}
+
+/* ─── CURL BOX ─── */
+.curl-box{
+  background:rgba(0,0,0,0.4);border-radius:10px;
+  padding:16px 20px;
+  font-family:var(--mono);font-size:12px;color:var(--muted2);
+  display:flex;gap:12px;align-items:flex-start;
+  overflow-x:auto;
+}
+.curl-box span{flex:1;word-break:break-all;line-height:1.7}
+.curl-dollar{color:var(--primary);flex-shrink:0;font-weight:700}
+.btn-copy{
+  background:none;border:1px solid var(--border-glow);
+  color:var(--muted2);font-family:var(--mono);font-size:10px;
+  font-weight:700;padding:5px 12px;border-radius:7px;cursor:pointer;
+  letter-spacing:0.05em;flex-shrink:0;
+  transition:all 0.2s;
+}
+.btn-copy:hover{color:var(--primary);border-color:var(--primary)}
+
+/* ─── TRY IT ─── */
+.try-row{display:flex;gap:10px;flex-wrap:wrap}
+.url-input{
+  flex:1;min-width:200px;
+  background:rgba(0,0,0,0.4);
+  border:1px solid var(--border-glow);
+  border-radius:10px;padding:12px 18px;
+  color:var(--text);font-family:var(--mono);font-size:13px;
+  outline:none;transition:border-color 0.2s;
+}
 .url-input::placeholder{color:var(--muted)}
-.url-input:focus{border-color:var(--indigo)}
-.btn-exec{display:flex;align-items:center;gap:7px;background:linear-gradient(135deg,var(--indigo),var(--violet));color:#fff;font-family:var(--sans);font-weight:700;font-size:13px;padding:11px 22px;border-radius:10px;border:none;cursor:pointer;flex-shrink:0;transition:opacity 0.2s;box-shadow:0 0 20px rgba(99,102,241,0.2)}
-.btn-exec:hover{opacity:0.85}
+.url-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(124,92,252,0.1)}
+.btn-exec{
+  display:flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dim));
+  color:#fff;font-family:var(--sans);font-weight:700;font-size:13px;
+  padding:12px 22px;border-radius:10px;border:none;cursor:pointer;
+  box-shadow:0 0 20px rgba(124,92,252,0.25);
+  transition:all 0.2s;flex-shrink:0;
+}
+.btn-exec:hover:not(:disabled){opacity:0.85;transform:translateY(-1px)}
 .btn-exec:disabled{opacity:0.5;cursor:not-allowed}
-.btn-exec svg{width:13px;height:13px}
+.exec-icon{width:14px;height:14px}
 
-/* RESPONSE */
-.res-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:none}
-.res-wrap.show{display:block}
-.res-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border)}
+/* ─── RESPONSE ─── */
+.res-wrap{margin-top:16px;display:none}
+.res-wrap.show{display:block;animation:fadeUp 0.2s ease}
+.res-topbar{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 16px;
+  background:rgba(0,0,0,0.3);
+  border:1px solid var(--border);
+  border-bottom:none;
+  border-radius:10px 10px 0 0;
+}
 .dot{width:10px;height:10px;border-radius:50%}
-.dr{background:#f87171}.dy{background:#fbbf24}.dg{background:#4ade80}
-.res-lbl{font-family:var(--mono);font-size:11px;color:var(--muted);flex:1;letter-spacing:0.05em}
-.res-status{font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px}
-.s-ok{background:rgba(16,185,129,0.1);color:var(--green)}
-.s-err{background:rgba(244,63,94,0.1);color:var(--rose)}
-.res-code{padding:16px;font-family:var(--mono);font-size:12px;line-height:1.75;color:var(--muted2);max-height:380px;overflow-y:auto;white-space:pre}
+.dot-r{background:#ff5f57}.dot-y{background:#ffbd2e}.dot-g{background:#28ca41}
+.res-label{font-family:var(--mono);font-size:10px;color:var(--muted);flex:1;letter-spacing:0.08em;text-transform:uppercase}
+.badge-ok{
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  padding:3px 10px;border-radius:5px;
+  background:rgba(0,255,157,0.1);color:var(--green);
+  border:1px solid rgba(0,255,157,0.2);
+}
+.badge-err{
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  padding:3px 10px;border-radius:5px;
+  background:rgba(255,77,141,0.1);color:var(--accent2);
+  border:1px solid rgba(255,77,141,0.2);
+}
+.res-code{
+  background:rgba(0,0,0,0.4);
+  border:1px solid var(--border);
+  border-top:none;border-radius:0 0 10px 10px;
+  padding:18px 20px;
+  font-family:var(--mono);font-size:12px;line-height:1.8;
+  color:var(--muted2);max-height:420px;overflow-y:auto;
+  white-space:pre;
+}
 .res-code::-webkit-scrollbar{width:4px}
 .res-code::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-.jk{color:#a78bfa}.js{color:#86efac}.jn{color:#fbbf24}.jb{color:#f87171}.jl{color:#94a3b8}
-.spinner{width:12px;height:12px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block}
+/* JSON syntax colors */
+.jk{color:#a78bfa}.js{color:#86efac}.jn{color:var(--yellow)}.jb{color:var(--accent2)}.jl{color:var(--muted)}
 
+/* ─── STATS SECTION ─── */
+.stats-section{border-top:1px solid var(--border);text-align:center}
+.stats-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:24px;
+  margin-top:56px;
+}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;padding:36px 24px;
+  position:relative;overflow:hidden;
+  transition:border-color 0.2s;
+}
+.stat-card:hover{border-color:var(--border-glow)}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:60%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--primary),transparent);
+}
+.stat-val{
+  font-size:48px;font-weight:800;letter-spacing:-0.03em;
+  line-height:1;margin-bottom:8px;
+  background:linear-gradient(135deg,var(--text),var(--muted2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.stat-lbl{font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em}
+
+/* ─── FORMAT SELECTORS (YouTube) ─── */
+.format-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.format-btn{
+  font-family:var(--mono);font-size:11px;font-weight:700;
+  padding:7px 14px;border-radius:8px;cursor:pointer;
+  border:1px solid var(--border);background:transparent;
+  color:var(--muted2);transition:all 0.15s;
+}
+.format-btn.active{background:rgba(124,92,252,0.12);color:var(--primary);border-color:var(--border-glow)}
+
+/* ─── FOOTER ─── */
+footer{
+  position:relative;z-index:1;
+  border-top:1px solid var(--border);
+  padding:48px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:16px;
+}
+.footer-logo{font-weight:800;font-size:18px;letter-spacing:-0.02em}
+.footer-logo span{color:var(--primary)}
+.footer-copy{font-size:13px;color:var(--muted);font-family:var(--mono)}
+.footer-links{display:flex;gap:24px}
+.footer-links a{font-size:12px;color:var(--muted);text-decoration:none;transition:color 0.2s;font-family:var(--mono)}
+.footer-links a:hover{color:var(--text)}
+
+/* ─── SPINNER ─── */
+.spinner{
+  width:13px;height:13px;
+  border:2px solid rgba(255,255,255,0.2);
+  border-top-color:#fff;border-radius:50%;
+  animation:spin 0.6s linear infinite;display:inline-block;
+}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.fade-in{animation:fadeIn 0.22s ease both}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-@media(max-width:700px){
-  .sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border);max-height:auto}
-  .main{flex-direction:column}
-  .home-grid{grid-template-columns:1fr}
-  .home-page,.ep-page{padding:20px 16px 60px}
-  .topbar-search{display:none}
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:900px){
+  nav{padding:16px 24px}
+  .nav-links{display:none}
+  .endpoints-layout{grid-template-columns:1fr}
+  .ep-nav{position:relative;top:0;display:flex;overflow-x:auto}
+  .ep-nav-item{flex-direction:column;align-items:flex-start;min-width:160px;border-bottom:none;border-right:1px solid var(--border)}
+  .features-grid{grid-template-columns:1fr}
+  .hero-platforms{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  footer{flex-direction:column;text-align:center;padding:32px 24px}
+  .footer-links{justify-content:center}
 }
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="topbar-logo">
-    <div class="logo-box">⚡</div>
-    <div class="logo-txt">Sanz<span>XD</span></div>
-  </div>
-  <div class="topbar-search">
-    <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" style="color:var(--muted)"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
-    <input type="text" placeholder="Search APIs by name, category, or description..." oninput="filterSidebar(this.value)"/>
-  </div>
-  <div class="topbar-right">
-    <div class="live-badge">LIVE</div>
-    <div class="topbar-author">by <span>@SanzXD</span></div>
-  </div>
-</div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
 
-<div class="main">
-  <div class="sidebar">
-    <div class="sidebar-inner" id="sidebar-inner">
-      <div class="sidebar-cat">Downloader</div>
-      <div class="sidebar-item active" id="si-home" onclick="showPage('home')">
-        <div class="si-icon si-home">🏠</div>
-        <div class="si-info">
-          <div class="si-name">Home</div>
-          <div class="si-desc">Overview & dokumentasi</div>
-        </div>
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="logo-icon">⚡</div>
+    <span class="logo-text">Sanz<span>XD</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#endpoints">API Docs</a>
+    <a href="#stats">Stats</a>
+  </div>
+  <div class="nav-badge">LIVE</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">⚡ Free · No Auth Required · JSON</div>
+  <h1>
+    Download<br>
+    <span class="line-2">Anything.</span>
+  </h1>
+  <p class="hero-sub">
+    API downloader untuk <strong>TikTok</strong>, <strong>Instagram</strong>, dan <strong>YouTube</strong>. Tanpa watermark, tanpa auth, langsung pakai. Gratis selamanya.
+  </p>
+  <div class="hero-cta">
+    <a href="#endpoints" class="btn-primary">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
+      Coba Sekarang
+    </a>
+    <a href="#features" class="btn-ghost">Lihat Fitur</a>
+  </div>
+
+  <div class="hero-platforms">
+    <div class="platform-card card-tt" onclick="scrollToEp('tiktok')">
+      <div class="platform-icon">🎵</div>
+      <div class="platform-name">TikTok</div>
+      <div class="platform-desc">Download video tanpa watermark + HD quality</div>
+      <div class="platform-tag">NO WATERMARK</div>
+    </div>
+    <div class="platform-card card-ig" onclick="scrollToEp('instagram')">
+      <div class="platform-icon">📸</div>
+      <div class="platform-name">Instagram</div>
+      <div class="platform-desc">Reel, Post, Carousel & IGTV</div>
+      <div class="platform-tag">MULTI MEDIA</div>
+    </div>
+    <div class="platform-card card-yt" onclick="scrollToEp('youtube')">
+      <div class="platform-icon">▶️</div>
+      <div class="platform-name">YouTube</div>
+      <div class="platform-desc">Video, Shorts & convert MP3</div>
+      <div class="platform-tag">MP3 + MP4</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="section-inner">
+    <div class="section-label">Kenapa Pilih SanzXD?</div>
+    <h2 class="section-title">Didesain untuk<br>Developer Modern</h2>
+    <p class="section-sub">Semua yang kamu butuhkan dalam satu API — cepat, bersih, dan selalu online.</p>
+
+    <div class="features-grid">
+      <div class="feat-cell" data-num="01">
+        <div class="feat-icon feat-icon-1">🚫</div>
+        <h3>No Watermark</h3>
+        <p>Download TikTok dalam kualitas original HD tanpa watermark. Tersedia juga versi SD dan dengan watermark.</p>
       </div>
-      <div class="sidebar-item" id="si-tiktok" onclick="showPage('tiktok')">
-        <div class="si-icon si-tiktok">🎵</div>
-        <div class="si-info">
-          <div class="si-name">TikTok DL</div>
-          <div class="si-desc">Download TikTok videos without watermark.</div>
-        </div>
-        <span class="si-badge">DL</span>
+      <div class="feat-cell" data-num="02">
+        <div class="feat-icon feat-icon-2">⚡</div>
+        <h3>Ultra Fast Response</h3>
+        <p>Server dengan auto-retry dan load balancing. TikTok &lt;1 detik, YouTube dengan polling otomatis.</p>
       </div>
-      <div class="sidebar-item" id="si-instagram" onclick="showPage('instagram')">
-        <div class="si-icon si-ig">📸</div>
-        <div class="si-info">
-          <div class="si-name">Instagram DL</div>
-          <div class="si-desc">Download Instagram media.</div>
-        </div>
-        <span class="si-badge">DL</span>
+      <div class="feat-cell" data-num="03">
+        <div class="feat-icon feat-icon-3">🔓</div>
+        <h3>Zero Auth</h3>
+        <p>Tidak perlu daftar, tidak perlu API key. Langsung hit endpoint dan dapatkan data.</p>
       </div>
-      <div class="sidebar-item" id="si-youtube" onclick="showPage('youtube')">
-        <div class="si-icon si-yt">▶️</div>
-        <div class="si-info">
-          <div class="si-name">YouTube DL</div>
-          <div class="si-desc">Download YouTube videos.</div>
-        </div>
-        <span class="si-badge">DL</span>
+      <div class="feat-cell" data-num="04">
+        <div class="feat-icon feat-icon-4">🌐</div>
+        <h3>CORS Friendly</h3>
+        <p>CORS sudah diaktifkan untuk semua origin. Cocok untuk web apps, mobile apps, maupun CLI.</p>
+      </div>
+      <div class="feat-cell" data-num="05">
+        <div class="feat-icon feat-icon-5">📦</div>
+        <h3>JSON Structured</h3>
+        <p>Response terstruktur rapi — author, video, audio, stats. Konsisten di semua endpoint.</p>
+      </div>
+      <div class="feat-cell" data-num="06">
+        <div class="feat-icon feat-icon-6">☁️</div>
+        <h3>Deploy ke Vercel</h3>
+        <p>Siap deploy ke Vercel dalam hitungan menit. Bisa juga run lokal dengan <code style="font-family:var(--mono);color:var(--primary);font-size:12px">node server.js</code>.</p>
       </div>
     </div>
   </div>
+</section>
 
-  <div class="content" id="content">
+<!-- ENDPOINTS -->
+<section class="endpoints" id="endpoints">
+  <div class="section-inner">
+    <div class="section-label">API Reference</div>
+    <h2 class="section-title">Dokumentasi<br>Endpoint</h2>
+    <p class="section-sub">Pilih platform, masukkan URL, dan coba langsung dari browser.</p>
 
-    <!-- HOME -->
-    <div id="page-home" class="home-page fade-in">
-      <div class="home-eyebrow">⚡ Free · No Auth · JSON Response</div>
-      <h1>Powerful API for<br><span class="grad">Modern Developers</span></h1>
-      <p class="home-sub">Akses endpoint <strong>TikTok</strong>, <strong>Instagram</strong>, dan <strong>YouTube</strong> downloader dalam satu platform. Cepat, handal, dan gratis — semua response menyertakan tag author <strong>@SanzXD</strong>.</p>
-      <div class="home-stats">
-        <div class="hstat"><div class="hstat-val">3</div><div class="hstat-lbl">Endpoints</div></div>
-        <div class="hstat"><div class="hstat-val">GET</div><div class="hstat-lbl">Method</div></div>
-        <div class="hstat"><div class="hstat-val">JSON</div><div class="hstat-lbl">Format</div></div>
-        <div class="hstat"><div class="hstat-val">FREE</div><div class="hstat-lbl">Access</div></div>
+    <div class="endpoints-layout">
+      <!-- Sidebar nav -->
+      <div class="ep-nav">
+        <div class="ep-nav-item active" id="nav-tiktok" onclick="switchEp('tiktok')">
+          <div class="ep-nav-dot"></div>
+          <div class="ep-nav-info">
+            <div class="ep-nav-name">🎵 TikTok DL</div>
+            <div class="ep-nav-path">/api/tiktok</div>
+          </div>
+        </div>
+        <div class="ep-nav-item" id="nav-instagram" onclick="switchEp('instagram')">
+          <div class="ep-nav-dot"></div>
+          <div class="ep-nav-info">
+            <div class="ep-nav-name">📸 Instagram DL</div>
+            <div class="ep-nav-path">/api/instagram</div>
+          </div>
+        </div>
+        <div class="ep-nav-item" id="nav-youtube" onclick="switchEp('youtube')">
+          <div class="ep-nav-dot"></div>
+          <div class="ep-nav-info">
+            <div class="ep-nav-name">▶️ YouTube DL</div>
+            <div class="ep-nav-path">/api/youtube</div>
+          </div>
+        </div>
       </div>
-      <div class="home-grid">
-        <div class="hfeat"><div class="hfeat-icon">🎵</div><h3>TikTok No WM</h3><p>Download video TikTok tanpa watermark dalam kualitas HD.</p></div>
-        <div class="hfeat"><div class="hfeat-icon">📸</div><h3>Instagram Media</h3><p>Download Reels, Post, Carousel, dan IGTV dari Instagram.</p></div>
-        <div class="hfeat"><div class="hfeat-icon">▶️</div><h3>YouTube & Shorts</h3><p>Download video YouTube, Shorts, dan convert ke MP3.</p></div>
-        <div class="hfeat"><div class="hfeat-icon">⚡</div><h3>Ultra Fast</h3><p>Response cepat dengan auto-retry untuk hasil yang konsisten.</p></div>
-        <div class="hfeat"><div class="hfeat-icon">🔓</div><h3>No Auth Needed</h3><p>Tidak perlu API key atau registrasi. Langsung pakai.</p></div>
-        <div class="hfeat"><div class="hfeat-icon">🌐</div><h3>CORS Friendly</h3><p>CORS sudah diaktifkan, cocok untuk web dan mobile apps.</p></div>
+
+      <!-- Panels -->
+      <div>
+
+        <!-- TikTok -->
+        <div class="ep-panel active" id="panel-tiktok">
+          <div class="ep-header">
+            <div class="ep-method-row">
+              <span class="badge-method">GET</span>
+              <span class="ep-path">/api/tiktok</span>
+            </div>
+            <div class="ep-desc">Download video TikTok tanpa watermark. Mendukung link vt.tiktok.com, vm.tiktok.com, dan www.tiktok.com.</div>
+          </div>
+
+          <div class="ep-card">
+            <div class="ep-card-header">
+              <span class="ep-card-title">Parameters</span>
+            </div>
+            <div class="ep-card-body" style="padding:0">
+              <table class="params-table">
+                <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td class="param-name">url</td>
+                    <td class="param-type">string</td>
+                    <td><span class="badge-req">Required</span></td>
+                    <td>URL video TikTok</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="ep-card">
+            <div class="ep-card-header">
+              <span class="ep-card-title">cURL</span>
+              <button class="btn-copy" onclick="copyCurl('curl-tt',this)">COPY</button>
+            </div>
+            <div class="ep-card-body">
+              <div class="curl-box">
+                <span class="curl-dollar">$</span>
+                <span id="curl-tt"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="ep-card">
+            <div class="ep-card-header">
+              <span class="ep-card-title">Try It Live</span>
+            </div>
+            <div class="ep-card-body">
+              <div class="try-row" style="margin-bottom:0">
+                <input class="url-input" id="tt-input" placeholder="https://vt.tiktok.com/ZS9mu8NkJ/"/>
+                <button class="btn-exec" id="tt-btn" onclick="execApi('tt')">
+                  <svg class="exec-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
+                  Execute
+                </button>
+              </div>
+              <div class="res-wrap" id="tt-res">
+                <div class="res-topbar">
+                  <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+                  <span class="res-label">JSON Response</span>
+                  <span id="tt-badge"></span>
+                  <button class="btn-copy" onclick="copyRes('tt-code',this)" style="margin-left:8px">COPY</button>
+                </div>
+                <div class="res-code" id="tt-code"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Instagram -->
+        <div class="ep-panel" id="panel-instagram">
+          <div class="ep-header">
+            <div class="ep-method-row">
+              <span class="badge-method">GET</span>
+              <span class="ep-path">/api/instagram</span>
+            </div>
+            <div class="ep-desc">Download media Instagram — Reels, Post, Carousel, hingga IGTV. Mendukung multi-media carousel secara otomatis.</div>
+          </div>
+
+          <div class="ep-card">
+            <div class="ep-card-header">
+              <span class="ep-card-title">Parameters</span>
+            </div>
+            <div class="ep-card-body" style="padding:0">
+              <table class="params-table">
+                <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td class="param-name">url</td>
+                    <td class="param-type">string</td>
+                    <td><span class="badge-req">Required</span></td>
+                    <td>URL Instagram Post, Reel, IGTV, atau Story</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="ep-card">
+            <div class="ep-card-header">
+              <span class="ep-card-title">cURL</span>
+              <button class="btn-copy" onclick="copyCurl('curl-ig',this)">COPY</button>
+            </div>
+            <div class="ep-card-body">
+              <div class="curl-box">
+                <span class="curl-dollar">$</span>
+                <span id="curl-ig"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="ep-card">
+            <div class="ep-card-header">
+              <span class="ep-card-title">Try It Live</span>
+            </div>
+            <div class="ep-card-body">
+              <div class="try-row" style="margin-bottom:0">
+                <input class="url-input" id="ig-input" placeholder="https://www.instagram.com/reel/ABC123/"/>
+                <button class="btn-exec" id="ig-btn" onclick="execApi('ig')">
+                  <svg class="exec-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
+                  Execute
+                </button>
+              </div>
+              <div class="res-wrap" id="ig-res">
+                <div class="res-topbar">
+                  <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+                  <span class="res-label">JSON Response</span>
+                  <span id="ig-badge"></span>
+                  <button class="btn-copy" onclick="copyRes('ig-code',this)" style="margin-left:8px">COPY</button>
+                </div>
+                <div class="res-code" id="ig-code"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- YouTube -->
+        <div class="ep-panel" id="panel-youtube">
+          <div class="ep-header">
+            <div class="ep-method-row">
+              <span class="badge-method">GET</span>
+              <span class="ep-path">/api/youtube</span>
+            </div>
+            <div class="ep-desc">Download video YouTube, Shorts, atau konversi ke MP3. Pilih format dan kualitas sesuai kebutuhan.</div>
+          </div>
+
+          <div class="ep-card">
+            <div class="ep-card-header">
+              <span class="ep-card-title">Parameters</span>
+            </div>
+            <div class="ep-card-body" style="padding:0">
+              <table class="params-table">
+                <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td class="param-name">url</td>
+                    <td class="param-type">string</td>
+                    <td><span class="badge-req">Required</span></td>
+                    <td>URL YouTube, Shorts, atau youtu.be</td>
+                  </tr>
+                  <tr>
+                    <td class="param-name">format</td>
+                    <td class="param-type">string</td>
+                    <td><span class="badge-opt">Optional</span></td>
+                    <td>mp3 atau mp4 — default: mp3</td>
+                  </tr>
+                  <tr>
+                    <td class="param-name">quality</td>
+                    <td class="param-type">string</td>
+                    <td><span class="badge-opt">Optional</span></td>
+                    <td>128 / 192 / 320 (mp3) atau 360 / 480 / 720 / 1080 (mp4)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="ep-card">
+            <div class="ep-card-header">
+              <span class="ep-card-title">cURL</span>
+              <button class="btn-copy" onclick="copyCurl('curl-yt',this)">COPY</button>
+            </div>
+            <div class="ep-card-body">
+              <div class="curl-box">
+                <span class="curl-dollar">$</span>
+                <span id="curl-yt"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="ep-card">
+            <div class="ep-card-header">
+              <span class="ep-card-title">Try It Live</span>
+            </div>
+            <div class="ep-card-body">
+              <div style="margin-bottom:14px">
+                <div style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px">Format</div>
+                <div class="format-row" id="yt-format-row">
+                  <button class="format-btn active" data-format="mp3" onclick="setYtFormat('mp3',this)">MP3</button>
+                  <button class="format-btn" data-format="mp4" onclick="setYtFormat('mp4',this)">MP4</button>
+                </div>
+                <div id="yt-quality-wrap">
+                  <div style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px;margin-top:14px">Quality</div>
+                  <div class="format-row" id="yt-quality-row">
+                    <button class="format-btn active" data-q="128" onclick="setYtQuality('128',this)">128kbps</button>
+                    <button class="format-btn" data-q="192" onclick="setYtQuality('192',this)">192kbps</button>
+                    <button class="format-btn" data-q="320" onclick="setYtQuality('320',this)">320kbps</button>
+                  </div>
+                </div>
+              </div>
+              <div class="try-row" style="margin-bottom:0">
+                <input class="url-input" id="yt-input" placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"/>
+                <button class="btn-exec" id="yt-btn" onclick="execApi('yt')">
+                  <svg class="exec-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
+                  Execute
+                </button>
+              </div>
+              <div class="res-wrap" id="yt-res">
+                <div class="res-topbar">
+                  <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+                  <span class="res-label">JSON Response</span>
+                  <span id="yt-badge"></span>
+                  <button class="btn-copy" onclick="copyRes('yt-code',this)" style="margin-left:8px">COPY</button>
+                </div>
+                <div class="res-code" id="yt-code"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
-
-    <!-- TIKTOK -->
-    <div id="page-tiktok" class="ep-page" style="display:none">
-      <div class="ep-breadcrumb">Downloader <span>/ TikTok DL</span></div>
-      <div class="ep-title-row"><span class="ep-method">GET</span><span class="ep-title-path">/api/tiktok</span></div>
-      <div class="ep-subtitle">Download TikTok videos without watermark.</div>
-      <div class="ep-section">
-        <div class="ep-sec-lbl">Parameters</div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden">
-          <table class="pt"><thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
-          <tbody><tr><td class="p-name">url</td><td class="p-type">string</td><td><span class="b-req">Required</span></td><td>URL video TikTok (vt.tiktok.com / vm.tiktok.com)</td></tr></tbody></table>
-        </div>
-      </div>
-      <div class="ep-section">
-        <div class="ep-sec-lbl">cURL</div>
-        <div class="curl-wrap"><span id="curl-tt"></span><button class="btn-copy" onclick="copyCurl('curl-tt',this)">COPY</button></div>
-      </div>
-      <div class="ep-section">
-        <div class="ep-sec-lbl">Try It</div>
-        <div class="try-row">
-          <input class="url-input" id="tt-input" placeholder="https://vt.tiktok.com/ZS9mu8NkJ/"/>
-          <button class="btn-exec" id="tt-btn" onclick="execApi('tt')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>EXECUTE API</button>
-        </div>
-        <div class="res-wrap" id="tt-res">
-          <div class="res-bar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span><span class="res-lbl">JSON RESPONSE</span><span class="res-status" id="tt-badge"></span><button class="btn-copy" onclick="copyRes('tt-code',this)">COPY</button></div>
-          <div class="res-code" id="tt-code"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- INSTAGRAM -->
-    <div id="page-instagram" class="ep-page" style="display:none">
-      <div class="ep-breadcrumb">Downloader <span>/ Instagram DL</span></div>
-      <div class="ep-title-row"><span class="ep-method">GET</span><span class="ep-title-path">/api/instagram</span></div>
-      <div class="ep-subtitle">Download Instagram media.</div>
-      <div class="ep-section">
-        <div class="ep-sec-lbl">Parameters</div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden">
-          <table class="pt"><thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
-          <tbody><tr><td class="p-name">url</td><td class="p-type">string</td><td><span class="b-req">Required</span></td><td>URL Instagram Post, Reel, IGTV, atau Story</td></tr></tbody></table>
-        </div>
-      </div>
-      <div class="ep-section">
-        <div class="ep-sec-lbl">cURL</div>
-        <div class="curl-wrap"><span id="curl-ig"></span><button class="btn-copy" onclick="copyCurl('curl-ig',this)">COPY</button></div>
-      </div>
-      <div class="ep-section">
-        <div class="ep-sec-lbl">Try It</div>
-        <div class="try-row">
-          <input class="url-input" id="ig-input" placeholder="https://www.instagram.com/reel/ABC123/"/>
-          <button class="btn-exec" id="ig-btn" onclick="execApi('ig')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>EXECUTE API</button>
-        </div>
-        <div class="res-wrap" id="ig-res">
-          <div class="res-bar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span><span class="res-lbl">JSON RESPONSE</span><span class="res-status" id="ig-badge"></span><button class="btn-copy" onclick="copyRes('ig-code',this)">COPY</button></div>
-          <div class="res-code" id="ig-code"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- YOUTUBE -->
-    <div id="page-youtube" class="ep-page" style="display:none">
-      <div class="ep-breadcrumb">Downloader <span>/ YouTube DL</span></div>
-      <div class="ep-title-row"><span class="ep-method">GET</span><span class="ep-title-path">/api/youtube</span></div>
-      <div class="ep-subtitle">Download YouTube videos & convert to MP3.</div>
-      <div class="ep-section">
-        <div class="ep-sec-lbl">Parameters</div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden">
-          <table class="pt"><thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
-          <tbody>
-            <tr><td class="p-name">url</td><td class="p-type">string</td><td><span class="b-req">Required</span></td><td>URL YouTube, Shorts, atau youtu.be</td></tr>
-            <tr><td class="p-name">format</td><td class="p-type">string</td><td><span class="b-opt">Optional</span></td><td>mp3 atau mp4 (default: mp3)</td></tr>
-            <tr><td class="p-name">quality</td><td class="p-type">string</td><td><span class="b-opt">Optional</span></td><td>128, 192, 320, 360, 480, 720, 1080</td></tr>
-          </tbody></table>
-        </div>
-      </div>
-      <div class="ep-section">
-        <div class="ep-sec-lbl">cURL</div>
-        <div class="curl-wrap"><span id="curl-yt"></span><button class="btn-copy" onclick="copyCurl('curl-yt',this)">COPY</button></div>
-      </div>
-      <div class="ep-section">
-        <div class="ep-sec-lbl">Try It</div>
-        <div class="try-row">
-          <input class="url-input" id="yt-input" placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"/>
-          <button class="btn-exec" id="yt-btn" onclick="execApi('yt')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>EXECUTE API</button>
-        </div>
-        <div class="res-wrap" id="yt-res">
-          <div class="res-bar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span><span class="res-lbl">JSON RESPONSE</span><span class="res-status" id="yt-badge"></span><button class="btn-copy" onclick="copyRes('yt-code',this)">COPY</button></div>
-          <div class="res-code" id="yt-code"></div>
-        </div>
-      </div>
-    </div>
-
   </div>
-</div>
+</section>
+
+<!-- STATS -->
+<section class="stats-section" id="stats">
+  <div class="section-inner">
+    <div class="section-label" style="text-align:center">By the Numbers</div>
+    <h2 class="section-title" style="text-align:center">Simpel tapi<br>Powerful</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-val">3</div>
+        <div class="stat-lbl">Endpoints</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">0</div>
+        <div class="stat-lbl">API Key Needed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">∞</div>
+        <div class="stat-lbl">Free Forever</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">HD</div>
+        <div class="stat-lbl">Quality Output</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Sanz<span>XD</span></div>
+  <div class="footer-copy">© 2025 @SanzXD — Built with ❤️ for developers</div>
+  <div class="footer-links">
+    <a href="#features">Features</a>
+    <a href="#endpoints">API Docs</a>
+    <a href="#stats">Stats</a>
+  </div>
+</footer>
 
 <script>
 const base = window.location.origin;
+
+// ── Config ──
 const cfg = {
-  tt:{ path:'/api/tiktok',   ex:'https://vt.tiktok.com/ZS9mu8NkJ/',         curl:'curl-tt' },
-  ig:{ path:'/api/instagram', ex:'https://www.instagram.com/p/ABC123/',       curl:'curl-ig' },
-  yt:{ path:'/api/youtube',   ex:'https://www.youtube.com/watch?v=dQw4w9WgXcQ', curl:'curl-yt' },
+  tt: { path:'/api/tiktok',    ex:'https://vt.tiktok.com/ZS9mu8NkJ/',            curlId:'curl-tt' },
+  ig: { path:'/api/instagram', ex:'https://www.instagram.com/p/ABC123/',          curlId:'curl-ig' },
+  yt: { path:'/api/youtube',   ex:'https://www.youtube.com/watch?v=dQw4w9WgXcQ', curlId:'curl-yt' },
 };
 
-for(const[k,c]of Object.entries(cfg)){
-  document.getElementById(c.curl).textContent=`curl "${base}${c.path}?url=${c.ex}"`;
-  const inp=document.getElementById(k+'-input');
-  if(inp){
-    inp.addEventListener('input',e=>{
-      const v=e.target.value.trim();
-      document.getElementById(c.curl).textContent=`curl "${base}${c.path}?url=${v||c.ex}"`;
-    });
-    inp.addEventListener('keydown',e=>{if(e.key==='Enter')execApi(k);});
+let ytFormat = 'mp3', ytQuality = '128';
+
+// ── Init cURLs ──
+function updateCurl(key) {
+  const c = cfg[key];
+  const val = document.getElementById(key+'-input')?.value.trim() || c.ex;
+  let url = `curl "${base}${c.path}?url=${val}`;
+  if (key === 'yt') url += `&format=${ytFormat}&quality=${ytQuality}`;
+  url += '"';
+  document.getElementById(c.curlId).textContent = url;
+}
+
+for (const key of Object.keys(cfg)) {
+  updateCurl(key);
+  const inp = document.getElementById(key+'-input');
+  if (inp) {
+    inp.addEventListener('input', () => updateCurl(key));
+    inp.addEventListener('keydown', e => { if(e.key==='Enter') execApi(key); });
   }
 }
 
-function showPage(name){
-  document.querySelectorAll('[id^="page-"]').forEach(el=>el.style.display='none');
-  document.querySelectorAll('.sidebar-item').forEach(el=>el.classList.remove('active'));
-  const p=document.getElementById('page-'+name);
-  p.style.display='block';
-  p.classList.remove('fade-in');void p.offsetWidth;p.classList.add('fade-in');
-  document.getElementById('si-'+name).classList.add('active');
-  document.getElementById('content').scrollTop=0;
+// ── YouTube Format/Quality ──
+function setYtFormat(f, btn) {
+  ytFormat = f;
+  document.querySelectorAll('#yt-format-row .format-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  // Update quality options
+  const qRow = document.getElementById('yt-quality-row');
+  if (f === 'mp3') {
+    qRow.innerHTML = `
+      <button class="format-btn active" data-q="128" onclick="setYtQuality('128',this)">128kbps</button>
+      <button class="format-btn" data-q="192" onclick="setYtQuality('192',this)">192kbps</button>
+      <button class="format-btn" data-q="320" onclick="setYtQuality('320',this)">320kbps</button>`;
+    ytQuality = '128';
+  } else {
+    qRow.innerHTML = `
+      <button class="format-btn active" data-q="360" onclick="setYtQuality('360',this)">360p</button>
+      <button class="format-btn" data-q="480" onclick="setYtQuality('480',this)">480p</button>
+      <button class="format-btn" data-q="720" onclick="setYtQuality('720',this)">720p</button>
+      <button class="format-btn" data-q="1080" onclick="setYtQuality('1080',this)">1080p</button>`;
+    ytQuality = '360';
+  }
+  updateCurl('yt');
 }
 
-function highlight(json){
-  return json.replace(/(\"(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*\"(\s*:)?|\b(true|false|null)\b|-?\d+\.?\d*([eE][+\-]?\d+)?)/g,m=>{
-    if(/^"/.test(m))return/:$/.test(m)?`<span class="jk">${m}</span>`:`<span class="js">${m}</span>`;
-    if(/true|false/.test(m))return`<span class="jb">${m}</span>`;
-    if(/null/.test(m))return`<span class="jl">${m}</span>`;
-    return`<span class="jn">${m}</span>`;
+function setYtQuality(q, btn) {
+  ytQuality = q;
+  document.querySelectorAll('#yt-quality-row .format-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  updateCurl('yt');
+}
+
+// ── Endpoint switcher ──
+function switchEp(name) {
+  document.querySelectorAll('.ep-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ep-nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+}
+
+function scrollToEp(name) {
+  switchEp(name);
+  document.getElementById('endpoints').scrollIntoView({behavior:'smooth'});
+}
+
+// ── JSON highlight ──
+function highlight(json) {
+  return json.replace(/(\"(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*\"(\s*:)?|\b(true|false|null)\b|-?\d+\.?\d*([eE][+\-]?\d+)?)/g, m => {
+    if (/^"/.test(m)) return /:$/.test(m) ? `<span class="jk">${m}</span>` : `<span class="js">${m}</span>`;
+    if (/true|false/.test(m)) return `<span class="jb">${m}</span>`;
+    if (/null/.test(m)) return `<span class="jl">${m}</span>`;
+    return `<span class="jn">${m}</span>`;
   });
 }
 
-async function execApi(key){
-  const c=cfg[key];
-  const val=document.getElementById(key+'-input').value.trim();
-  if(!val){alert('Masukkan URL terlebih dahulu!');return;}
-  const btn=document.getElementById(key+'-btn');
-  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Loading...';
-  const rw=document.getElementById(key+'-res'),rc=document.getElementById(key+'-code'),rb=document.getElementById(key+'-badge');
-  rw.classList.add('show');rc.textContent='Fetching...';rb.className='res-status';rb.textContent='';
-  try{
-    const resp=await fetch(`${base}${c.path}?url=${encodeURIComponent(val)}`);
-    const data=await resp.json();
-    rc.innerHTML=highlight(JSON.stringify(data,null,2));
-    if(resp.ok&&data.status){rb.className='res-status s-ok';rb.textContent=`${resp.status} OK`;}
-    else{rb.className='res-status s-err';rb.textContent=`${resp.status} Error`;}
-  }catch(err){rc.textContent=`Error: ${err.message}`;rb.className='res-status s-err';rb.textContent='Network Error';}
-  btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>EXECUTE API';
+// ── Execute API ──
+async function execApi(key) {
+  const c = cfg[key];
+  const val = document.getElementById(key+'-input').value.trim();
+  if (!val) { alert('Masukkan URL terlebih dahulu!'); return; }
+
+  const btn = document.getElementById(key+'-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Loading...';
+
+  const rw = document.getElementById(key+'-res');
+  const rc = document.getElementById(key+'-code');
+  const rb = document.getElementById(key+'-badge');
+  rw.classList.add('show');
+  rc.textContent = 'Fetching...';
+  rb.innerHTML = '';
+
+  try {
+    let endpoint = `${base}${c.path}?url=${encodeURIComponent(val)}`;
+    if (key === 'yt') endpoint += `&format=${ytFormat}&quality=${ytQuality}`;
+
+    const resp = await fetch(endpoint);
+    const data = await resp.json();
+    rc.innerHTML = highlight(JSON.stringify(data, null, 2));
+
+    if (resp.ok && data.status) {
+      rb.innerHTML = `<span class="badge-ok">${resp.status} OK</span>`;
+    } else {
+      rb.innerHTML = `<span class="badge-err">${resp.status} Error</span>`;
+    }
+  } catch(err) {
+    rc.textContent = `Error: ${err.message}`;
+    rb.innerHTML = `<span class="badge-err">Network Error</span>`;
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg class="exec-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>Execute';
 }
 
-function copyCurl(id,btn){
-  navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>{
-    const o=btn.textContent;btn.textContent='✓ COPIED';setTimeout(()=>btn.textContent=o,1500);
+// ── Copy helpers ──
+function copyCurl(id, btn) {
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+    const o = btn.textContent; btn.textContent = '✓ COPIED';
+    setTimeout(() => btn.textContent = o, 1500);
   });
 }
-function copyRes(id,btn){
-  navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>{
-    const o=btn.textContent;btn.textContent='✓ COPIED';setTimeout(()=>btn.textContent=o,1500);
-  });
-}
-function filterSidebar(q){
-  document.querySelectorAll('.sidebar-item').forEach(item=>{
-    const n=item.querySelector('.si-name')?.textContent.toLowerCase()||'';
-    const d=item.querySelector('.si-desc')?.textContent.toLowerCase()||'';
-    item.style.display=(!q||n.includes(q.toLowerCase())||d.includes(q.toLowerCase()))?'':'none';
+function copyRes(id, btn) {
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+    const o = btn.textContent; btn.textContent = '✓ COPIED';
+    setTimeout(() => btn.textContent = o, 1500);
   });
 }
 </script>
