@@ -1,8 +1,7 @@
 /**
- * Instagram Downloader API — Multi-source fallback
- * Primary  : snapinsta.app
- * Fallback 1: saveig.app
- * Fallback 2: downloadgram.org (format baru + lama)
+ * Instagram Downloader API — Primary: sssinstagram.com
+ * Fallback 1: snapinsta.app
+ * Fallback 2: saveig.app
  *
  * GET /api/instagram?url=https://www.instagram.com/reel/...
  */
@@ -52,9 +51,9 @@ export default async function handler(req, res) {
   }
 
   const sources = [
+    { name: "sssinstagram", fn: () => fetchViaSSSInstagram(url) },
     { name: "snapinsta",    fn: () => fetchViaSnapinsta(url) },
     { name: "saveig",       fn: () => fetchViaSaveIG(url) },
-    { name: "downloadgram", fn: () => fetchViaDownloadgram(url) },
   ];
 
   const errors = [];
@@ -77,9 +76,73 @@ export default async function handler(req, res) {
   });
 }
 
-// ── SOURCE 1: snapinsta.app ──────────────────────────────────
+// ── SOURCE 1: sssinstagram.com ───────────────────────────────
+async function fetchViaSSSInstagram(url) {
+  const resp = await fetch("https://sssinstagram.com/request", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "User-Agent": UA_DESKTOP,
+      "Referer": "https://sssinstagram.com/",
+      "Origin": "https://sssinstagram.com",
+    },
+    body: JSON.stringify({ link: url, auto_proxy: 0 }),
+  });
+
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+  const json = await resp.json();
+
+  if (!json?.status || !json?.result) {
+    throw new Error(json?.message || "Respons tidak valid");
+  }
+
+  const r = json.result;
+
+  // Tentukan tipe: video atau image
+  const isVideo = Array.isArray(r.videos) && r.videos.length > 0;
+  const isImage = Array.isArray(r.images) && r.images.length > 0;
+
+  if (isVideo) {
+    return {
+      status: true,
+      code: 200,
+      message: "Berhasil mengambil data media.",
+      result: {
+        type: "video",
+        url: r.videos[0],
+        download_url: r.videos[0],
+        thumbnail: r.thumb || null,
+        username: r.username || null,
+        // Audio (mp3) jika ada
+        audio: r.mp3?.[0]?.url || null,
+      },
+    };
+  }
+
+  if (isImage) {
+    // Bisa multi-image (carousel)
+    return {
+      status: true,
+      code: 200,
+      message: "Berhasil mengambil data media.",
+      result: {
+        type: "image",
+        url: r.images[0],
+        download_url: r.images[0],
+        // Kalau carousel, kasih semua
+        images: r.images.length > 1 ? r.images : undefined,
+        thumbnail: r.thumb || null,
+        username: r.username || null,
+      },
+    };
+  }
+
+  throw new Error("Tidak ada video atau gambar dalam respons");
+}
+
+// ── SOURCE 2: snapinsta.app ──────────────────────────────────
 async function fetchViaSnapinsta(url) {
-  // Ambil CSRF token dari halaman utama
   const homePage = await fetch("https://snapinsta.app/", {
     headers: { "User-Agent": UA_DESKTOP },
   });
@@ -111,7 +174,7 @@ async function fetchViaSnapinsta(url) {
   return parseHtmlToResult(json.data);
 }
 
-// ── SOURCE 2: saveig.app ─────────────────────────────────────
+// ── SOURCE 3: saveig.app ─────────────────────────────────────
 async function fetchViaSaveIG(url) {
   const body = new URLSearchParams({ q: url, t: "media", lang: "en" });
 
@@ -135,62 +198,6 @@ async function fetchViaSaveIG(url) {
   return parseHtmlToResult(json.data);
 }
 
-// ── SOURCE 3: downloadgram.org ───────────────────────────────
-async function fetchViaDownloadgram(url) {
-  const body = new URLSearchParams({ url, v: "3", lang: "en" });
-
-  const resp = await fetch("https://api.downloadgram.org/media", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": UA_MOBILE,
-      "accept-language": "id-ID,id;q=0.9,en;q=0.8",
-      "Referer": "https://downloadgram.org/",
-      "Origin": "https://downloadgram.org",
-    },
-    body,
-  });
-
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-
-  const raw = await resp.text();
-
-  // Format baru: JSON langsung
-  if (raw.trim().startsWith("{") || raw.trim().startsWith("[")) {
-    try {
-      const json = JSON.parse(raw);
-      const mediaUrl = json?.url || json?.data?.url || json?.links?.[0]?.url || json?.result?.url;
-      if (mediaUrl) {
-        const isVideo = /\.mp4|video/i.test(mediaUrl);
-        return buildResult(
-          isVideo ? "video" : "image",
-          mediaUrl,
-          mediaUrl,
-          json?.thumbnail || json?.cover || null
-        );
-      }
-    } catch (_) {}
-  }
-
-  // Format lama: JS string ['innerHTML'] = '...'
-  const innerMatch = raw.match(/\['innerHTML'\]\s*=\s*'([\s\S]+?)'\s*(?:,|;|$)/);
-  if (innerMatch) {
-    const html = innerMatch[1]
-      .replace(/\\'/g, "'")
-      .replace(/\\\\/g, "\\")
-      .replace(/\\n/g, "\n")
-      .replace(/\\r/g, "");
-    return parseHtmlToResult(html);
-  }
-
-  // Format baru 2: response langsung HTML
-  if (raw.includes("<video") || raw.includes("<img") || raw.includes("href=")) {
-    return parseHtmlToResult(raw);
-  }
-
-  throw new Error(`Format response tidak dikenali. Snippet: ${raw.slice(0, 200)}`);
-}
-
 // ── PARSER HTML UNIVERSAL ─────────────────────────────────────
 function parseHtmlToResult(html) {
   const sourceSrc   = html.match(/<source[^>]+src=["']([^"']+)["']/i)?.[1];
@@ -203,33 +210,34 @@ function parseHtmlToResult(html) {
   const videoUrl = sourceSrc || mp4Href;
 
   if (videoUrl) {
-    return buildResult(
-      "video",
-      clean(videoUrl),
-      dlHref ? clean(dlHref) : clean(videoUrl),
-      videoPoster ? clean(videoPoster) : null
-    );
+    return {
+      status: true,
+      code: 200,
+      message: "Berhasil mengambil data media.",
+      result: {
+        type: "video",
+        url: clean(videoUrl),
+        download_url: dlHref ? clean(dlHref) : clean(videoUrl),
+        thumbnail: videoPoster ? clean(videoPoster) : null,
+      },
+    };
   }
 
   if (imgSrc) {
-    return buildResult(
-      "image",
-      clean(imgSrc),
-      dlHref ? clean(dlHref) : clean(imgSrc),
-      null
-    );
+    return {
+      status: true,
+      code: 200,
+      message: "Berhasil mengambil data media.",
+      result: {
+        type: "image",
+        url: clean(imgSrc),
+        download_url: dlHref ? clean(dlHref) : clean(imgSrc),
+        thumbnail: null,
+      },
+    };
   }
 
-  throw new Error(`Media tidak ditemukan dalam HTML. Snippet: ${html.slice(0, 200)}`);
-}
-
-function buildResult(type, url, download_url, thumbnail) {
-  return {
-    status: true,
-    code: 200,
-    message: "Berhasil mengambil data media.",
-    result: { type, url, download_url, thumbnail },
-  };
+  throw new Error(`Media tidak ditemukan. Snippet: ${html.slice(0, 200)}`);
 }
 
 function clean(str) {
