@@ -529,7 +529,7 @@ body::before{
     <div class="cat-label">TOOLS</div>
     <div class="api-list">
       <div class="api-item" data-name="QR Code Generator" data-desc="Generate QR Code dari teks atau URL." data-cat="tools" onclick="openEndpoint('qrcode')">
-        <div class="api-icon">📷</div>
+        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="5" y="5" width="3" height="3" fill="#a78bfa" stroke="none"/><rect x="16" y="5" width="3" height="3" fill="#a78bfa" stroke="none"/><rect x="5" y="16" width="3" height="3" fill="#a78bfa" stroke="none"/><path d="M14 14h3v3h-3z" fill="#a78bfa" stroke="none"/><path d="M17 14h4M17 17v4M14 17h1M21 17h0M14 21h4"/></svg></div>
         <div class="api-info">
           <div class="api-name-row">
             <span class="api-name">QR Code Generator</span>
@@ -540,7 +540,7 @@ body::before{
         <span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Short URL" data-desc="Persingkat URL panjang jadi pendek via TinyURL." data-cat="tools" onclick="openEndpoint('shorturl')">
-        <div class="api-icon">🔗</div>
+        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
         <div class="api-info">
           <div class="api-name-row">
             <span class="api-name">Short URL</span>
@@ -555,7 +555,7 @@ body::before{
     <div class="cat-label">AI</div>
     <div class="api-list">
       <div class="api-item" data-name="AI Image Generator" data-desc="Generate gambar dari teks prompt via Pollinations AI." data-cat="ai" onclick="openEndpoint('aiimage')">
-        <div class="api-icon">🎨</div>
+        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="#a78bfa" stroke="none"/><path d="M21 15l-5-5L5 21"/><path d="M14 14l2-2 5 5"/></svg></div>
         <div class="api-info">
           <div class="api-name-row">
             <span class="api-name">AI Image Generator</span>
@@ -626,7 +626,7 @@ const EP = {
     ]
   },
   qrcode: {
-    icon:'📷', name:'QR Code Generator', badge:'TOOLS', method:'GET', path:'/api/qrcode', key:'qr',
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="5" y="5" width="3" height="3" fill="#a78bfa" stroke="none"/><rect x="16" y="5" width="3" height="3" fill="#a78bfa" stroke="none"/><rect x="5" y="16" width="3" height="3" fill="#a78bfa" stroke="none"/><path d="M14 14h3v3h-3z" fill="#a78bfa" stroke="none"/><path d="M17 14h4M17 17v4M14 17h1M21 17h0M14 21h4"/></svg>', name:'QR Code Generator', badge:'TOOLS', method:'GET', path:'/api/qrcode', key:'qr',
     desc:'Generate QR Code dari teks atau URL apapun. Bisa kustomisasi ukuran, warna foreground, dan warna background.',
     placeholder:'https://example.com',
     params:[
@@ -637,7 +637,7 @@ const EP = {
     ]
   },
   shorturl: {
-    icon:'🔗', name:'Short URL', badge:'TOOLS', method:'GET', path:'/api/shorturl', key:'su',
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>', name:'Short URL', badge:'TOOLS', method:'GET', path:'/api/shorturl', key:'su',
     desc:'Persingkat URL panjang menjadi link pendek via TinyURL. Bisa tambahkan alias kustom.',
     placeholder:'https://example.com/very/long/path/here',
     params:[
@@ -646,7 +646,7 @@ const EP = {
     ]
   },
   aiimage: {
-    icon:'🎨', name:'AI Image Generator', badge:'AI', method:'GET', path:'/api/aiimage', key:'ai',
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="#a78bfa" stroke="none"/><path d="M21 15l-5-5L5 21"/><path d="M14 14l2-2 5 5"/></svg>', name:'AI Image Generator', badge:'AI', method:'GET', path:'/api/aiimage', key:'ai',
     desc:'Generate gambar dari teks prompt menggunakan Pollinations AI. Gratis, tanpa API key. Tersedia berbagai model.',
     placeholder:'a cat astronaut in space, realistic, 4k',
     params:[
