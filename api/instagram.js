@@ -1,9 +1,9 @@
 /**
- * Instagram Downloader API — via Cobalt (self-hosted on Railway)
+ * Instagram Downloader API — via yozora yt-dlp
  * GET /api/instagram?url=https://www.instagram.com/reel/...
  */
 
-const COBALT_URL = "https://cobalt-api-production-2914.up.railway.app";
+const YTDLP_API = "https://yozora.vercel.app/api/info";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -45,7 +45,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await fetchViaCobalt(url);
+    const result = await fetchViaYtdlp(url);
     return res.status(200).json(result);
   } catch (err) {
     console.error("[Instagram]", err.message);
@@ -57,84 +57,57 @@ export default async function handler(req, res) {
   }
 }
 
-async function fetchViaCobalt(url) {
-  const resp = await fetch(COBALT_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-    },
-    body: JSON.stringify({ url }),
+async function fetchViaYtdlp(url) {
+  const apiUrl = `${YTDLP_API}?query=${encodeURIComponent(url)}`;
+
+  const resp = await fetch(apiUrl, {
+    headers: { "Accept": "application/json" },
   });
 
-  if (!resp.ok) throw new Error(`Cobalt responded ${resp.status}`);
+  if (!resp.ok) throw new Error(`yt-dlp API responded ${resp.status}`);
 
   const data = await resp.json();
+  if (!data || data.error) throw new Error(data?.error || "Gagal mengambil data.");
 
-  // Ekstrak shortcode dari URL untuk username fallback
   const shortcode = url.match(/\/(p|reel|tv|stories)\/([^/?]+)/)?.[2] ?? null;
+  const videoUrl = data.url || data.formats?.find(f => f.vcodec !== "none")?.url || null;
+  const audioUrl = data.formats?.find(f => f.vcodec === "none" && f.acodec !== "none")?.url || null;
+  const thumb = data.thumbnail || null;
 
-  if (data.status === "tunnel" || data.status === "redirect") {
-    return buildResponse({
-      type: "video",
-      url: data.url,
-      filename: data.filename ?? null,
-      shortcode,
-      items: null,
-    });
-  }
-
-  if (data.status === "picker") {
-    const items = data.picker ?? [];
-    return buildResponse({
-      type: items[0]?.type === "video" ? "video" : "image",
-      url: items[0]?.url ?? null,
-      filename: data.filename ?? null,
-      shortcode,
-      items: items.map(i => ({ type: i.type, url: i.url })),
-    });
-  }
-
-  const errCode = data.error?.code ?? "unknown";
-  throw new Error(`Cobalt error: ${errCode}`);
-}
-
-function buildResponse({ type, url, filename, shortcode, items }) {
   return {
     status: true,
     code: 200,
     message: "Berhasil mengambil data media.",
     author: {
-      username: null,   // tidak tersedia dari Cobalt
+      username: data.uploader_id || data.uploader || null,
       avatar: null,
       verified: null,
     },
-    video: type === "video" ? {
-      play: url,
-      hdplay: url,      // Cobalt sudah return kualitas terbaik
-      wmplay: null,     // Instagram tidak ada watermark version
-      cover: null,      // tidak tersedia
-      filename: filename,
-    } : null,
-    image: type === "image" ? {
-      url: url,
-      all_images: items ?? [],
-    } : null,
+    video: {
+      play: videoUrl,
+      hdplay: videoUrl,
+      wmplay: null,
+      cover: thumb,
+      title: data.title || null,
+      duration: data.duration || null,
+      filename: `instagram_${shortcode}.mp4`,
+    },
     audio: {
-      play: null,       // tidak tersedia dari Cobalt
-      title: null,
-      author: null,
+      play: audioUrl,
+      title: data.track || null,
+      author: data.artist || null,
     },
     stats: {
-      play_count: null,
-      like_count: null,
-      comment_count: null,
+      play_count: data.view_count || null,
+      like_count: data.like_count || null,
+      comment_count: data.comment_count || null,
       share_count: null,
     },
     meta: {
       shortcode,
-      source_url: `https://www.instagram.com/reel/${shortcode}/`,
-      provider: "cobalt",
+      source_url: url,
+      thumbnail: thumb,
+      provider: "yt-dlp",
     },
   };
 }
