@@ -1,9 +1,9 @@
 /**
- * Instagram Downloader API — via yozora yt-dlp
+ * Instagram Downloader API — via yt-dlp-exec
  * GET /api/instagram?url=https://www.instagram.com/reel/...
  */
 
-const YTDLP_API = "https://yozora.vercel.app/api/info";
+import ytDlp from "yt-dlp-exec";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -45,7 +45,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await fetchViaYtdlp(url);
+    const result = await fetchViaYtDlp(url);
     return res.status(200).json(result);
   } catch (err) {
     console.error("[Instagram]", err.message);
@@ -57,29 +57,35 @@ export default async function handler(req, res) {
   }
 }
 
-async function fetchViaYtdlp(url) {
-  const apiUrl = `${YTDLP_API}?query=${encodeURIComponent(url)}`;
-
-  const resp = await fetch(apiUrl, {
-    headers: { "Accept": "application/json" },
+async function fetchViaYtDlp(url) {
+  const info = await ytDlp(url, {
+    dumpSingleJson: true,
+    noWarnings: true,
+    noCallHome: true,
+    preferFreeFormats: true,
+    addHeader: ["referer:instagram.com", "user-agent:Mozilla/5.0"],
   });
 
-  if (!resp.ok) throw new Error(`yt-dlp API responded ${resp.status}`);
-
-  const data = await resp.json();
-  if (!data || data.error) throw new Error(data?.error || "Gagal mengambil data.");
-
   const shortcode = url.match(/\/(p|reel|tv|stories)\/([^/?]+)/)?.[2] ?? null;
-  const videoUrl = data.url || data.formats?.find(f => f.vcodec !== "none")?.url || null;
-  const audioUrl = data.formats?.find(f => f.vcodec === "none" && f.acodec !== "none")?.url || null;
-  const thumb = data.thumbnail || null;
+
+  // Ambil video URL terbaik
+  const formats = info.formats || [];
+  const videoFormat = formats
+    .filter(f => f.vcodec !== "none" && f.url)
+    .sort((a, b) => (b.height || 0) - (a.height || 0))[0];
+  const audioFormat = formats
+    .filter(f => f.vcodec === "none" && f.acodec !== "none" && f.url)[0];
+
+  const videoUrl = videoFormat?.url || info.url || null;
+  const audioUrl = audioFormat?.url || null;
+  const thumb = info.thumbnail || null;
 
   return {
     status: true,
     code: 200,
     message: "Berhasil mengambil data media.",
     author: {
-      username: data.uploader_id || data.uploader || null,
+      username: info.uploader_id || info.uploader || null,
       avatar: null,
       verified: null,
     },
@@ -88,19 +94,19 @@ async function fetchViaYtdlp(url) {
       hdplay: videoUrl,
       wmplay: null,
       cover: thumb,
-      title: data.title || null,
-      duration: data.duration || null,
+      title: info.title || null,
+      duration: info.duration || null,
       filename: `instagram_${shortcode}.mp4`,
     },
     audio: {
       play: audioUrl,
-      title: data.track || null,
-      author: data.artist || null,
+      title: info.track || null,
+      author: info.artist || null,
     },
     stats: {
-      play_count: data.view_count || null,
-      like_count: data.like_count || null,
-      comment_count: data.comment_count || null,
+      play_count: info.view_count || null,
+      like_count: info.like_count || null,
+      comment_count: info.comment_count || null,
       share_count: null,
     },
     meta: {
