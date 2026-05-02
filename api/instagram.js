@@ -67,47 +67,74 @@ async function fetchViaCobalt(url) {
     body: JSON.stringify({ url }),
   });
 
-  if (!resp.ok) {
-    throw new Error(`Cobalt responded ${resp.status}`);
-  }
+  if (!resp.ok) throw new Error(`Cobalt responded ${resp.status}`);
 
   const data = await resp.json();
 
-  // status: "tunnel" atau "redirect" = sukses, langsung ada URL-nya
+  // Ekstrak shortcode dari URL untuk username fallback
+  const shortcode = url.match(/\/(p|reel|tv|stories)\/([^/?]+)/)?.[2] ?? null;
+
   if (data.status === "tunnel" || data.status === "redirect") {
-    return {
-      status: true,
-      code: 200,
-      message: "Berhasil mengambil data media.",
-      result: {
-        type: "video",
-        url: data.url,
-        download_url: data.url,
-        filename: data.filename ?? null,
-        thumbnail: null,
-      },
-    };
+    return buildResponse({
+      type: "video",
+      url: data.url,
+      filename: data.filename ?? null,
+      shortcode,
+      items: null,
+    });
   }
 
-  // status: "picker" = multiple media (carousel/slideshow)
   if (data.status === "picker") {
     const items = data.picker ?? [];
-
-    return {
-      status: true,
-      code: 200,
-      message: "Berhasil mengambil data media.",
-      result: {
-        type: items[0]?.type ?? "image",
-        url: items[0]?.url ?? null,
-        download_url: items[0]?.url ?? null,
-        thumbnail: null,
-        all_items: items.map(i => ({ type: i.type, url: i.url })),
-      },
-    };
+    return buildResponse({
+      type: items[0]?.type === "video" ? "video" : "image",
+      url: items[0]?.url ?? null,
+      filename: data.filename ?? null,
+      shortcode,
+      items: items.map(i => ({ type: i.type, url: i.url })),
+    });
   }
 
-  // status: "error"
   const errCode = data.error?.code ?? "unknown";
   throw new Error(`Cobalt error: ${errCode}`);
+}
+
+function buildResponse({ type, url, filename, shortcode, items }) {
+  return {
+    status: true,
+    code: 200,
+    message: "Berhasil mengambil data media.",
+    author: {
+      username: null,   // tidak tersedia dari Cobalt
+      avatar: null,
+      verified: null,
+    },
+    video: type === "video" ? {
+      play: url,
+      hdplay: url,      // Cobalt sudah return kualitas terbaik
+      wmplay: null,     // Instagram tidak ada watermark version
+      cover: null,      // tidak tersedia
+      filename: filename,
+    } : null,
+    image: type === "image" ? {
+      url: url,
+      all_images: items ?? [],
+    } : null,
+    audio: {
+      play: null,       // tidak tersedia dari Cobalt
+      title: null,
+      author: null,
+    },
+    stats: {
+      play_count: null,
+      like_count: null,
+      comment_count: null,
+      share_count: null,
+    },
+    meta: {
+      shortcode,
+      source_url: `https://www.instagram.com/reel/${shortcode}/`,
+      provider: "cobalt",
+    },
+  };
 }
