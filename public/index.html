@@ -49,7 +49,9 @@ body::before{
   display:flex;align-items:center;justify-content:center;
   font-size:15px;font-weight:800;color:#fff;
   box-shadow:0 0 16px rgba(124,58,237,0.5);
+  overflow:hidden;
 }
+.nav-logo-img img{width:100%;height:100%;object-fit:cover;border-radius:8px}
 .nav-logo-text{font-size:15px;font-weight:800;color:var(--text);letter-spacing:-0.01em}
 .nav-logo-text span{color:var(--primary-light)}
 .nav-links{display:flex;align-items:center;gap:4px;flex:1;justify-content:center}
@@ -92,7 +94,9 @@ body::before{
   display:flex;align-items:center;justify-content:center;
   font-size:32px;margin-bottom:28px;
   box-shadow:0 0 48px rgba(124,58,237,0.45),0 0 0 1px rgba(139,92,246,0.3);
+  overflow:hidden;
 }
+.hero-avatar img{width:100%;height:100%;object-fit:cover;border-radius:18px}
 .hero h1{
   font-size:clamp(2rem,8vw,3rem);font-weight:800;
   letter-spacing:-0.03em;line-height:1.1;margin-bottom:16px;
@@ -210,8 +214,9 @@ body::before{
   width:38px;height:38px;border-radius:10px;
   background:rgba(124,58,237,0.1);border:1px solid rgba(139,92,246,0.15);
   display:flex;align-items:center;justify-content:center;
-  font-size:16px;flex-shrink:0;
+  font-size:16px;flex-shrink:0;overflow:hidden;
 }
+.api-icon img{width:100%;height:100%;object-fit:cover;border-radius:10px}
 .api-info{flex:1;min-width:0}
 .api-name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px}
 .api-name{font-size:14px;font-weight:700;color:var(--text)}
@@ -242,8 +247,9 @@ body::before{
 .detail-icon{
   width:48px;height:48px;border-radius:12px;
   background:rgba(124,58,237,0.12);border:1px solid rgba(139,92,246,0.2);
-  display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden;
 }
+.detail-icon img{width:100%;height:100%;object-fit:cover;border-radius:12px}
 .detail-title{font-size:20px;font-weight:800;letter-spacing:-0.02em}
 .detail-badge-green{
   display:inline-flex;align-items:center;gap:5px;
@@ -386,7 +392,7 @@ body::before{
 <!-- NAVBAR -->
 <nav class="navbar">
   <a href="#" class="nav-logo" onclick="showPage('home');return false">
-    <div class="nav-logo-img">⚡</div>
+    <div class="nav-logo-img"><img src="https://i.ibb.co.com/q4HBSw3/1777719969821.jpg" alt="SanzXD"/></div>
     <span class="nav-logo-text">Sanz<span>XD</span></span>
   </a>
   <div class="nav-links">
@@ -402,7 +408,7 @@ body::before{
 <div id="page-home" class="page active">
   <div class="home-hero">
     <div class="hero-badge">✦ THE FUTURE OF REST API</div>
-    <div class="hero-avatar">⚡</div>
+    <div class="hero-avatar"><img src="https://i.ibb.co.com/q4HBSw3/1777719969821.jpg" alt="SanzXD"/></div>
     <h1>Powerful API for<br><span class="grad">Modern Developers</span></h1>
     <p class="hero-sub">Akses endpoint <strong>TikTok</strong>, <strong>Instagram</strong>, dan <strong>YouTube</strong> downloader dalam satu platform yang cepat, aman, dan mudah digunakan.</p>
     <div class="hero-cta">
@@ -449,7 +455,7 @@ body::before{
   <div class="footer">
     <div class="footer-col">
       <div class="footer-logo-row">
-        <div class="nav-logo-img">⚡</div>
+        <div class="nav-logo-img"><img src="https://i.ibb.co.com/q4HBSw3/1777719969821.jpg" alt="SanzXD"/></div>
         <span class="footer-brand-name">Sanz<span>XD</span></span>
       </div>
       <p class="footer-brand" style="font-size:12px;color:var(--muted);line-height:1.6;margin-top:8px">Platform REST API terbaik untuk kebutuhan download dan otomasi. Cepat, aman, dan handal.</p>
@@ -483,7 +489,7 @@ body::before{
     <div class="cat-label">DOWNLOADER</div>
     <div class="api-list">
       <div class="api-item" data-name="TikTok DL" data-desc="Download TikTok videos without watermark." data-cat="downloader" onclick="openEndpoint('tiktok')">
-        <div class="api-icon">📥</div>
+        <div class="api-icon"><img src="https://i.ibb.co.com/TMJDbCx0/images.png" alt="TikTok"/></div>
         <div class="api-info">
           <div class="api-name-row">
             <span class="api-name">TikTok DL</span>
@@ -494,7 +500,7 @@ body::before{
         <span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Instagram DL" data-desc="Download Instagram media." data-cat="downloader" onclick="openEndpoint('instagram')">
-        <div class="api-icon">📸</div>
+        <div class="api-icon"><img src="https://i.ibb.co.com/5X1vVhcB/Instagram-icon.png" alt="Instagram"/></div>
         <div class="api-info">
           <div class="api-name-row">
             <span class="api-name">Instagram DL</span>
@@ -505,7 +511,7 @@ body::before{
         <span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="YouTube DL" data-desc="Download YouTube videos to MP3/MP4." data-cat="downloader" onclick="openEndpoint('youtube')">
-        <div class="api-icon">▶️</div>
+        <div class="api-icon"><img src="https://i.ibb.co.com/mVsJP4Lt/images-3.jpg" alt="YouTube"/></div>
         <div class="api-info">
           <div class="api-name-row">
             <span class="api-name">YouTube DL</span>
@@ -554,19 +560,19 @@ function filterApis(q) {
 
 const EP = {
   tiktok: {
-    icon:'📥', name:'TikTok DL', badge:'DOWNLOADER', method:'GET', path:'/api/tiktok', key:'tt',
+    icon:'<img src="https://i.ibb.co.com/TMJDbCx0/images.png" alt="TikTok" style="width:100%;height:100%;object-fit:cover;border-radius:12px">', name:'TikTok DL', badge:'DOWNLOADER', method:'GET', path:'/api/tiktok', key:'tt',
     desc:'Download video TikTok tanpa watermark. Mendukung link vt.tiktok.com, vm.tiktok.com, dan www.tiktok.com.',
     placeholder:'https://vt.tiktok.com/ZS9mu8NkJ/',
     params:[{name:'url',type:'string',req:true,desc:'URL video TikTok'}]
   },
   instagram: {
-    icon:'📸', name:'Instagram DL', badge:'DOWNLOADER', method:'GET', path:'/api/instagram', key:'ig',
+    icon:'<img src="https://i.ibb.co.com/5X1vVhcB/Instagram-icon.png" alt="Instagram" style="width:100%;height:100%;object-fit:cover;border-radius:12px">', name:'Instagram DL', badge:'DOWNLOADER', method:'GET', path:'/api/instagram', key:'ig',
     desc:'Download media Instagram — Reels, Post, Carousel, hingga IGTV.',
     placeholder:'https://www.instagram.com/reel/ABC123/',
     params:[{name:'url',type:'string',req:true,desc:'URL Instagram Post, Reel, IGTV, atau Story'}]
   },
   youtube: {
-    icon:'▶️', name:'YouTube DL', badge:'DOWNLOADER', method:'GET', path:'/api/youtube', key:'yt',
+    icon:'<img src="https://i.ibb.co.com/mVsJP4Lt/images-3.jpg" alt="YouTube" style="width:100%;height:100%;object-fit:cover;border-radius:12px">', name:'YouTube DL', badge:'DOWNLOADER', method:'GET', path:'/api/youtube', key:'yt',
     desc:'Download video YouTube, Shorts, atau konversi ke MP3. Pilih format dan kualitas sesuai kebutuhan.',
     placeholder:'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     params:[
