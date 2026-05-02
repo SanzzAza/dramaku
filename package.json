@@ -3,13 +3,12 @@
   "version": "1.0.0",
   "description": "TikTok, Instagram & YouTube Downloader API",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "vercel dev",
+    "dev": "node server.js",
     "deploy": "vercel --prod"
   },
-  "dependencies": {
-    "yt-dlp-exec": "^1.0.2"
-  },
+  "dependencies": {},
   "engines": {
     "node": "20.x"
   }
