@@ -614,21 +614,6 @@
           </div>
         </div>
 
-        <!-- EXAMPLE RESPONSE -->
-        <div class="example-block">
-          <p class="params-title">Example Response (200 OK)</p>
-          <div class="response-box visible">
-            <div class="response-topbar">
-              <span class="dot dot-r"></span>
-              <span class="dot dot-y"></span>
-              <span class="dot dot-g"></span>
-              <span class="response-label">application/json</span>
-              <span class="status-badge status-ok">200 OK</span>
-            </div>
-            <div class="response-code" id="example-json"></div>
-          </div>
-        </div>
-
       </div>
     </div>
 
@@ -731,40 +716,6 @@
       if (e.key === 'Enter') executeAPI();
     });
 
-    // ── EXAMPLE JSON ──
-    const example = {
-      status: true,
-      code: 200,
-      message: "Berhasil mengambil data video.",
-      author: {
-        uid: "6763749574765922305",
-        username: "savero.mlbb",
-        nickname: "savero 🔥",
-        verified: false
-      },
-      video: {
-        id: "7634919645799009557",
-        title: "seperti biasa savero mengacak acak mpl ph 😎🤩🔥 #MLBB",
-        duration: 23,
-        cover: "https://p16-sign.tiktokcdn-us.com/...",
-        play: "https://api-h2.tiktokcdn-us.com/...",
-        hdplay: "https://api-h2.tiktokcdn-us.com/...",
-        size: 4156606,
-        hd_size: 2238679
-      },
-      audio: {
-        title: "original sound - sahabat.esport.idn",
-        author: "sahabat.esport.idn",
-        play: "https://p19.tiktokcdn-us.com/..."
-      },
-      stats: {
-        play_count: 128400,
-        like_count: 8923,
-        comment_count: 142,
-        share_count: 67
-      }
-    };
-    document.getElementById('example-json').innerHTML = highlight(JSON.stringify(example, null, 2));
   </script>
 </body>
 </html>
