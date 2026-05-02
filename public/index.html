@@ -470,9 +470,14 @@ body::before{
       <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('tiktok'),10);return false">TikTok DL</a>
       <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('instagram'),10);return false">Instagram DL</a>
       <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('youtube'),10);return false">YouTube DL</a>
+      <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('facebook'),10);return false">Facebook DL</a>
+      <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('pinterest'),10);return false">Pinterest DL</a>
       <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('qrcode'),10);return false">QR Code</a>
       <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('shorturl'),10);return false">Short URL</a>
+      <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('cuaca'),10);return false">Cuaca</a>
+      <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('kurs'),10);return false">Kurs Mata Uang</a>
       <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('aiimage'),10);return false">AI Image</a>
+      <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('tts'),10);return false">Text to Speech</a>
     </div>
     <div class="footer-col">
       <h4>Social</h4>
@@ -531,22 +536,76 @@ body::before{
       <div class="api-item" data-name="QR Code Generator" data-desc="Generate QR Code dari teks atau URL." data-cat="tools" onclick="openEndpoint('qrcode')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="5" y="5" width="3" height="3" fill="#a78bfa" stroke="none"/><rect x="16" y="5" width="3" height="3" fill="#a78bfa" stroke="none"/><rect x="5" y="16" width="3" height="3" fill="#a78bfa" stroke="none"/><path d="M14 14h3v3h-3z" fill="#a78bfa" stroke="none"/><path d="M17 14h4M17 17v4M14 17h1M21 17h0M14 21h4"/></svg></div>
         <div class="api-info">
-          <div class="api-name-row">
-            <span class="api-name">QR Code Generator</span>
-            <span class="api-badge">TOOLS</span>
-          </div>
+          <div class="api-name-row"><span class="api-name">QR Code Generator</span><span class="api-badge">TOOLS</span></div>
           <div class="api-desc">Generate QR Code dari teks atau URL.</div>
         </div>
         <span class="api-chevron">›</span>
       </div>
-      <div class="api-item" data-name="Short URL" data-desc="Persingkat URL panjang jadi pendek via TinyURL." data-cat="tools" onclick="openEndpoint('shorturl')">
+      <div class="api-item" data-name="Short URL" data-desc="Persingkat URL panjang jadi pendek." data-cat="tools" onclick="openEndpoint('shorturl')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
         <div class="api-info">
-          <div class="api-name-row">
-            <span class="api-name">Short URL</span>
-            <span class="api-badge">TOOLS</span>
-          </div>
-          <div class="api-desc">Persingkat URL panjang jadi pendek via TinyURL.</div>
+          <div class="api-name-row"><span class="api-name">Short URL</span><span class="api-badge">TOOLS</span></div>
+          <div class="api-desc">Persingkat URL panjang jadi pendek.</div>
+        </div>
+        <span class="api-chevron">›</span>
+      </div>
+      <div class="api-item" data-name="Cuaca" data-desc="Info cuaca real-time berdasarkan nama kota." data-cat="tools" onclick="openEndpoint('cuaca')">
+        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/></svg></div>
+        <div class="api-info">
+          <div class="api-name-row"><span class="api-name">Cuaca</span><span class="api-badge">TOOLS</span></div>
+          <div class="api-desc">Info cuaca real-time berdasarkan nama kota.</div>
+        </div>
+        <span class="api-chevron">›</span>
+      </div>
+      <div class="api-item" data-name="Cek Nomor HP" data-desc="Deteksi operator dari nomor HP Indonesia." data-cat="tools" onclick="openEndpoint('cekno')">
+        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg></div>
+        <div class="api-info">
+          <div class="api-name-row"><span class="api-name">Cek Nomor HP</span><span class="api-badge">TOOLS</span></div>
+          <div class="api-desc">Deteksi operator dari nomor HP Indonesia.</div>
+        </div>
+        <span class="api-chevron">›</span>
+      </div>
+      <div class="api-item" data-name="Konversi Mata Uang" data-desc="Konversi kurs mata uang real-time." data-cat="tools" onclick="openEndpoint('kurs')">
+        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+        <div class="api-info">
+          <div class="api-name-row"><span class="api-name">Konversi Mata Uang</span><span class="api-badge">TOOLS</span></div>
+          <div class="api-desc">Konversi kurs mata uang real-time.</div>
+        </div>
+        <span class="api-chevron">›</span>
+      </div>
+      <div class="api-item" data-name="Screenshot Web" data-desc="Ambil screenshot halaman web dari URL." data-cat="tools" onclick="openEndpoint('screenshot')">
+        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+        <div class="api-info">
+          <div class="api-name-row"><span class="api-name">Screenshot Web</span><span class="api-badge">TOOLS</span></div>
+          <div class="api-desc">Ambil screenshot halaman web dari URL.</div>
+        </div>
+        <span class="api-chevron">›</span>
+      </div>
+      <div class="api-item" data-name="Text to Speech" data-desc="Konversi teks ke audio suara." data-cat="tools" onclick="openEndpoint('tts')">
+        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></div>
+        <div class="api-info">
+          <div class="api-name-row"><span class="api-name">Text to Speech</span><span class="api-badge">TOOLS</span></div>
+          <div class="api-desc">Konversi teks ke audio suara.</div>
+        </div>
+        <span class="api-chevron">›</span>
+      </div>
+    </div>
+
+    <div class="cat-label">FUN</div>
+    <div class="api-list">
+      <div class="api-item" data-name="Random Quote" data-desc="Ambil kutipan motivasi secara acak." data-cat="fun" onclick="openEndpoint('quote')">
+        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg></div>
+        <div class="api-info">
+          <div class="api-name-row"><span class="api-name">Random Quote</span><span class="api-badge">FUN</span></div>
+          <div class="api-desc">Ambil kutipan motivasi secara acak.</div>
+        </div>
+        <span class="api-chevron">›</span>
+      </div>
+      <div class="api-item" data-name="Random Anime Image" data-desc="Ambil gambar anime random via waifu.pics." data-cat="fun" onclick="openEndpoint('anime')">
+        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/><path d="M9 11.5c0 1 .5 2 1.5 2.5M15 11.5c0 1-.5 2-1.5 2.5"/></svg></div>
+        <div class="api-info">
+          <div class="api-name-row"><span class="api-name">Random Anime Image</span><span class="api-badge">FUN</span></div>
+          <div class="api-desc">Ambil gambar anime random via waifu.pics.</div>
         </div>
         <span class="api-chevron">›</span>
       </div>
@@ -557,17 +616,12 @@ body::before{
       <div class="api-item" data-name="AI Image Generator" data-desc="Generate gambar dari teks prompt via Pollinations AI." data-cat="ai" onclick="openEndpoint('aiimage')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="#a78bfa" stroke="none"/><path d="M21 15l-5-5L5 21"/><path d="M14 14l2-2 5 5"/></svg></div>
         <div class="api-info">
-          <div class="api-name-row">
-            <span class="api-name">AI Image Generator</span>
-            <span class="api-badge">AI</span>
-          </div>
+          <div class="api-name-row"><span class="api-name">AI Image Generator</span><span class="api-badge">AI</span></div>
           <div class="api-desc">Generate gambar dari teks prompt via Pollinations AI.</div>
         </div>
         <span class="api-chevron">›</span>
       </div>
     </div>
-  </div>
-</div>
 
 <!-- ═══════════ DETAIL ═══════════ -->
 <div id="page-detail" class="page">
@@ -655,6 +709,83 @@ const EP = {
       {name:'width',type:'number',req:false,desc:'Lebar gambar dalam pixel (128–1440) — default: 1024'},
       {name:'height',type:'number',req:false,desc:'Tinggi gambar dalam pixel (128–1440) — default: 1024'},
       {name:'seed',type:'number',req:false,desc:'Seed untuk hasil konsisten (opsional, random jika kosong)'}
+    ]
+  },
+  cuaca: {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/></svg>',
+    name:'Cuaca', badge:'TOOLS', method:'GET', path:'/api/cuaca', key:'cw',
+    desc:'Info cuaca real-time dan forecast 4 hari berdasarkan nama kota. Powered by Open-Meteo, gratis tanpa API key.',
+    placeholder:'Jakarta',
+    params:[{name:'kota',type:'string',req:true,desc:'Nama kota yang ingin dicek cuacanya'}]
+  },
+  cekno: {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>',
+    name:'Cek Nomor HP', badge:'TOOLS', method:'GET', path:'/api/cekno', key:'cn',
+    desc:'Deteksi operator dari nomor HP Indonesia (Telkomsel, XL, Indosat, dll) berdasarkan prefix. Tanpa API eksternal.',
+    placeholder:'08123456789',
+    params:[{name:'no',type:'string',req:true,desc:'Nomor HP Indonesia (format 08xx atau +628xx)'}]
+  },
+  kurs: {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
+    name:'Konversi Mata Uang', badge:'TOOLS', method:'GET', path:'/api/kurs', key:'kr',
+    desc:'Konversi kurs mata uang real-time. Mendukung 160+ mata uang dunia via exchangerate-api.com.',
+    placeholder:'100',
+    params:[
+      {name:'jumlah',type:'number',req:true,desc:'Jumlah uang yang ingin dikonversi'},
+      {name:'dari',type:'string',req:false,desc:'Kode mata uang asal — default: USD'},
+      {name:'ke',type:'string',req:false,desc:'Kode mata uang tujuan — default: IDR'}
+    ]
+  },
+  quote: {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>',
+    name:'Random Quote', badge:'FUN', method:'GET', path:'/api/quote', key:'qt',
+    desc:'Ambil kutipan motivasi secara acak dari quotable.io. Bisa filter berdasarkan tag.',
+    placeholder:'motivation',
+    params:[{name:'tag',type:'string',req:false,desc:'Filter tag — contoh: motivation, life, love (opsional)'}]
+  },
+  anime: {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>',
+    name:'Random Anime Image', badge:'FUN', method:'GET', path:'/api/anime', key:'an',
+    desc:'Ambil gambar anime random via waifu.pics. Pilih tipe karakter yang diinginkan.',
+    placeholder:'waifu',
+    params:[
+      {name:'type',type:'string',req:false,desc:'waifu / neko / megumin / cuddle / hug / kiss / pat / smug — default: waifu'},
+      {name:'category',type:'string',req:false,desc:'sfw atau nsfw — default: sfw'}
+    ]
+  },
+  facebook: {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>',
+    name:'Facebook DL', badge:'DOWNLOADER', method:'GET', path:'/api/facebook', key:'fb',
+    desc:'Download video dari Facebook dan Facebook Reels.',
+    placeholder:'https://www.facebook.com/reel/123456789',
+    params:[{name:'url',type:'string',req:true,desc:'URL video Facebook atau Reels'}]
+  },
+  pinterest: {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.236 2.636 7.855 6.356 9.312-.088-.791-.167-2.005.035-2.868.181-.78 1.172-4.97 1.172-4.97s-.299-.598-.299-1.482c0-1.388.806-2.428 1.808-2.428.852 0 1.265.64 1.265 1.408 0 .858-.546 2.14-.828 3.33-.236.995.499 1.806 1.476 1.806 1.772 0 3.137-1.868 3.137-4.566 0-2.387-1.716-4.057-4.165-4.057-2.837 0-4.502 2.126-4.502 4.322 0 .856.33 1.772.741 2.272a.3.3 0 0 1 .069.286c-.076.315-.244.995-.277 1.134-.044.183-.146.222-.336.134-1.249-.581-2.03-2.407-2.03-3.874 0-3.154 2.292-6.052 6.608-6.052 3.469 0 6.165 2.473 6.165 5.776 0 3.447-2.173 6.22-5.19 6.22-1.013 0-1.966-.527-2.292-1.148l-.623 2.378c-.226.869-.835 1.958-1.244 2.621.937.29 1.931.446 2.962.446 5.522 0 10-4.477 10-10S17.523 2 12 2z"/></svg>',
+    name:'Pinterest DL', badge:'DOWNLOADER', method:'GET', path:'/api/pinterest', key:'pt',
+    desc:'Download gambar atau video dari Pinterest.',
+    placeholder:'https://www.pinterest.com/pin/123456789',
+    params:[{name:'url',type:'string',req:true,desc:'URL pin Pinterest'}]
+  },
+  screenshot: {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>',
+    name:'Screenshot Web', badge:'TOOLS', method:'GET', path:'/api/screenshot', key:'ss',
+    desc:'Ambil screenshot halaman web dari URL. Balik URL gambar screenshot siap pakai.',
+    placeholder:'https://example.com',
+    params:[
+      {name:'url',type:'string',req:true,desc:'URL halaman web yang ingin di-screenshot'},
+      {name:'width',type:'number',req:false,desc:'Lebar viewport — default: 1280'},
+      {name:'height',type:'number',req:false,desc:'Tinggi viewport — default: 720'}
+    ]
+  },
+  tts: {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>',
+    name:'Text to Speech', badge:'TOOLS', method:'GET', path:'/api/tts', key:'ts',
+    desc:'Konversi teks ke audio suara via StreamElements TTS. Support suara Indonesia dan banyak bahasa lainnya.',
+    placeholder:'Halo selamat datang di SanzXD API',
+    params:[
+      {name:'text',type:'string',req:true,desc:'Teks yang ingin dikonversi ke suara'},
+      {name:'voice',type:'string',req:false,desc:'Suara TTS — contoh: id-ID-Wavenet-A, Brian, Linda — default: Brian'}
     ]
   }
 };
