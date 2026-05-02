@@ -1,15 +1,13 @@
 {
   "name": "tiktok-downloader-api",
   "version": "1.0.0",
-  "description": "TikTok & Instagram Downloader API - No Watermark",
+  "description": "TikTok Downloader API - No Watermark",
   "private": true,
   "scripts": {
     "dev": "vercel dev",
     "deploy": "vercel --prod"
   },
-  "dependencies": {
-    "cheerio": "^1.0.0"
-  },
+  "dependencies": {},
   "engines": {
     "node": "24.x"
   }
