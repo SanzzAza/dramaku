@@ -95,17 +95,17 @@ async function fetchTikTok(url) {
       cover: d.cover || null,
       origin_cover: d.origin_cover || null,
       // No watermark
-      play: d.play ? `https://www.tikwm.com${d.play}` : null,
+      play: d.play || null,
       // HD no watermark
-      hdplay: d.hdplay ? `https://www.tikwm.com${d.hdplay}` : null,
+      hdplay: d.hdplay || null,
       // With watermark
-      wmplay: d.wmplay ? `https://www.tikwm.com${d.wmplay}` : null,
+      wmplay: d.wmplay || null,
       size: d.size || null,
       hd_size: d.hd_size || null,
       wm_size: d.wm_size || null,
     },
     audio: {
-      play: d.music ? `https://www.tikwm.com${d.music}` : null,
+      play: d.music || null,
       title: d.music_info?.title || null,
       author: d.music_info?.author || null,
       cover: d.music_info?.cover || null,
