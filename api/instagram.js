@@ -78,56 +78,37 @@ async function fetchViaDownloadgram(url) {
 
   if (!resp.ok) throw new Error(`downloadgram responded ${resp.status}`);
 
-  const html = await resp.text();
+  const raw = await resp.text();
 
-  // --- DEBUG: log first 500 chars so we can see the structure ---
-  console.log("[Instagram DEBUG] response snippet:", html.slice(0, 500));
-
-  // Try to parse as JSON first (some APIs return JSON)
-  try {
-    const json = JSON.parse(html);
-    console.log("[Instagram DEBUG] got JSON:", JSON.stringify(json).slice(0, 300));
-
-    // Handle JSON response
-    const mediaUrl = json.url || json.media_url || json.download_url || json.link;
-    const thumbUrl = json.thumbnail || json.thumb || json.poster || null;
-    const type = json.type || (mediaUrl?.includes(".mp4") ? "video" : "image");
-
-    if (mediaUrl) {
-      return {
-        status: true,
-        code: 200,
-        message: "Berhasil mengambil data media.",
-        result: {
-          type,
-          url: mediaUrl,
-          download_url: mediaUrl,
-          thumbnail: thumbUrl,
-        },
-      };
-    }
-  } catch (_) {
-    // Not JSON, continue with HTML parsing
+  // Response adalah JS string: ...['innerHTML']='<html here>'
+  // Extract konten HTML dari dalam single-quoted string setelah innerHTML=
+  const innerMatch = raw.match(/\['innerHTML'\]\s*=\s*'([\s\S]+?)'\s*(?:,|$)/);
+  if (!innerMatch) {
+    throw new Error(`Format response tidak dikenali. Snippet: ${raw.slice(0, 200)}`);
   }
 
-  // HTML parsing — try multiple patterns
+  // Unescape JS string escapes: \' -> ' dan \\ -> \
+  const html = innerMatch[1]
+    .replace(/\\'/g, "'")
+    .replace(/\\\\/g, "\\")
+    .replace(/\\n/g, "\n")
+    .replace(/\\r/g, "");
+
+  console.log("[Instagram DEBUG] extracted HTML snippet:", html.slice(0, 300));
+
   const result = {};
 
-  // Pattern 1: <source src="...">
-  const sourceSrc = html.match(/<source[^>]+src=["']([^"']+)["']/i)?.[1];
-  // Pattern 2: <video ... poster="...">
+  // Cek video
+  const sourceSrc  = html.match(/<source[^>]+src=["']([^"']+)["']/i)?.[1];
   const videoPoster = html.match(/<video[^>]+poster=["']([^"']+)["']/i)?.[1];
-  // Pattern 3: data-url or data-src attributes
-  const dataUrl = html.match(/data-(?:url|src|href)=["'](https?:\/\/[^"']+)["']/i)?.[1];
-  // Pattern 4: href with .mp4
-  const mp4Href = html.match(/href=["'](https?:\/\/[^"']+\.mp4[^"']*)["']/i)?.[1];
-  // Pattern 5: href with download attr
-  const dlHref = html.match(/<a[^>]+download[^>]*href=["']([^"']+)["']/i)?.[1]
-               || html.match(/href=["']([^"']+)["'][^>]*download/i)?.[1];
-  // Pattern 6: plain img src (https only)
+  const mp4Href    = html.match(/href=["'](https?:\/\/[^"']+\.mp4[^"']*)["']/i)?.[1];
+  const dlHref     = html.match(/<a[^>]+download[^>]*href=["']([^"']+)["']/i)?.[1]
+                  || html.match(/href=["']([^"']+)["'][^>]*download/i)?.[1];
+
+  // Cek image
   const imgSrc = html.match(/<img[^>]+src=["'](https:\/\/[^"']+)["']/i)?.[1];
 
-  const videoUrl = sourceSrc || mp4Href || dataUrl;
+  const videoUrl = sourceSrc || mp4Href;
 
   if (videoUrl) {
     result.type = "video";
@@ -140,8 +121,7 @@ async function fetchViaDownloadgram(url) {
     result.download_url = dlHref ? clean(dlHref) : clean(imgSrc);
     result.thumbnail = null;
   } else {
-    // Last resort: dump snippet in error so we can debug
-    throw new Error(`Struktur response tidak dikenali. Snippet: ${html.slice(0, 200)}`);
+    throw new Error(`Media tidak ditemukan dalam HTML. Snippet: ${html.slice(0, 200)}`);
   }
 
   return {
