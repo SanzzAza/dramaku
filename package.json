@@ -6,10 +6,13 @@
   "type": "module",
   "scripts": {
     "dev": "node server.js",
-    "deploy": "vercel --prod"
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
   },
-  "dependencies": {},
   "engines": {
     "node": "20.x"
+  },
+  "devDependencies": {
+    "wrangler": "^4.87.0"
   }
 }
