@@ -470,6 +470,9 @@ body::before{
       <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('tiktok'),10);return false">TikTok DL</a>
       <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('instagram'),10);return false">Instagram DL</a>
       <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('youtube'),10);return false">YouTube DL</a>
+      <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('qrcode'),10);return false">QR Code</a>
+      <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('shorturl'),10);return false">Short URL</a>
+      <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('aiimage'),10);return false">AI Image</a>
     </div>
     <div class="footer-col">
       <h4>Social</h4>
@@ -518,6 +521,47 @@ body::before{
             <span class="api-badge">DOWNLOADER</span>
           </div>
           <div class="api-desc">Download YouTube videos to MP3/MP4.</div>
+        </div>
+        <span class="api-chevron">›</span>
+      </div>
+    </div>
+
+    <div class="cat-label">TOOLS</div>
+    <div class="api-list">
+      <div class="api-item" data-name="QR Code Generator" data-desc="Generate QR Code dari teks atau URL." data-cat="tools" onclick="openEndpoint('qrcode')">
+        <div class="api-icon">📷</div>
+        <div class="api-info">
+          <div class="api-name-row">
+            <span class="api-name">QR Code Generator</span>
+            <span class="api-badge">TOOLS</span>
+          </div>
+          <div class="api-desc">Generate QR Code dari teks atau URL.</div>
+        </div>
+        <span class="api-chevron">›</span>
+      </div>
+      <div class="api-item" data-name="Short URL" data-desc="Persingkat URL panjang jadi pendek via TinyURL." data-cat="tools" onclick="openEndpoint('shorturl')">
+        <div class="api-icon">🔗</div>
+        <div class="api-info">
+          <div class="api-name-row">
+            <span class="api-name">Short URL</span>
+            <span class="api-badge">TOOLS</span>
+          </div>
+          <div class="api-desc">Persingkat URL panjang jadi pendek via TinyURL.</div>
+        </div>
+        <span class="api-chevron">›</span>
+      </div>
+    </div>
+
+    <div class="cat-label">AI</div>
+    <div class="api-list">
+      <div class="api-item" data-name="AI Image Generator" data-desc="Generate gambar dari teks prompt via Pollinations AI." data-cat="ai" onclick="openEndpoint('aiimage')">
+        <div class="api-icon">🎨</div>
+        <div class="api-info">
+          <div class="api-name-row">
+            <span class="api-name">AI Image Generator</span>
+            <span class="api-badge">AI</span>
+          </div>
+          <div class="api-desc">Generate gambar dari teks prompt via Pollinations AI.</div>
         </div>
         <span class="api-chevron">›</span>
       </div>
@@ -580,12 +624,47 @@ const EP = {
       {name:'format',type:'string',req:false,desc:'mp3 atau mp4 — default: mp3'},
       {name:'quality',type:'string',req:false,desc:'128 / 192 / 320 (mp3) atau 360 / 480 / 720 / 1080 (mp4)'}
     ]
+  },
+  qrcode: {
+    icon:'📷', name:'QR Code Generator', badge:'TOOLS', method:'GET', path:'/api/qrcode', key:'qr',
+    desc:'Generate QR Code dari teks atau URL apapun. Bisa kustomisasi ukuran, warna foreground, dan warna background.',
+    placeholder:'https://example.com',
+    params:[
+      {name:'text',type:'string',req:true,desc:'Teks atau URL yang ingin dijadikan QR Code'},
+      {name:'size',type:'number',req:false,desc:'Ukuran gambar dalam pixel (50–1000) — default: 300'},
+      {name:'color',type:'string',req:false,desc:'Warna QR Code dalam HEX tanpa # — default: 000000 (hitam)'},
+      {name:'bg',type:'string',req:false,desc:'Warna background dalam HEX tanpa # — default: ffffff (putih)'}
+    ]
+  },
+  shorturl: {
+    icon:'🔗', name:'Short URL', badge:'TOOLS', method:'GET', path:'/api/shorturl', key:'su',
+    desc:'Persingkat URL panjang menjadi link pendek via TinyURL. Bisa tambahkan alias kustom.',
+    placeholder:'https://example.com/very/long/path/here',
+    params:[
+      {name:'url',type:'string',req:true,desc:'URL panjang yang ingin dipersingkat'},
+      {name:'alias',type:'string',req:false,desc:'Alias kustom untuk short URL (opsional, harus unik)'}
+    ]
+  },
+  aiimage: {
+    icon:'🎨', name:'AI Image Generator', badge:'AI', method:'GET', path:'/api/aiimage', key:'ai',
+    desc:'Generate gambar dari teks prompt menggunakan Pollinations AI. Gratis, tanpa API key. Tersedia berbagai model.',
+    placeholder:'a cat astronaut in space, realistic, 4k',
+    params:[
+      {name:'prompt',type:'string',req:true,desc:'Deskripsi gambar yang ingin di-generate'},
+      {name:'model',type:'string',req:false,desc:'flux / flux-realism / flux-anime / flux-3d / turbo — default: flux'},
+      {name:'width',type:'number',req:false,desc:'Lebar gambar dalam pixel (128–1440) — default: 1024'},
+      {name:'height',type:'number',req:false,desc:'Tinggi gambar dalam pixel (128–1440) — default: 1024'},
+      {name:'seed',type:'number',req:false,desc:'Seed untuk hasil konsisten (opsional, random jika kosong)'}
+    ]
   }
 };
 
 function buildCurl(ep, val) {
   val = val || ep.placeholder;
-  let s = `curl "${base}${ep.path}?url=${val}`;
+  let paramName = 'url';
+  if (ep.key === 'qr' || ep.key === 'ai') paramName = ep.key === 'qr' ? 'text' : 'prompt';
+  if (ep.key === 'su') paramName = 'url';
+  let s = `curl "${base}${ep.path}?${paramName}=${encodeURIComponent(val)}`;
   if (ep.key === 'yt') s += `&format=${ytFormat}&quality=${ytQuality}`;
   return s + '"';
 }
