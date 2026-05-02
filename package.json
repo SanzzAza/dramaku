@@ -7,9 +7,7 @@
     "dev": "vercel dev",
     "deploy": "vercel --prod"
   },
-  "dependencies": {
-    "@tobyg74/tiktok-api-dl": "^3.1.5"
-  },
+  "dependencies": {},
   "engines": {
     "node": "24.x"
   }
