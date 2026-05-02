@@ -3,14 +3,6 @@
   "rewrites": [
     { "source": "/", "destination": "/public/index.html" }
   ],
-  "functions": {
-    "api/tiktok.js":    { "maxDuration": 15 },
-    "api/instagram.js": { "maxDuration": 20 },
-    "api/youtube.js":   { "maxDuration": 20 },
-    "api/qrcode.js":    { "maxDuration": 10 },
-    "api/aiimage.js":   { "maxDuration": 20 },
-    "api/shorturl.js":  { "maxDuration": 10 }
-  },
   "headers": [
     {
       "source": "/api/(.*)",
