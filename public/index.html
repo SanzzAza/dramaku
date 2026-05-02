@@ -1,1040 +1,398 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SanzXD API — Media Downloader</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg:       #05070f;
-      --bg2:      #080c18;
-      --surface:  #0c1122;
-      --surface2: #101828;
-      --border:   rgba(99,102,241,0.12);
-      --border2:  rgba(99,102,241,0.25);
-      --indigo:   #6366f1;
-      --violet:   #8b5cf6;
-      --cyan:     #22d3ee;
-      --green:    #10b981;
-      --rose:     #f43f5e;
-      --amber:    #f59e0b;
-      --text:     #e2e8f0;
-      --muted:    #64748b;
-      --muted2:   #94a3b8;
-      --mono:     'JetBrains Mono', monospace;
-      --sans:     'Outfit', sans-serif;
-      --r:        14px;
-    }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SanzXD API</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+:root{
+  --bg:#07090f;--sidebar:#0b0e1a;--surface:#0f1322;--surface2:#131829;
+  --border:rgba(255,255,255,0.07);--border2:rgba(99,102,241,0.25);
+  --indigo:#6366f1;--violet:#8b5cf6;--cyan:#22d3ee;
+  --green:#10b981;--rose:#f43f5e;--amber:#f59e0b;
+  --text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8;
+  --mono:'JetBrains Mono',monospace;--sans:'Outfit',sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex;flex-direction:column}
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+/* TOPBAR */
+.topbar{display:flex;align-items:center;gap:16px;padding:0 20px;height:54px;background:var(--sidebar);border-bottom:1px solid var(--border);flex-shrink:0;z-index:50}
+.topbar-logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:16px;letter-spacing:-0.02em;white-space:nowrap;text-decoration:none;color:var(--text)}
+.logo-box{width:28px;height:28px;background:linear-gradient(135deg,var(--indigo),var(--violet));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.logo-txt span{color:var(--indigo)}
+.topbar-search{flex:1;max-width:380px;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0 14px;height:34px}
+.topbar-search input{background:none;border:none;outline:none;color:var(--text);font-family:var(--sans);font-size:13px;width:100%}
+.topbar-search input::placeholder{color:var(--muted)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.live-badge{display:flex;align-items:center;gap:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:var(--green);font-size:11px;font-family:var(--mono);font-weight:700;padding:5px 12px;border-radius:100px}
+.live-badge::before{content:'';width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+.topbar-author{font-size:12px;color:var(--muted);font-family:var(--mono)}
+.topbar-author span{color:var(--indigo)}
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+/* LAYOUT */
+.main{display:flex;flex:1;overflow:hidden}
 
-    /* ── NOISE TEXTURE ── */
-    body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.4;
-    }
+/* SIDEBAR */
+.sidebar{width:280px;flex-shrink:0;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-inner{overflow-y:auto;flex:1;padding:12px 0}
+.sidebar-inner::-webkit-scrollbar{width:4px}
+.sidebar-inner::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.sidebar-cat{font-size:10px;font-family:var(--mono);font-weight:700;color:var(--indigo);text-transform:uppercase;letter-spacing:0.15em;padding:10px 18px 6px}
+.sidebar-item{display:flex;align-items:center;gap:12px;padding:9px 18px;cursor:pointer;transition:background 0.15s;position:relative}
+.sidebar-item:hover{background:rgba(255,255,255,0.04)}
+.sidebar-item.active{background:rgba(99,102,241,0.1)}
+.sidebar-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--indigo);border-radius:0 2px 2px 0}
+.si-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.si-home{background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.2)}
+.si-tiktok{background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08)}
+.si-ig{background:rgba(225,48,108,0.12);border:1px solid rgba(225,48,108,0.15)}
+.si-yt{background:rgba(255,0,0,0.1);border:1px solid rgba(255,0,0,0.15)}
+.si-info{flex:1;min-width:0}
+.si-name{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.si-desc{font-size:11.5px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.si-badge{font-size:9px;font-weight:700;font-family:var(--mono);padding:2px 6px;border-radius:4px;background:rgba(99,102,241,0.12);color:var(--indigo);border:1px solid var(--border2);flex-shrink:0;letter-spacing:0.04em}
 
-    /* ── GRID ── */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
-      background-size: 48px 48px;
-      pointer-events: none;
-      z-index: 0;
-    }
+/* CONTENT */
+.content{flex:1;overflow-y:auto;background:var(--bg)}
+.content::-webkit-scrollbar{width:5px}
+.content::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
-    /* ── GLOW ORBS ── */
-    .orb {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(100px);
-      pointer-events: none;
-      z-index: 0;
-    }
-    .orb-1 { width: 700px; height: 700px; background: rgba(99,102,241,0.08); top: -300px; left: -200px; }
-    .orb-2 { width: 500px; height: 500px; background: rgba(139,92,246,0.07); top: 50%; right: -150px; }
-    .orb-3 { width: 400px; height: 400px; background: rgba(34,211,238,0.05); bottom: 5%; left: 20%; }
+/* HOME */
+.home-page{padding:48px 48px 80px;max-width:720px}
+.home-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(99,102,241,0.08);border:1px solid var(--border2);border-radius:100px;padding:5px 14px;font-size:11px;font-family:var(--mono);color:var(--indigo);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:24px}
+.home-page h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;letter-spacing:-0.04em;line-height:1.1;margin-bottom:16px}
+.grad{background:linear-gradient(135deg,var(--indigo),var(--violet),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.home-sub{font-size:15px;color:var(--muted2);line-height:1.7;max-width:520px;margin-bottom:36px}
+.home-sub strong{color:var(--text);font-weight:600}
+.home-stats{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:48px}
+.hstat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 28px;text-align:center;min-width:90px}
+.hstat-val{font-size:22px;font-weight:800;font-family:var(--mono);color:var(--indigo)}
+.hstat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-top:4px;font-weight:600}
+.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.hfeat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;transition:border-color 0.2s}
+.hfeat:hover{border-color:var(--border2)}
+.hfeat-icon{font-size:22px;margin-bottom:10px}
+.hfeat h3{font-size:14px;font-weight:700;margin-bottom:4px}
+.hfeat p{font-size:12.5px;color:var(--muted2);line-height:1.5}
 
-    /* ── NAVBAR ── */
-    nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      background: rgba(5,7,15,0.8);
-      border-bottom: 1px solid var(--border);
-    }
-    .nav-inner {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 0 24px;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .nav-logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 800;
-      font-size: 17px;
-      letter-spacing: -0.02em;
-    }
-    .nav-logo-icon {
-      width: 32px; height: 32px;
-      background: linear-gradient(135deg, var(--indigo), var(--violet));
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
-    }
-    .nav-logo span { color: var(--indigo); }
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .nav-links a {
-      color: var(--muted2);
-      text-decoration: none;
-      font-size: 13.5px;
-      font-weight: 500;
-      padding: 6px 12px;
-      border-radius: 8px;
-      transition: color 0.2s, background 0.2s;
-    }
-    .nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.05); }
-    .nav-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(99,102,241,0.12);
-      border: 1px solid var(--border2);
-      color: var(--indigo);
-      font-size: 12px;
-      font-weight: 600;
-      padding: 6px 14px;
-      border-radius: 100px;
-      font-family: var(--mono);
-    }
-    .nav-badge::before {
-      content: '';
-      width: 6px; height: 6px;
-      background: var(--green);
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
+/* ENDPOINT */
+.ep-page{padding:32px 40px 80px}
+.ep-breadcrumb{font-size:11px;font-family:var(--mono);color:var(--muted);margin-bottom:12px}
+.ep-breadcrumb span{color:var(--muted2)}
+.ep-title-row{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+.ep-method{font-family:var(--mono);font-size:12px;font-weight:700;padding:5px 12px;border-radius:7px;background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.25);flex-shrink:0}
+.ep-title-path{font-family:var(--mono);font-size:20px;font-weight:700}
+.ep-subtitle{font-size:14px;color:var(--muted2);margin-bottom:28px}
+.ep-section{margin-bottom:28px}
+.ep-sec-lbl{font-size:10px;font-family:var(--mono);font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.ep-sec-lbl::after{content:'';flex:1;height:1px;background:var(--border)}
 
-    /* ── HERO ── */
-    .hero {
-      position: relative;
-      z-index: 1;
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 80px 24px 64px;
-      text-align: center;
-    }
-    .hero-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(99,102,241,0.08);
-      border: 1px solid var(--border2);
-      border-radius: 100px;
-      padding: 6px 16px;
-      font-size: 12px;
-      font-family: var(--mono);
-      color: var(--indigo);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 28px;
-      animation: fadeDown 0.6s ease both;
-    }
-    .hero h1 {
-      font-size: clamp(2.4rem, 7vw, 4rem);
-      font-weight: 900;
-      letter-spacing: -0.04em;
-      line-height: 1.05;
-      margin-bottom: 20px;
-      animation: fadeDown 0.6s 0.1s ease both;
-    }
-    .hero h1 .grad {
-      background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 50%, var(--cyan) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .hero-sub {
-      font-size: 16px;
-      color: var(--muted2);
-      max-width: 500px;
-      margin: 0 auto 36px;
-      line-height: 1.7;
-      font-weight: 400;
-      animation: fadeDown 0.6s 0.2s ease both;
-    }
-    .hero-sub strong { color: var(--text); font-weight: 600; }
+/* TABLE */
+.pt{width:100%;border-collapse:collapse;font-size:13px}
+.pt th{text-align:left;padding:8px 14px;font-size:10px;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:700;border-bottom:1px solid var(--border)}
+.pt td{padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--muted2);vertical-align:top}
+.pt tr:last-child td{border-bottom:none}
+.p-name{font-family:var(--mono);color:var(--indigo);font-size:13px}
+.p-type{font-family:var(--mono);color:var(--amber);font-size:12px}
+.b-req{background:rgba(244,63,94,0.1);color:var(--rose);border:1px solid rgba(244,63,94,0.2);font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:4px}
+.b-opt{background:rgba(99,102,241,0.1);color:var(--indigo);border:1px solid var(--border2);font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:4px}
 
-    .hero-ctas {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      animation: fadeDown 0.6s 0.3s ease both;
-    }
-    .btn-primary {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: linear-gradient(135deg, var(--indigo), var(--violet));
-      color: #fff;
-      font-weight: 700;
-      font-size: 14px;
-      padding: 12px 24px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      text-decoration: none;
-      letter-spacing: 0.01em;
-      transition: opacity 0.2s, transform 0.2s;
-      box-shadow: 0 0 30px rgba(99,102,241,0.3);
-    }
-    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
-    .btn-ghost {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border2);
-      color: var(--muted2);
-      font-weight: 600;
-      font-size: 14px;
-      padding: 12px 24px;
-      border-radius: 10px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: border-color 0.2s, color 0.2s;
-    }
-    .btn-ghost:hover { border-color: rgba(99,102,241,0.5); color: var(--text); }
+/* CURL */
+.curl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-family:var(--mono);font-size:12.5px;color:var(--muted2);display:flex;gap:12px;align-items:flex-start;overflow-x:auto}
+.curl-wrap span{flex:1;word-break:break-all}
+.btn-copy{background:none;border:1px solid var(--border2);color:var(--muted2);font-family:var(--mono);font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;cursor:pointer;letter-spacing:0.05em;flex-shrink:0;transition:color 0.2s,border-color 0.2s}
+.btn-copy:hover{color:var(--indigo);border-color:var(--indigo)}
 
-    /* ── STATS STRIP ── */
-    .stats-strip {
-      position: relative; z-index: 1;
-      max-width: 1000px;
-      margin: 0 auto 64px;
-      padding: 0 24px;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-      animation: fadeUp 0.6s 0.4s ease both;
-    }
-    .stat-item {
-      background: var(--surface);
-      padding: 24px;
-      text-align: center;
-      transition: background 0.2s;
-    }
-    .stat-item:hover { background: var(--surface2); }
-    .stat-val {
-      font-size: 28px;
-      font-weight: 800;
-      font-family: var(--mono);
-      background: linear-gradient(135deg, var(--indigo), var(--cyan));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: -0.02em;
-    }
-    .stat-lbl {
-      font-size: 11px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-top: 4px;
-      font-weight: 600;
-    }
+/* TRY IT */
+.try-row{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.url-input{flex:1;min-width:200px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:11px 16px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;transition:border-color 0.2s}
+.url-input::placeholder{color:var(--muted)}
+.url-input:focus{border-color:var(--indigo)}
+.btn-exec{display:flex;align-items:center;gap:7px;background:linear-gradient(135deg,var(--indigo),var(--violet));color:#fff;font-family:var(--sans);font-weight:700;font-size:13px;padding:11px 22px;border-radius:10px;border:none;cursor:pointer;flex-shrink:0;transition:opacity 0.2s;box-shadow:0 0 20px rgba(99,102,241,0.2)}
+.btn-exec:hover{opacity:0.85}
+.btn-exec:disabled{opacity:0.5;cursor:not-allowed}
+.btn-exec svg{width:13px;height:13px}
 
-    /* ── FEATURE CARDS ── */
-    .features {
-      position: relative; z-index: 1;
-      max-width: 1000px;
-      margin: 0 auto 72px;
-      padding: 0 24px;
-    }
-    .section-title {
-      font-size: 11px;
-      font-family: var(--mono);
-      color: var(--indigo);
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-    .section-title::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-    .feat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      padding: 24px;
-      transition: border-color 0.2s, transform 0.2s;
-      animation: fadeUp 0.5s ease both;
-    }
-    .feat-card:hover { border-color: var(--border2); transform: translateY(-2px); }
-    .feat-icon {
-      width: 40px; height: 40px;
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
-      margin-bottom: 14px;
-    }
-    .feat-icon.indigo { background: rgba(99,102,241,0.12); }
-    .feat-icon.violet { background: rgba(139,92,246,0.12); }
-    .feat-icon.cyan   { background: rgba(34,211,238,0.12); }
-    .feat-icon.green  { background: rgba(16,185,129,0.12); }
-    .feat-icon.rose   { background: rgba(244,63,94,0.12); }
-    .feat-icon.amber  { background: rgba(245,158,11,0.12); }
-    .feat-card h3 {
-      font-size: 15px;
-      font-weight: 700;
-      margin-bottom: 6px;
-      letter-spacing: -0.01em;
-    }
-    .feat-card p {
-      font-size: 13px;
-      color: var(--muted2);
-      line-height: 1.6;
-    }
+/* RESPONSE */
+.res-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:none}
+.res-wrap.show{display:block}
+.res-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.dot{width:10px;height:10px;border-radius:50%}
+.dr{background:#f87171}.dy{background:#fbbf24}.dg{background:#4ade80}
+.res-lbl{font-family:var(--mono);font-size:11px;color:var(--muted);flex:1;letter-spacing:0.05em}
+.res-status{font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px}
+.s-ok{background:rgba(16,185,129,0.1);color:var(--green)}
+.s-err{background:rgba(244,63,94,0.1);color:var(--rose)}
+.res-code{padding:16px;font-family:var(--mono);font-size:12px;line-height:1.75;color:var(--muted2);max-height:380px;overflow-y:auto;white-space:pre}
+.res-code::-webkit-scrollbar{width:4px}
+.res-code::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.jk{color:#a78bfa}.js{color:#86efac}.jn{color:#fbbf24}.jb{color:#f87171}.jl{color:#94a3b8}
+.spinner{width:12px;height:12px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block}
 
-    /* ── DOCS SECTION ── */
-    .docs {
-      position: relative; z-index: 1;
-      max-width: 1000px;
-      margin: 0 auto 80px;
-      padding: 0 24px;
-    }
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn 0.22s ease both}
 
-    /* BASE URL */
-    .base-url-card {
-      background: var(--surface);
-      border: 1px solid rgba(16,185,129,0.2);
-      border-radius: var(--r);
-      padding: 18px 24px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 32px;
-    }
-    .base-lbl {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-    }
-    .base-val {
-      font-family: var(--mono);
-      font-size: 14px;
-      color: var(--green);
-      flex: 1;
-    }
-    .badge-https {
-      background: rgba(16,185,129,0.1);
-      color: var(--green);
-      border: 1px solid rgba(16,185,129,0.25);
-      font-size: 10px;
-      font-family: var(--mono);
-      font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 6px;
-    }
-
-    /* ENDPOINT CARD */
-    .ep-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      overflow: hidden;
-      margin-bottom: 16px;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .ep-card.open { border-color: var(--border2); }
-    .ep-card:hover { box-shadow: 0 0 30px rgba(99,102,241,0.06); }
-
-    .ep-header {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 18px 24px;
-      cursor: pointer;
-      user-select: none;
-    }
-    .method-get {
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 6px;
-      background: rgba(16,185,129,0.12);
-      color: var(--green);
-      border: 1px solid rgba(16,185,129,0.25);
-      flex-shrink: 0;
-      letter-spacing: 0.05em;
-    }
-    .ep-path {
-      font-family: var(--mono);
-      font-size: 14px;
-      color: var(--text);
-      font-weight: 600;
-    }
-    .ep-desc {
-      font-size: 13px;
-      color: var(--muted);
-      flex: 1;
-    }
-    .ep-platform {
-      display: flex;
-      gap: 6px;
-    }
-    .platform-tag {
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 100px;
-      letter-spacing: 0.04em;
-    }
-    .pt-tiktok  { background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
-    .pt-ig      { background: rgba(225,48,108,0.12); color: #e1306c; border: 1px solid rgba(225,48,108,0.2); }
-    .pt-yt      { background: rgba(255,0,0,0.1); color: #ff4444; border: 1px solid rgba(255,0,0,0.2); }
-    .toggle-icon { color: var(--muted); font-size: 18px; transition: transform 0.25s; flex-shrink: 0; }
-    .ep-card.open .toggle-icon { transform: rotate(180deg); }
-
-    .ep-body {
-      display: none;
-      padding: 0 24px 24px;
-      border-top: 1px solid var(--border);
-    }
-    .ep-card.open .ep-body { display: block; }
-
-    .params-title {
-      font-size: 11px;
-      font-family: var(--mono);
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      font-weight: 700;
-      margin: 20px 0 10px;
-    }
-    .params-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .params-table th {
-      text-align: left;
-      padding: 8px 12px;
-      font-size: 10px;
-      font-family: var(--mono);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-      font-weight: 700;
-      border-bottom: 1px solid var(--border);
-    }
-    .params-table td {
-      padding: 10px 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
-      color: var(--muted2);
-      vertical-align: top;
-    }
-    .param-name { font-family: var(--mono); color: var(--indigo); font-size: 13px; }
-    .param-type { font-family: var(--mono); color: var(--amber); font-size: 12px; }
-    .badge-req { background: rgba(244,63,94,0.1); color: var(--rose); border: 1px solid rgba(244,63,94,0.2); font-size: 10px; font-family: var(--mono); padding: 2px 8px; border-radius: 4px; }
-    .badge-opt { background: rgba(99,102,241,0.1); color: var(--indigo); border: 1px solid var(--border2); font-size: 10px; font-family: var(--mono); padding: 2px 8px; border-radius: 4px; }
-
-    /* CURL BOX */
-    .curl-box {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px 16px;
-      font-family: var(--mono);
-      font-size: 12.5px;
-      color: var(--muted2);
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      overflow-x: auto;
-    }
-    .curl-box span { flex: 1; white-space: nowrap; }
-    .btn-copy-curl {
-      background: none; border: 1px solid var(--border2);
-      color: var(--muted2); font-family: var(--mono); font-size: 10px;
-      font-weight: 700; padding: 4px 10px; border-radius: 6px; cursor: pointer;
-      letter-spacing: 0.05em; flex-shrink: 0;
-      transition: border-color 0.2s, color 0.2s;
-    }
-    .btn-copy-curl:hover { border-color: var(--indigo); color: var(--indigo); }
-
-    /* TRY IT */
-    .try-group {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-    .url-input {
-      flex: 1;
-      background: var(--bg);
-      border: 1px solid var(--border2);
-      border-radius: 10px;
-      padding: 11px 16px;
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: 13px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .url-input::placeholder { color: var(--muted); }
-    .url-input:focus { border-color: var(--indigo); }
-    .btn-exec {
-      display: flex; align-items: center; gap: 7px;
-      background: linear-gradient(135deg, var(--indigo), var(--violet));
-      color: #fff;
-      font-family: var(--sans);
-      font-weight: 700;
-      font-size: 13px;
-      padding: 11px 20px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      flex-shrink: 0;
-      letter-spacing: 0.02em;
-      transition: opacity 0.2s;
-    }
-    .btn-exec:hover { opacity: 0.85; }
-    .btn-exec:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-exec svg { width: 13px; height: 13px; }
-
-    /* RESPONSE */
-    .res-box {
-      display: none;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    .res-box.visible { display: block; }
-    .res-topbar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 16px;
-      background: var(--surface2);
-      border-bottom: 1px solid var(--border);
-    }
-    .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .dot-r { background: #f87171; }
-    .dot-y { background: #fbbf24; }
-    .dot-g { background: #4ade80; }
-    .res-label { font-family: var(--mono); font-size: 11px; color: var(--muted); flex: 1; letter-spacing: 0.05em; }
-    .res-status { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
-    .res-status.ok  { background: rgba(16,185,129,0.1); color: var(--green); }
-    .res-status.err { background: rgba(244,63,94,0.1); color: var(--rose); }
-    .btn-copy-res {
-      background: none; border: 1px solid var(--border2);
-      color: var(--muted); font-family: var(--mono); font-size: 10px;
-      font-weight: 700; padding: 3px 8px; border-radius: 5px; cursor: pointer;
-      transition: color 0.2s;
-    }
-    .btn-copy-res:hover { color: var(--text); }
-    .res-code {
-      padding: 16px;
-      font-family: var(--mono);
-      font-size: 12.5px;
-      line-height: 1.7;
-      color: var(--muted2);
-      max-height: 340px;
-      overflow-y: auto;
-      white-space: pre;
-    }
-    .json-key  { color: #a78bfa; }
-    .json-str  { color: #86efac; }
-    .json-num  { color: #fbbf24; }
-    .json-bool { color: #f87171; }
-    .json-null { color: #94a3b8; }
-
-    /* SPINNER */
-    .spinner {
-      width: 12px; height: 12px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      display: inline-block;
-    }
-
-    /* ── FOOTER ── */
-    footer {
-      position: relative; z-index: 1;
-      border-top: 1px solid var(--border);
-      padding: 32px 24px;
-      text-align: center;
-    }
-    .footer-inner { max-width: 1000px; margin: 0 auto; }
-    .footer-logo { font-size: 16px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
-    .footer-logo span { color: var(--indigo); }
-    footer p { font-size: 13px; color: var(--muted); margin-top: 6px; }
-    footer a { color: var(--indigo); text-decoration: none; }
-
-    /* ── ANIMATIONS ── */
-    @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-18px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(18px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 700px) {
-      .features-grid { grid-template-columns: 1fr 1fr; }
-      .stats-strip { grid-template-columns: repeat(2, 1fr); }
-      .ep-desc, .ep-platform { display: none; }
-      .nav-links { display: none; }
-      .hero { padding: 56px 20px 48px; }
-    }
-    @media (max-width: 480px) {
-      .features-grid { grid-template-columns: 1fr; }
-    }
-  </style>
+@media(max-width:700px){
+  .sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border);max-height:auto}
+  .main{flex-direction:column}
+  .home-grid{grid-template-columns:1fr}
+  .home-page,.ep-page{padding:20px 16px 60px}
+  .topbar-search{display:none}
+}
+</style>
 </head>
 <body>
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
 
-  <!-- NAVBAR -->
-  <nav>
-    <div class="nav-inner">
-      <div class="nav-logo">
-        <div class="nav-logo-icon">⚡</div>
-        <span>Sanz<span>XD</span></span>
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="logo-box">⚡</div>
+    <div class="logo-txt">Sanz<span>XD</span></div>
+  </div>
+  <div class="topbar-search">
+    <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" style="color:var(--muted)"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+    <input type="text" placeholder="Search APIs by name, category, or description..." oninput="filterSidebar(this.value)"/>
+  </div>
+  <div class="topbar-right">
+    <div class="live-badge">LIVE</div>
+    <div class="topbar-author">by <span>@SanzXD</span></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="sidebar">
+    <div class="sidebar-inner" id="sidebar-inner">
+      <div class="sidebar-cat">Downloader</div>
+      <div class="sidebar-item active" id="si-home" onclick="showPage('home')">
+        <div class="si-icon si-home">🏠</div>
+        <div class="si-info">
+          <div class="si-name">Home</div>
+          <div class="si-desc">Overview & dokumentasi</div>
+        </div>
       </div>
-      <div class="nav-links">
-        <a href="#features">Features</a>
-        <a href="#docs">Docs</a>
+      <div class="sidebar-item" id="si-tiktok" onclick="showPage('tiktok')">
+        <div class="si-icon si-tiktok">🎵</div>
+        <div class="si-info">
+          <div class="si-name">TikTok DL</div>
+          <div class="si-desc">Download TikTok videos without watermark.</div>
+        </div>
+        <span class="si-badge">DL</span>
       </div>
-      <div class="nav-badge">v1.0.0 — Live</div>
-    </div>
-  </nav>
-
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-eyebrow">⚡ Free · No Auth · JSON</div>
-    <h1>Media Downloader<br><span class="grad">API for Developers</span></h1>
-    <p class="hero-sub">
-      Download video dari <strong>TikTok</strong>, <strong>Instagram</strong>, dan <strong>YouTube</strong>
-      tanpa watermark. Fast, reliable, dan gratis — siap pakai di project kamu.
-    </p>
-    <div class="hero-ctas">
-      <a href="#docs" class="btn-primary">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
-        Coba Sekarang
-      </a>
-      <a href="#docs" class="btn-ghost">
-        📄 Dokumentasi
-      </a>
-    </div>
-  </section>
-
-  <!-- STATS -->
-  <div class="stats-strip">
-    <div class="stat-item">
-      <div class="stat-val">3</div>
-      <div class="stat-lbl">Endpoints</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-val">GET</div>
-      <div class="stat-lbl">Method</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-val">JSON</div>
-      <div class="stat-lbl">Format</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-val">FREE</div>
-      <div class="stat-lbl">Access</div>
+      <div class="sidebar-item" id="si-instagram" onclick="showPage('instagram')">
+        <div class="si-icon si-ig">📸</div>
+        <div class="si-info">
+          <div class="si-name">Instagram DL</div>
+          <div class="si-desc">Download Instagram media.</div>
+        </div>
+        <span class="si-badge">DL</span>
+      </div>
+      <div class="sidebar-item" id="si-youtube" onclick="showPage('youtube')">
+        <div class="si-icon si-yt">▶️</div>
+        <div class="si-info">
+          <div class="si-name">YouTube DL</div>
+          <div class="si-desc">Download YouTube videos.</div>
+        </div>
+        <span class="si-badge">DL</span>
+      </div>
     </div>
   </div>
 
-  <!-- FEATURES -->
-  <section class="features" id="features">
-    <div class="section-title">// Features</div>
-    <div class="features-grid">
-      <div class="feat-card">
-        <div class="feat-icon indigo">🎵</div>
-        <h3>TikTok No WM</h3>
-        <p>Download video TikTok tanpa watermark dalam kualitas HD.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon rose">📸</div>
-        <h3>Instagram Media</h3>
-        <p>Download Reels, Post, Carousel, dan IGTV dari Instagram.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon amber">▶️</div>
-        <h3>YouTube & Shorts</h3>
-        <p>Download video YouTube, Shorts, dan convert ke MP3.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon green">⚡</div>
-        <h3>Ultra Fast</h3>
-        <p>Response cepat dengan auto-retry untuk hasil yang konsisten.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon cyan">🔓</div>
-        <h3>No Auth Needed</h3>
-        <p>Tidak perlu API key atau registrasi. Langsung pakai.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon violet">🌐</div>
-        <h3>CORS Friendly</h3>
-        <p>CORS sudah diaktifkan, cocok untuk web dan mobile apps.</p>
-      </div>
-    </div>
-  </section>
+  <div class="content" id="content">
 
-  <!-- DOCS -->
-  <section class="docs" id="docs">
-    <div class="section-title">// API Reference</div>
-
-    <!-- BASE URL -->
-    <div class="base-url-card">
-      <span class="base-lbl">Base</span>
-      <span class="base-val" id="base-url">https://your-project.vercel.app</span>
-      <span class="badge-https">HTTPS</span>
+    <!-- HOME -->
+    <div id="page-home" class="home-page fade-in">
+      <div class="home-eyebrow">⚡ Free · No Auth · JSON Response</div>
+      <h1>Powerful API for<br><span class="grad">Modern Developers</span></h1>
+      <p class="home-sub">Akses endpoint <strong>TikTok</strong>, <strong>Instagram</strong>, dan <strong>YouTube</strong> downloader dalam satu platform. Cepat, handal, dan gratis — semua response menyertakan tag author <strong>@SanzXD</strong>.</p>
+      <div class="home-stats">
+        <div class="hstat"><div class="hstat-val">3</div><div class="hstat-lbl">Endpoints</div></div>
+        <div class="hstat"><div class="hstat-val">GET</div><div class="hstat-lbl">Method</div></div>
+        <div class="hstat"><div class="hstat-val">JSON</div><div class="hstat-lbl">Format</div></div>
+        <div class="hstat"><div class="hstat-val">FREE</div><div class="hstat-lbl">Access</div></div>
+      </div>
+      <div class="home-grid">
+        <div class="hfeat"><div class="hfeat-icon">🎵</div><h3>TikTok No WM</h3><p>Download video TikTok tanpa watermark dalam kualitas HD.</p></div>
+        <div class="hfeat"><div class="hfeat-icon">📸</div><h3>Instagram Media</h3><p>Download Reels, Post, Carousel, dan IGTV dari Instagram.</p></div>
+        <div class="hfeat"><div class="hfeat-icon">▶️</div><h3>YouTube & Shorts</h3><p>Download video YouTube, Shorts, dan convert ke MP3.</p></div>
+        <div class="hfeat"><div class="hfeat-icon">⚡</div><h3>Ultra Fast</h3><p>Response cepat dengan auto-retry untuk hasil yang konsisten.</p></div>
+        <div class="hfeat"><div class="hfeat-icon">🔓</div><h3>No Auth Needed</h3><p>Tidak perlu API key atau registrasi. Langsung pakai.</p></div>
+        <div class="hfeat"><div class="hfeat-icon">🌐</div><h3>CORS Friendly</h3><p>CORS sudah diaktifkan, cocok untuk web dan mobile apps.</p></div>
+      </div>
     </div>
 
     <!-- TIKTOK -->
-    <div class="ep-card open" id="card-tiktok">
-      <div class="ep-header" onclick="toggleCard('card-tiktok')">
-        <span class="method-get">GET</span>
-        <span class="ep-path">/api/tiktok</span>
-        <span class="ep-desc">Download TikTok video tanpa watermark</span>
-        <div class="ep-platform"><span class="platform-tag pt-tiktok">TikTok</span></div>
-        <span class="toggle-icon">▾</span>
+    <div id="page-tiktok" class="ep-page" style="display:none">
+      <div class="ep-breadcrumb">Downloader <span>/ TikTok DL</span></div>
+      <div class="ep-title-row"><span class="ep-method">GET</span><span class="ep-title-path">/api/tiktok</span></div>
+      <div class="ep-subtitle">Download TikTok videos without watermark.</div>
+      <div class="ep-section">
+        <div class="ep-sec-lbl">Parameters</div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+          <table class="pt"><thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+          <tbody><tr><td class="p-name">url</td><td class="p-type">string</td><td><span class="b-req">Required</span></td><td>URL video TikTok (vt.tiktok.com / vm.tiktok.com)</td></tr></tbody></table>
+        </div>
       </div>
-      <div class="ep-body">
-        <p class="params-title">Parameters</p>
-        <table class="params-table">
-          <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
-          <tbody>
-            <tr>
-              <td class="param-name">url</td>
-              <td class="param-type">string</td>
-              <td><span class="badge-req">Required</span></td>
-              <td>URL video TikTok (vt.tiktok.com / vm.tiktok.com)</td>
-            </tr>
-          </tbody>
-        </table>
-        <p class="params-title">cURL</p>
-        <div class="curl-box">
-          <span id="curl-tt"></span>
-          <button class="btn-copy-curl" onclick="copyCurl('curl-tt')">COPY</button>
+      <div class="ep-section">
+        <div class="ep-sec-lbl">cURL</div>
+        <div class="curl-wrap"><span id="curl-tt"></span><button class="btn-copy" onclick="copyCurl('curl-tt',this)">COPY</button></div>
+      </div>
+      <div class="ep-section">
+        <div class="ep-sec-lbl">Try It</div>
+        <div class="try-row">
+          <input class="url-input" id="tt-input" placeholder="https://vt.tiktok.com/ZS9mu8NkJ/"/>
+          <button class="btn-exec" id="tt-btn" onclick="execApi('tt')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>EXECUTE API</button>
         </div>
-        <p class="params-title">Try It</p>
-        <div class="try-group">
-          <input class="url-input" id="tt-input" placeholder="https://vt.tiktok.com/ZS9mu8NkJ/" />
-          <button class="btn-exec" id="tt-btn" onclick="execApi('tt')">
-            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
-            EXECUTE
-          </button>
-        </div>
-        <div class="res-box" id="tt-res">
-          <div class="res-topbar">
-            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-            <span class="res-label">JSON Response</span>
-            <span class="res-status" id="tt-badge"></span>
-            <button class="btn-copy-res" onclick="copyRes('tt-code')">COPY</button>
-          </div>
+        <div class="res-wrap" id="tt-res">
+          <div class="res-bar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span><span class="res-lbl">JSON RESPONSE</span><span class="res-status" id="tt-badge"></span><button class="btn-copy" onclick="copyRes('tt-code',this)">COPY</button></div>
           <div class="res-code" id="tt-code"></div>
         </div>
       </div>
     </div>
 
     <!-- INSTAGRAM -->
-    <div class="ep-card" id="card-instagram">
-      <div class="ep-header" onclick="toggleCard('card-instagram')">
-        <span class="method-get">GET</span>
-        <span class="ep-path">/api/instagram</span>
-        <span class="ep-desc">Download Instagram Post, Reel & IGTV</span>
-        <div class="ep-platform"><span class="platform-tag pt-ig">Instagram</span></div>
-        <span class="toggle-icon">▾</span>
+    <div id="page-instagram" class="ep-page" style="display:none">
+      <div class="ep-breadcrumb">Downloader <span>/ Instagram DL</span></div>
+      <div class="ep-title-row"><span class="ep-method">GET</span><span class="ep-title-path">/api/instagram</span></div>
+      <div class="ep-subtitle">Download Instagram media.</div>
+      <div class="ep-section">
+        <div class="ep-sec-lbl">Parameters</div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+          <table class="pt"><thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+          <tbody><tr><td class="p-name">url</td><td class="p-type">string</td><td><span class="b-req">Required</span></td><td>URL Instagram Post, Reel, IGTV, atau Story</td></tr></tbody></table>
+        </div>
       </div>
-      <div class="ep-body">
-        <p class="params-title">Parameters</p>
-        <table class="params-table">
-          <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
-          <tbody>
-            <tr>
-              <td class="param-name">url</td>
-              <td class="param-type">string</td>
-              <td><span class="badge-req">Required</span></td>
-              <td>URL Instagram Post, Reel, IGTV, atau Story</td>
-            </tr>
-          </tbody>
-        </table>
-        <p class="params-title">cURL</p>
-        <div class="curl-box">
-          <span id="curl-ig"></span>
-          <button class="btn-copy-curl" onclick="copyCurl('curl-ig')">COPY</button>
+      <div class="ep-section">
+        <div class="ep-sec-lbl">cURL</div>
+        <div class="curl-wrap"><span id="curl-ig"></span><button class="btn-copy" onclick="copyCurl('curl-ig',this)">COPY</button></div>
+      </div>
+      <div class="ep-section">
+        <div class="ep-sec-lbl">Try It</div>
+        <div class="try-row">
+          <input class="url-input" id="ig-input" placeholder="https://www.instagram.com/reel/ABC123/"/>
+          <button class="btn-exec" id="ig-btn" onclick="execApi('ig')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>EXECUTE API</button>
         </div>
-        <p class="params-title">Try It</p>
-        <div class="try-group">
-          <input class="url-input" id="ig-input" placeholder="https://www.instagram.com/reel/ABC123/" />
-          <button class="btn-exec" id="ig-btn" onclick="execApi('ig')">
-            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
-            EXECUTE
-          </button>
-        </div>
-        <div class="res-box" id="ig-res">
-          <div class="res-topbar">
-            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-            <span class="res-label">JSON Response</span>
-            <span class="res-status" id="ig-badge"></span>
-            <button class="btn-copy-res" onclick="copyRes('ig-code')">COPY</button>
-          </div>
+        <div class="res-wrap" id="ig-res">
+          <div class="res-bar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span><span class="res-lbl">JSON RESPONSE</span><span class="res-status" id="ig-badge"></span><button class="btn-copy" onclick="copyRes('ig-code',this)">COPY</button></div>
           <div class="res-code" id="ig-code"></div>
         </div>
       </div>
     </div>
 
     <!-- YOUTUBE -->
-    <div class="ep-card" id="card-youtube">
-      <div class="ep-header" onclick="toggleCard('card-youtube')">
-        <span class="method-get">GET</span>
-        <span class="ep-path">/api/youtube</span>
-        <span class="ep-desc">Download YouTube Video, Shorts & MP3</span>
-        <div class="ep-platform"><span class="platform-tag pt-yt">YouTube</span></div>
-        <span class="toggle-icon">▾</span>
-      </div>
-      <div class="ep-body">
-        <p class="params-title">Parameters</p>
-        <table class="params-table">
-          <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+    <div id="page-youtube" class="ep-page" style="display:none">
+      <div class="ep-breadcrumb">Downloader <span>/ YouTube DL</span></div>
+      <div class="ep-title-row"><span class="ep-method">GET</span><span class="ep-title-path">/api/youtube</span></div>
+      <div class="ep-subtitle">Download YouTube videos & convert to MP3.</div>
+      <div class="ep-section">
+        <div class="ep-sec-lbl">Parameters</div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+          <table class="pt"><thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
           <tbody>
-            <tr>
-              <td class="param-name">url</td>
-              <td class="param-type">string</td>
-              <td><span class="badge-req">Required</span></td>
-              <td>URL YouTube, Shorts, atau youtu.be</td>
-            </tr>
-            <tr>
-              <td class="param-name">format</td>
-              <td class="param-type">string</td>
-              <td><span class="badge-opt">Optional</span></td>
-              <td>mp3 atau mp4 (default: mp3)</td>
-            </tr>
-            <tr>
-              <td class="param-name">quality</td>
-              <td class="param-type">string</td>
-              <td><span class="badge-opt">Optional</span></td>
-              <td>Kualitas: 128, 192, 320, 360, 480, 720, 1080</td>
-            </tr>
-          </tbody>
-        </table>
-        <p class="params-title">cURL</p>
-        <div class="curl-box">
-          <span id="curl-yt"></span>
-          <button class="btn-copy-curl" onclick="copyCurl('curl-yt')">COPY</button>
+            <tr><td class="p-name">url</td><td class="p-type">string</td><td><span class="b-req">Required</span></td><td>URL YouTube, Shorts, atau youtu.be</td></tr>
+            <tr><td class="p-name">format</td><td class="p-type">string</td><td><span class="b-opt">Optional</span></td><td>mp3 atau mp4 (default: mp3)</td></tr>
+            <tr><td class="p-name">quality</td><td class="p-type">string</td><td><span class="b-opt">Optional</span></td><td>128, 192, 320, 360, 480, 720, 1080</td></tr>
+          </tbody></table>
         </div>
-        <p class="params-title">Try It</p>
-        <div class="try-group">
-          <input class="url-input" id="yt-input" placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ" />
-          <button class="btn-exec" id="yt-btn" onclick="execApi('yt')">
-            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
-            EXECUTE
-          </button>
+      </div>
+      <div class="ep-section">
+        <div class="ep-sec-lbl">cURL</div>
+        <div class="curl-wrap"><span id="curl-yt"></span><button class="btn-copy" onclick="copyCurl('curl-yt',this)">COPY</button></div>
+      </div>
+      <div class="ep-section">
+        <div class="ep-sec-lbl">Try It</div>
+        <div class="try-row">
+          <input class="url-input" id="yt-input" placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"/>
+          <button class="btn-exec" id="yt-btn" onclick="execApi('yt')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>EXECUTE API</button>
         </div>
-        <div class="res-box" id="yt-res">
-          <div class="res-topbar">
-            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-            <span class="res-label">JSON Response</span>
-            <span class="res-status" id="yt-badge"></span>
-            <button class="btn-copy-res" onclick="copyRes('yt-code')">COPY</button>
-          </div>
+        <div class="res-wrap" id="yt-res">
+          <div class="res-bar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span><span class="res-lbl">JSON RESPONSE</span><span class="res-status" id="yt-badge"></span><button class="btn-copy" onclick="copyRes('yt-code',this)">COPY</button></div>
           <div class="res-code" id="yt-code"></div>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- FOOTER -->
-  <footer>
-    <div class="footer-inner">
-      <div class="footer-logo">Sanz<span>XD</span> API</div>
-      <p>Built with ☕ by <a href="#">@SanzXD</a> · Powered by <a href="https://vercel.com" target="_blank">Vercel</a></p>
-    </div>
-  </footer>
+  </div>
+</div>
 
-  <script>
-    const base = window.location.origin;
+<script>
+const base = window.location.origin;
+const cfg = {
+  tt:{ path:'/api/tiktok',   ex:'https://vt.tiktok.com/ZS9mu8NkJ/',         curl:'curl-tt' },
+  ig:{ path:'/api/instagram', ex:'https://www.instagram.com/p/ABC123/',       curl:'curl-ig' },
+  yt:{ path:'/api/youtube',   ex:'https://www.youtube.com/watch?v=dQw4w9WgXcQ', curl:'curl-yt' },
+};
 
-    const configs = {
-      tt: {
-        path: '/api/tiktok',
-        inputId: 'tt-input',
-        btnId: 'tt-btn',
-        resId: 'tt-res',
-        codeId: 'tt-code',
-        badgeId: 'tt-badge',
-        curlId: 'curl-tt',
-        example: 'https://vt.tiktok.com/ZS9mu8NkJ/',
-      },
-      ig: {
-        path: '/api/instagram',
-        inputId: 'ig-input',
-        btnId: 'ig-btn',
-        resId: 'ig-res',
-        codeId: 'ig-code',
-        badgeId: 'ig-badge',
-        curlId: 'curl-ig',
-        example: 'https://www.instagram.com/p/ABC123/',
-      },
-      yt: {
-        path: '/api/youtube',
-        inputId: 'yt-input',
-        btnId: 'yt-btn',
-        resId: 'yt-res',
-        codeId: 'yt-code',
-        badgeId: 'yt-badge',
-        curlId: 'curl-yt',
-        example: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-      },
-    };
+for(const[k,c]of Object.entries(cfg)){
+  document.getElementById(c.curl).textContent=`curl "${base}${c.path}?url=${c.ex}"`;
+  const inp=document.getElementById(k+'-input');
+  if(inp){
+    inp.addEventListener('input',e=>{
+      const v=e.target.value.trim();
+      document.getElementById(c.curl).textContent=`curl "${base}${c.path}?url=${v||c.ex}"`;
+    });
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')execApi(k);});
+  }
+}
 
-    // Init base url & curl
-    document.getElementById('base-url').textContent = base;
-    for (const [key, c] of Object.entries(configs)) {
-      document.getElementById(c.curlId).textContent = `curl "${base}${c.path}?url=${c.example}"`;
-      document.getElementById(c.inputId).addEventListener('input', e => {
-        const v = e.target.value.trim();
-        document.getElementById(c.curlId).textContent = `curl "${base}${c.path}?url=${v || c.example}"`;
-      });
-      document.getElementById(c.inputId).addEventListener('keydown', e => {
-        if (e.key === 'Enter') execApi(key);
-      });
-    }
+function showPage(name){
+  document.querySelectorAll('[id^="page-"]').forEach(el=>el.style.display='none');
+  document.querySelectorAll('.sidebar-item').forEach(el=>el.classList.remove('active'));
+  const p=document.getElementById('page-'+name);
+  p.style.display='block';
+  p.classList.remove('fade-in');void p.offsetWidth;p.classList.add('fade-in');
+  document.getElementById('si-'+name).classList.add('active');
+  document.getElementById('content').scrollTop=0;
+}
 
-    function toggleCard(id) {
-      document.getElementById(id).classList.toggle('open');
-    }
+function highlight(json){
+  return json.replace(/(\"(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*\"(\s*:)?|\b(true|false|null)\b|-?\d+\.?\d*([eE][+\-]?\d+)?)/g,m=>{
+    if(/^"/.test(m))return/:$/.test(m)?`<span class="jk">${m}</span>`:`<span class="js">${m}</span>`;
+    if(/true|false/.test(m))return`<span class="jb">${m}</span>`;
+    if(/null/.test(m))return`<span class="jl">${m}</span>`;
+    return`<span class="jn">${m}</span>`;
+  });
+}
 
-    function highlight(json) {
-      return json.replace(
-        /(\"(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*\"(\s*:)?|\b(true|false|null)\b|-?\d+\.?\d*([eE][+\-]?\d+)?)/g,
-        m => {
-          if (/^"/.test(m)) {
-            if (/:$/.test(m)) return `<span class="json-key">${m}</span>`;
-            return `<span class="json-str">${m}</span>`;
-          }
-          if (/true|false/.test(m)) return `<span class="json-bool">${m}</span>`;
-          if (/null/.test(m)) return `<span class="json-null">${m}</span>`;
-          return `<span class="json-num">${m}</span>`;
-        }
-      );
-    }
+async function execApi(key){
+  const c=cfg[key];
+  const val=document.getElementById(key+'-input').value.trim();
+  if(!val){alert('Masukkan URL terlebih dahulu!');return;}
+  const btn=document.getElementById(key+'-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Loading...';
+  const rw=document.getElementById(key+'-res'),rc=document.getElementById(key+'-code'),rb=document.getElementById(key+'-badge');
+  rw.classList.add('show');rc.textContent='Fetching...';rb.className='res-status';rb.textContent='';
+  try{
+    const resp=await fetch(`${base}${c.path}?url=${encodeURIComponent(val)}`);
+    const data=await resp.json();
+    rc.innerHTML=highlight(JSON.stringify(data,null,2));
+    if(resp.ok&&data.status){rb.className='res-status s-ok';rb.textContent=`${resp.status} OK`;}
+    else{rb.className='res-status s-err';rb.textContent=`${resp.status} Error`;}
+  }catch(err){rc.textContent=`Error: ${err.message}`;rb.className='res-status s-err';rb.textContent='Network Error';}
+  btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>EXECUTE API';
+}
 
-    async function execApi(key) {
-      const c = configs[key];
-      const val = document.getElementById(c.inputId).value.trim();
-      if (!val) { alert('Masukkan URL terlebih dahulu!'); return; }
-
-      const btn = document.getElementById(c.btnId);
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span> Loading...';
-
-      const resBox = document.getElementById(c.resId);
-      const resCode = document.getElementById(c.codeId);
-      const badge = document.getElementById(c.badgeId);
-
-      resBox.classList.add('visible');
-      resCode.textContent = 'Fetching...';
-      badge.className = 'res-status';
-      badge.textContent = '';
-
-      try {
-        const resp = await fetch(`${base}${c.path}?url=${encodeURIComponent(val)}`);
-        const data = await resp.json();
-        resCode.innerHTML = highlight(JSON.stringify(data, null, 2));
-        if (resp.ok && data.status) {
-          badge.className = 'res-status ok';
-          badge.textContent = `${resp.status} OK`;
-        } else {
-          badge.className = 'res-status err';
-          badge.textContent = `${resp.status} Error`;
-        }
-      } catch (err) {
-        resCode.textContent = `Error: ${err.message}`;
-        badge.className = 'res-status err';
-        badge.textContent = 'Network Error';
-      }
-
-      btn.disabled = false;
-      btn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg> EXECUTE';
-    }
-
-    function copyCurl(id) {
-      navigator.clipboard.writeText(document.getElementById(id).textContent)
-        .then(() => {
-          const btn = document.querySelector(`[onclick="copyCurl('${id}')"]`);
-          const orig = btn.textContent;
-          btn.textContent = '✓ COPIED';
-          setTimeout(() => btn.textContent = orig, 1500);
-        });
-    }
-
-    function copyRes(id) {
-      navigator.clipboard.writeText(document.getElementById(id).textContent)
-        .then(() => alert('Response di-copy!'));
-    }
-  </script>
+function copyCurl(id,btn){
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>{
+    const o=btn.textContent;btn.textContent='✓ COPIED';setTimeout(()=>btn.textContent=o,1500);
+  });
+}
+function copyRes(id,btn){
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>{
+    const o=btn.textContent;btn.textContent='✓ COPIED';setTimeout(()=>btn.textContent=o,1500);
+  });
+}
+function filterSidebar(q){
+  document.querySelectorAll('.sidebar-item').forEach(item=>{
+    const n=item.querySelector('.si-name')?.textContent.toLowerCase()||'';
+    const d=item.querySelector('.si-desc')?.textContent.toLowerCase()||'';
+    item.style.display=(!q||n.includes(q.toLowerCase())||d.includes(q.toLowerCase()))?'':'none';
+  });
+}
+</script>
 </body>
 </html>
