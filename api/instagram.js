@@ -156,7 +156,7 @@ async function fetchInstagram(url) {
   }
 
   return {
-    author: "@SanzXD",
+    creator: "@SanzXD",
     status: true,
     code: 200,
     message: "Berhasil mengambil data media.",
