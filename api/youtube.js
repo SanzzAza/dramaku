@@ -1,9 +1,9 @@
 /**
- * YouTube Downloader API — via Cobalt (self-hosted on Railway)
+ * YouTube Downloader API — via yozora yt-dlp
  * GET /api/youtube?url=https://www.youtube.com/watch?v=...
  */
 
-const COBALT_URL = "https://cobalt-api-production-2914.up.railway.app";
+const YTDLP_API = "https://yozora.vercel.app/api/info";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -47,7 +47,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await fetchViaCobalt(url, quality, audioOnly);
+    const result = await fetchViaYtdlp(url, quality, audioOnly);
     return res.status(200).json(result);
   } catch (err) {
     console.error("[YouTube]", err.message);
@@ -59,72 +59,71 @@ export default async function handler(req, res) {
   }
 }
 
-async function fetchViaCobalt(url, quality, audioOnly) {
-  const body = {
-    url,
-    videoQuality: quality,
-    ...(audioOnly && { downloadMode: "audio" }),
-  };
+async function fetchViaYtdlp(url, quality, audioOnly) {
+  const format = audioOnly
+    ? "bestaudio[ext=m4a]/bestaudio"
+    : `bestvideo[height<=${quality}][ext=mp4]+bestaudio[ext=m4a]/best[height<=${quality}]/best`;
 
-  const resp = await fetch(COBALT_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-    },
-    body: JSON.stringify(body),
+  const apiUrl = `${YTDLP_API}?query=${encodeURIComponent(url)}&format=${encodeURIComponent(format)}`;
+
+  const resp = await fetch(apiUrl, {
+    headers: { "Accept": "application/json" },
   });
 
-  if (!resp.ok) throw new Error(`Cobalt responded ${resp.status}`);
+  if (!resp.ok) throw new Error(`yt-dlp API responded ${resp.status}`);
 
   const data = await resp.json();
+  if (!data || data.error) throw new Error(data?.error || "Gagal mengambil data.");
 
-  // Ekstrak video ID dari URL
   const videoId = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/)?.[1] ?? null;
-  const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null;
   const isShorts = /\/shorts\//i.test(url);
+  const videoUrl = data.url || null;
+  const thumb = data.thumbnail || (videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null);
 
-  if (data.status === "tunnel" || data.status === "redirect") {
-    return {
-      status: true,
-      code: 200,
-      message: "Berhasil mengambil data media.",
-      video: {
-        id: videoId,
-        title: null,        // Cobalt tidak return title
-        duration: null,
-        type: isShorts ? "shorts" : "video",
-        quality: quality,
-        play: audioOnly ? null : data.url,
-        audio_only: audioOnly ? data.url : null,
-        cover: thumbnail,
-        filename: data.filename ?? null,
-      },
-      audio: {
-        play: audioOnly ? data.url : null,
-        title: null,
-        author: null,
-      },
-      author: {
-        username: null,     // Cobalt tidak return metadata channel
-        avatar: null,
-      },
-      stats: {
-        view_count: null,
-        like_count: null,
-        comment_count: null,
-      },
-      meta: {
-        video_id: videoId,
-        source_url: videoId ? `https://www.youtube.com/watch?v=${videoId}` : url,
-        thumbnail_hq: thumbnail,
-        thumbnail_mq: videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null,
-        thumbnail_sq: videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null,
-        provider: "cobalt",
-      },
-    };
-  }
+  // Cari format audio dan video terbaik dari list formats
+  const formats = data.formats || [];
+  const audioFormat = formats.find(f => f.vcodec === "none" && f.acodec !== "none");
+  const videoFormat = formats.find(f => f.vcodec !== "none" && f.height && f.height <= parseInt(quality));
 
-  const errCode = data.error?.code ?? "unknown";
-  throw new Error(`Cobalt error: ${errCode}`);
+  return {
+    status: true,
+    code: 200,
+    message: "Berhasil mengambil data media.",
+    author: {
+      username: data.uploader_id || data.uploader || null,
+      avatar: null,
+      channel_url: data.channel_url || null,
+    },
+    video: {
+      id: videoId,
+      title: data.title || null,
+      description: data.description ? data.description.slice(0, 300) : null,
+      duration: data.duration || null,
+      type: isShorts ? "shorts" : "video",
+      quality: quality,
+      play: audioOnly ? null : videoUrl,
+      audio_only: audioOnly ? videoUrl : (audioFormat?.url || null),
+      cover: thumb,
+      filename: data.title ? `${data.title.slice(0, 50)}.mp4` : `youtube_${videoId}.mp4`,
+    },
+    audio: {
+      play: audioFormat?.url || null,
+      title: data.track || data.title || null,
+      author: data.artist || data.uploader || null,
+    },
+    stats: {
+      view_count: data.view_count || null,
+      like_count: data.like_count || null,
+      comment_count: data.comment_count || null,
+    },
+    meta: {
+      video_id: videoId,
+      source_url: videoId ? `https://www.youtube.com/watch?v=${videoId}` : url,
+      thumbnail_hq: videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : thumb,
+      thumbnail_mq: videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null,
+      tags: data.tags?.slice(0, 10) || null,
+      categories: data.categories || null,
+      provider: "yt-dlp",
+    },
+  };
 }
