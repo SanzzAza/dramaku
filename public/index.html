@@ -709,7 +709,7 @@ function openEndpoint(id) {
           <span class="detail-badge-green">● ${ep.method}</span>
         </div>
       </div>
-      <div class="detail-path">${base}${ep.path}?url={url}</div>
+      <div class="detail-path">${base}${ep.path}?${ep.params[0].name}={${ep.params[0].name}}</div>
       <div class="detail-desc">${ep.desc}</div>
     </div>
 
@@ -804,7 +804,7 @@ function setQual(q, btn, id) {
 async function execApi(id) {
   const ep = EP[id];
   const val = document.getElementById('inp-' + ep.key)?.value.trim();
-  if (!val) { alert('Masukkan URL terlebih dahulu!'); return; }
+  if (!val) { alert('Masukkan ' + ep.params[0].name + ' terlebih dahulu!'); return; }
 
   const btn = document.getElementById('btn-' + ep.key);
   btn.disabled = true;
@@ -818,7 +818,8 @@ async function execApi(id) {
   rb.innerHTML = '';
 
   try {
-    let url = `${base}${ep.path}?url=${encodeURIComponent(val)}`;
+    const paramName = ep.params[0].name;
+    let url = `${base}${ep.path}?${paramName}=${encodeURIComponent(val)}`;
     if (id === 'youtube') url += `&format=${ytFormat}&quality=${ytQuality}`;
     const resp = await fetch(url);
     const data = await resp.json();
