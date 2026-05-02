@@ -11,6 +11,6 @@
     "@tobyg74/tiktok-api-dl": "^3.1.5"
   },
   "engines": {
-    "node": "18.x"
+    "node": "24.x"
   }
 }
