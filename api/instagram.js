@@ -1,5 +1,6 @@
 /**
- * Instagram Downloader API — Primary: sssinstagram.com
+ * Instagram Downloader API
+ * Primary  : Instagram /embed/captioned/ (resmi, tanpa pihak ketiga)
  * Fallback 1: snapinsta.app
  * Fallback 2: saveig.app
  *
@@ -13,10 +14,8 @@ const CORS_HEADERS = {
   "Content-Type": "application/json",
 };
 
-const UA_DESKTOP =
+const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
-const UA_MOBILE =
-  "Mozilla/5.0 (Android 13; Mobile; rv:124.0) Gecko/124.0 Firefox/124.0";
 
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
@@ -41,8 +40,17 @@ export default async function handler(req, res) {
     });
   }
 
+  // Normalisasi URL — buang query string agar embed bekerja
+  let cleanUrl;
+  try {
+    const u = new URL(url);
+    cleanUrl = `${u.origin}${u.pathname}`.replace(/\/$/, "");
+  } catch {
+    return res.status(400).json({ status: false, code: 400, message: "URL tidak valid." });
+  }
+
   const igRegex = /^https?:\/\/(www\.)?instagram\.com\/(p|reel|tv|stories)\/.+/i;
-  if (!igRegex.test(url)) {
+  if (!igRegex.test(cleanUrl)) {
     return res.status(400).json({
       status: false,
       code: 400,
@@ -51,9 +59,9 @@ export default async function handler(req, res) {
   }
 
   const sources = [
-    { name: "sssinstagram", fn: () => fetchViaSSSInstagram(url) },
-    { name: "snapinsta",    fn: () => fetchViaSnapinsta(url) },
-    { name: "saveig",       fn: () => fetchViaSaveIG(url) },
+    { name: "instagram_embed", fn: () => fetchViaEmbed(cleanUrl) },
+    { name: "snapinsta",       fn: () => fetchViaSnapinsta(url) },
+    { name: "saveig",          fn: () => fetchViaSaveIG(url) },
   ];
 
   const errors = [];
@@ -76,75 +84,90 @@ export default async function handler(req, res) {
   });
 }
 
-// ── SOURCE 1: sssinstagram.com ───────────────────────────────
-async function fetchViaSSSInstagram(url) {
-  const resp = await fetch("https://sssinstagram.com/request", {
-    method: "POST",
+// ── SOURCE 1: Instagram Embed (resmi, tanpa API key) ─────────
+async function fetchViaEmbed(baseUrl) {
+  const embedUrl = `${baseUrl}/embed/captioned/`;
+
+  const resp = await fetch(embedUrl, {
     headers: {
-      "Content-Type": "application/json",
-      "User-Agent": UA_DESKTOP,
-      "Referer": "https://sssinstagram.com/",
-      "Origin": "https://sssinstagram.com",
+      "User-Agent": UA,
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.5",
+      "Referer": "https://www.instagram.com/",
     },
-    body: JSON.stringify({ link: url, auto_proxy: 0 }),
   });
 
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  if (!resp.ok) throw new Error(`Instagram embed HTTP ${resp.status}`);
 
-  const json = await resp.json();
+  const html = await resp.text();
 
-  if (!json?.status || !json?.result) {
-    throw new Error(json?.message || "Respons tidak valid");
+  // Cari video URL
+  let videoUrl = null;
+
+  // Format 1: video_url di dalam JSON/script tag
+  const videoJsonMatch = html.match(/"video_url"\s*:\s*"([^"]+)"/);
+  if (videoJsonMatch) {
+    videoUrl = videoJsonMatch[1].replace(/\\u0026/g, "&").replace(/\\/g, "");
   }
 
-  const r = json.result;
+  // Format 2: src di dalam <video> tag
+  if (!videoUrl) {
+    const videoTagMatch = html.match(/<video[^>]+src=["']([^"']+)["']/i);
+    if (videoTagMatch) videoUrl = videoTagMatch[1];
+  }
 
-  // Tentukan tipe: video atau image
-  const isVideo = Array.isArray(r.videos) && r.videos.length > 0;
-  const isImage = Array.isArray(r.images) && r.images.length > 0;
+  // Format 3: href ke .mp4
+  if (!videoUrl) {
+    const mp4Match = html.match(/href=["'](https?:\/\/[^"']+\.mp4[^"']*?)["']/i);
+    if (mp4Match) videoUrl = mp4Match[1];
+  }
 
-  if (isVideo) {
+  if (videoUrl) {
+    // Cari thumbnail
+    const posterMatch =
+      html.match(/<video[^>]+poster=["']([^"']+)["']/i)?.[1] ||
+      html.match(/"thumbnail_url"\s*:\s*"([^"]+)"/)?.[1]?.replace(/\\u0026/g, "&").replace(/\\/g, "");
+
     return {
       status: true,
       code: 200,
       message: "Berhasil mengambil data media.",
       result: {
         type: "video",
-        url: r.videos[0],
-        download_url: r.videos[0],
-        thumbnail: r.thumb || null,
-        username: r.username || null,
-        // Audio (mp3) jika ada
-        audio: r.mp3?.[0]?.url || null,
+        url: decodeHtml(videoUrl),
+        download_url: decodeHtml(videoUrl),
+        thumbnail: posterMatch ? decodeHtml(posterMatch) : null,
       },
     };
   }
 
-  if (isImage) {
-    // Bisa multi-image (carousel)
+  // Cari image URL
+  const imgMatch =
+    html.match(/class="EmbeddedMediaImage"[^>]+src=["']([^"']+)["']/i) ||
+    html.match(/"display_url"\s*:\s*"([^"]+)"/);
+
+  if (imgMatch) {
+    const imgUrl = imgMatch[1].replace(/\\u0026/g, "&").replace(/\\/g, "");
     return {
       status: true,
       code: 200,
       message: "Berhasil mengambil data media.",
       result: {
         type: "image",
-        url: r.images[0],
-        download_url: r.images[0],
-        // Kalau carousel, kasih semua
-        images: r.images.length > 1 ? r.images : undefined,
-        thumbnail: r.thumb || null,
-        username: r.username || null,
+        url: decodeHtml(imgUrl),
+        download_url: decodeHtml(imgUrl),
+        thumbnail: null,
       },
     };
   }
 
-  throw new Error("Tidak ada video atau gambar dalam respons");
+  throw new Error("Media tidak ditemukan di embed Instagram");
 }
 
 // ── SOURCE 2: snapinsta.app ──────────────────────────────────
 async function fetchViaSnapinsta(url) {
   const homePage = await fetch("https://snapinsta.app/", {
-    headers: { "User-Agent": UA_DESKTOP },
+    headers: { "User-Agent": UA },
   });
   const homeHtml = await homePage.text();
 
@@ -158,7 +181,7 @@ async function fetchViaSnapinsta(url) {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": UA_MOBILE,
+      "User-Agent": UA,
       "Referer": "https://snapinsta.app/",
       "Origin": "https://snapinsta.app",
       "X-Requested-With": "XMLHttpRequest",
@@ -182,7 +205,7 @@ async function fetchViaSaveIG(url) {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": UA_MOBILE,
+      "User-Agent": UA,
       "Referer": "https://saveig.app/",
       "Origin": "https://saveig.app",
       "X-Requested-With": "XMLHttpRequest",
@@ -198,7 +221,7 @@ async function fetchViaSaveIG(url) {
   return parseHtmlToResult(json.data);
 }
 
-// ── PARSER HTML UNIVERSAL ─────────────────────────────────────
+// ── HELPERS ──────────────────────────────────────────────────
 function parseHtmlToResult(html) {
   const sourceSrc   = html.match(/<source[^>]+src=["']([^"']+)["']/i)?.[1];
   const videoPoster = html.match(/<video[^>]+poster=["']([^"']+)["']/i)?.[1];
@@ -242,4 +265,8 @@ function parseHtmlToResult(html) {
 
 function clean(str) {
   return str.replace(/\\"/g, "").replace(/\\\\"/g, "").trim();
+}
+
+function decodeHtml(str) {
+  return str.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").trim();
 }
