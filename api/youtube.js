@@ -1,9 +1,9 @@
 /**
- * YouTube Downloader API — via yozora yt-dlp
+ * YouTube Downloader API — via yt-dlp-exec
  * GET /api/youtube?url=https://www.youtube.com/watch?v=...
  */
 
-const YTDLP_API = "https://yozora.vercel.app/api/info";
+import ytDlp from "yt-dlp-exec";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -47,7 +47,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await fetchViaYtdlp(url, quality, audioOnly);
+    const result = await fetchViaYtDlp(url, quality, audioOnly);
     return res.status(200).json(result);
   } catch (err) {
     console.error("[YouTube]", err.message);
@@ -59,70 +59,72 @@ export default async function handler(req, res) {
   }
 }
 
-async function fetchViaYtdlp(url, quality, audioOnly) {
+async function fetchViaYtDlp(url, quality, audioOnly) {
   const format = audioOnly
     ? "bestaudio[ext=m4a]/bestaudio"
     : `bestvideo[height<=${quality}][ext=mp4]+bestaudio[ext=m4a]/best[height<=${quality}]/best`;
 
-  const apiUrl = `${YTDLP_API}?query=${encodeURIComponent(url)}&format=${encodeURIComponent(format)}`;
-
-  const resp = await fetch(apiUrl, {
-    headers: { "Accept": "application/json" },
+  const info = await ytDlp(url, {
+    dumpSingleJson: true,
+    noWarnings: true,
+    noCallHome: true,
+    format,
+    addHeader: ["referer:youtube.com", "user-agent:Mozilla/5.0"],
   });
-
-  if (!resp.ok) throw new Error(`yt-dlp API responded ${resp.status}`);
-
-  const data = await resp.json();
-  if (!data || data.error) throw new Error(data?.error || "Gagal mengambil data.");
 
   const videoId = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/)?.[1] ?? null;
   const isShorts = /\/shorts\//i.test(url);
-  const videoUrl = data.url || null;
-  const thumb = data.thumbnail || (videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null);
+  const thumb = info.thumbnail || (videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null);
 
-  // Cari format audio dan video terbaik dari list formats
-  const formats = data.formats || [];
-  const audioFormat = formats.find(f => f.vcodec === "none" && f.acodec !== "none");
-  const videoFormat = formats.find(f => f.vcodec !== "none" && f.height && f.height <= parseInt(quality));
+  const formats = info.formats || [];
+  const audioFormat = formats
+    .filter(f => f.vcodec === "none" && f.acodec !== "none" && f.url)
+    .sort((a, b) => (b.abr || 0) - (a.abr || 0))[0];
+  const videoFormat = formats
+    .filter(f => f.vcodec !== "none" && f.height && f.height <= parseInt(quality) && f.url)
+    .sort((a, b) => (b.height || 0) - (a.height || 0))[0];
+
+  const videoUrl = videoFormat?.url || info.url || null;
+  const audioUrl = audioFormat?.url || null;
 
   return {
     status: true,
     code: 200,
     message: "Berhasil mengambil data media.",
     author: {
-      username: data.uploader_id || data.uploader || null,
+      username: info.uploader_id || info.uploader || null,
       avatar: null,
-      channel_url: data.channel_url || null,
+      channel_url: info.channel_url || null,
     },
     video: {
       id: videoId,
-      title: data.title || null,
-      description: data.description ? data.description.slice(0, 300) : null,
-      duration: data.duration || null,
+      title: info.title || null,
+      description: info.description ? info.description.slice(0, 300) : null,
+      duration: info.duration || null,
       type: isShorts ? "shorts" : "video",
-      quality: quality,
+      quality,
       play: audioOnly ? null : videoUrl,
-      audio_only: audioOnly ? videoUrl : (audioFormat?.url || null),
+      audio_only: audioOnly ? videoUrl : null,
       cover: thumb,
-      filename: data.title ? `${data.title.slice(0, 50)}.mp4` : `youtube_${videoId}.mp4`,
+      filename: info.title ? `${info.title.slice(0, 50)}.mp4` : `youtube_${videoId}.mp4`,
     },
     audio: {
-      play: audioFormat?.url || null,
-      title: data.track || data.title || null,
-      author: data.artist || data.uploader || null,
+      play: audioUrl,
+      title: info.track || info.title || null,
+      author: info.artist || info.uploader || null,
     },
     stats: {
-      view_count: data.view_count || null,
-      like_count: data.like_count || null,
-      comment_count: data.comment_count || null,
+      view_count: info.view_count || null,
+      like_count: info.like_count || null,
+      comment_count: info.comment_count || null,
     },
     meta: {
       video_id: videoId,
       source_url: videoId ? `https://www.youtube.com/watch?v=${videoId}` : url,
       thumbnail_hq: videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : thumb,
       thumbnail_mq: videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null,
-      tags: data.tags?.slice(0, 10) || null,
-      categories: data.categories || null,
+      tags: info.tags?.slice(0, 10) || null,
+      categories: info.categories || null,
       provider: "yt-dlp",
     },
   };
