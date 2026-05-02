@@ -8,7 +8,7 @@
     "deploy": "vercel --prod"
   },
   "dependencies": {
-    "instagram-url-direct": "^2.0.7"
+    "cheerio": "^1.0.0"
   },
   "engines": {
     "node": "24.x"
