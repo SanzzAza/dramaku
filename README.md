@@ -1,6 +1,6 @@
 # MyAPI
 
-REST API sederhana untuk TikTok Downloader (dan lebih banyak endpoint ke depannya).
+REST API sederhhshshsana untuk TikTok Downloader (dan lebih banyak endpoint ke depannya).
 
 ## Struktur Folder
 
