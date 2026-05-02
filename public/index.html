@@ -1,157 +1,770 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤖 Shenira API</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TikTok DL API — Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #080c14;
+      --surface:   #0d1220;
+      --surface2:  #111827;
+      --border:    rgba(255,255,255,0.07);
+      --accent:    #00e5a0;
+      --accent2:   #0ea5e9;
+      --accent3:   #a78bfa;
+      --danger:    #f87171;
+      --warn:      #fbbf24;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --code-bg:   #060a10;
+      --radius:    12px;
+      --glow:      0 0 40px rgba(0,229,160,0.12);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── GRID BACKGROUND ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── GLOW ORBS ── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-1 { width: 600px; height: 600px; background: rgba(0,229,160,0.05); top: -200px; left: -200px; }
+    .orb-2 { width: 400px; height: 400px; background: rgba(14,165,233,0.06); top: 40%; right: -100px; }
+    .orb-3 { width: 300px; height: 300px; background: rgba(167,139,250,0.04); bottom: 10%; left: 30%; }
+
+    /* ── LAYOUT ── */
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 60px 0 48px;
+      text-align: center;
+      animation: fadeDown 0.7s ease both;
+    }
+
+    .logo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0,229,160,0.08);
+      border: 1px solid rgba(0,229,160,0.2);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .logo-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 6vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    h1 span { color: var(--accent); }
+
+    .subtitle {
+      font-size: 15px;
+      color: var(--muted);
+      max-width: 480px;
+      margin: 0 auto 32px;
+      line-height: 1.6;
+      font-weight: 400;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin: 48px 0 20px;
+      animation: fadeUp 0.5s ease both;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── ENDPOINT CARD ── */
+    .endpoint-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 16px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      animation: fadeUp 0.5s ease both;
+    }
+    .endpoint-card:hover {
+      border-color: rgba(0,229,160,0.2);
+      box-shadow: var(--glow);
+    }
+
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 20px 24px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .method-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+    .method-get  { background: rgba(0,229,160,0.12); color: var(--accent); border: 1px solid rgba(0,229,160,0.25); }
+    .method-post { background: rgba(14,165,233,0.12); color: var(--accent2); border: 1px solid rgba(14,165,233,0.25); }
+
+    .endpoint-path {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .endpoint-desc {
+      font-size: 13px;
+      color: var(--muted);
+      flex: 2;
+      text-align: right;
+    }
+
+    .toggle-icon {
+      color: var(--muted);
+      font-size: 18px;
+      transition: transform 0.3s;
+      flex-shrink: 0;
+    }
+    .endpoint-card.open .toggle-icon { transform: rotate(180deg); }
+
+    /* ── ENDPOINT BODY ── */
+    .endpoint-body {
+      display: none;
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      background: var(--surface2);
+    }
+    .endpoint-card.open .endpoint-body { display: block; }
+
+    /* ── PARAMS TABLE ── */
+    .params-title {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .params-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+    .params-table th {
+      text-align: left;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.03);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+    }
+    .params-table td {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .param-name  { font-family: 'JetBrains Mono', monospace; color: var(--accent); }
+    .param-type  { font-family: 'JetBrains Mono', monospace; color: var(--accent2); font-size: 12px; }
+    .badge-req   { background: rgba(248,113,113,0.12); color: var(--danger); border: 1px solid rgba(248,113,113,0.3); font-size: 10px; padding: 2px 7px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; }
+    .badge-opt   { background: rgba(100,116,139,0.12); color: var(--muted); border: 1px solid var(--border); font-size: 10px; padding: 2px 7px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; }
+
+    /* ── TRY IT ── */
+    .try-section { margin-top: 4px; }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .url-input {
+      flex: 1;
+      min-width: 200px;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .url-input::placeholder { color: var(--muted); }
+    .url-input:focus { border-color: rgba(0,229,160,0.4); }
+
+    .btn-execute {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: #000;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 12px 22px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+    .btn-execute:hover  { opacity: 0.88; }
+    .btn-execute:active { transform: scale(0.97); }
+    .btn-execute:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-execute svg { width: 14px; height: 14px; }
+
+    /* ── RESPONSE BOX ── */
+    .response-box {
+      display: none;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .response-box.visible { display: block; }
+
+    .response-topbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid var(--border);
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #febc2e; }
+    .dot-g { background: #28c840; }
+
+    .response-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-left: 4px;
+      flex: 1;
+    }
+
+    .status-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 5px;
+    }
+    .status-ok  { background: rgba(0,229,160,0.12); color: var(--accent); }
+    .status-err { background: rgba(248,113,113,0.12); color: var(--danger); }
+
+    .copy-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      padding: 3px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .response-code {
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--text);
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(0,0,0,0.3);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    /* ── CURL BOX ── */
+    .curl-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .curl-box span { color: var(--accent2); flex: 1; word-break: break-all; }
+    .btn-curl-copy {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      flex-shrink: 0;
+    }
+    .btn-curl-copy:hover { border-color: var(--accent2); color: var(--accent2); }
+
+    /* ── EXAMPLE RESPONSE ── */
+    .example-block {
+      margin-top: 24px;
+    }
+
+    /* ── BASE URL INFO ── */
+    .base-url-card {
+      background: var(--surface);
+      border: 1px solid rgba(0,229,160,0.15);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      animation: fadeUp 0.5s ease 0.1s both;
+    }
+    .base-url-label {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      flex-shrink: 0;
+    }
+    .base-url-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--accent);
+      flex: 1;
+    }
+    .badge-https {
+      background: rgba(0,229,160,0.08);
+      color: var(--accent);
+      border: 1px solid rgba(0,229,160,0.2);
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      flex-shrink: 0;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      margin-top: 80px;
+      padding: 32px 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+    footer p { font-size: 13px; color: var(--muted); }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── JSON SYNTAX HIGHLIGHT ── */
+    .json-key    { color: #a78bfa; }
+    .json-str    { color: #86efac; }
+    .json-num    { color: #fbbf24; }
+    .json-bool   { color: #f87171; }
+    .json-null   { color: #94a3b8; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .endpoint-desc { display: none; }
+      .stats-row { gap: 20px; }
+    }
+  </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-12">
-    <div class="max-w-4xl mx-auto px-6">
-        <div class="text-center mb-16">
-            <div class="inline-flex items-center gap-3 bg-white/80 px-8 py-4 rounded-3xl shadow-xl backdrop-blur-sm">
-                <span class="text-4xl">🤖</span>
-                <div>
-                    <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                        Shenira API
-                    </h1>
-                    <p class="text-lg text-gray-600 mt-1">AI Tools • Free • Fast • Vercel</p>
-                </div>
-            </div>
-        </div>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
 
-        <!-- TTS -->
-        <div class="bg-white/90 backdrop-blur-xl rounded-3xl p-10 mb-10 shadow-2xl border border-white/50">
-            <h2 class="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-4">
-                🔊 Text to Speech
-            </h2>
-            <textarea id="ttsText" rows="4" 
-                class="w-full p-6 text-xl border-2 border-gray-200 rounded-2xl focus:border-blue-500 focus:outline-none resize-vertical mb-6"
-                placeholder="Tulis apa saja... Contoh: 'Halo dunia, ini tes AI speech!'">Halo! Shenira API sudah live di Vercel! 🎉</textarea>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <select id="ttsLang" class="p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500">
-                    <option value="id-ID">🇮🇩 Indonesia</option>
-                    <option value="en-US">🇺🇸 English</option>
-                    <option value="es-ES">🇪🇸 Español</option>
-                </select>
-                <input type="range" id="ttsSpeed" min="0.5" max="2" step="0.1" value="1" class="col-span-1 md:col-span-2">
-                <span id="speedValue" class="text-xl font-bold text-center self-center">1.0x</span>
-            </div>
-            
-            <button onclick="textToSpeech()" 
-                class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-8 rounded-2xl text-2xl font-bold shadow-2xl hover:from-blue-600 hover:to-indigo-700 transform hover:scale-[1.02] transition-all duration-200">
-                🎙️ Buat Audio MP3
-            </button>
-            
-            <audio id="ttsAudio" controls class="w-full mt-8 p-4 bg-gray-50 rounded-2xl hidden"></audio>
-            <div id="ttsResult"></div>
-        </div>
+  <div class="wrapper">
 
-        <!-- OCR -->
-        <div class="bg-white/90 backdrop-blur-xl rounded-3xl p-10 shadow-2xl border border-white/50">
-            <h2 class="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-4">
-                🖼️ Image to Text
-            </h2>
-            <input type="file" id="ocrFile" accept="image/*" 
-                class="w-full p-6 border-2 border-gray-200 rounded-2xl mb-8 file:mr-6 file:py-6 file:px-10 file:rounded-xl file:border-0 file:bg-emerald-500 file:text-white hover:file:bg-emerald-600 text-xl">
-            
-            <button onclick="imageToText()" 
-                class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-8 rounded-2xl text-2xl font-bold shadow-2xl hover:from-emerald-600 hover:to-teal-700 transform hover:scale-[1.02] transition-all duration-200">
-                ✨ Ekstrak Teks
-            </button>
-            <div id="ocrResult"></div>
+    <!-- HEADER -->
+    <header>
+      <div class="logo-badge">v1.0.0 — Live API</div>
+      <h1>TikTok DL<br><span>API Documentation</span></h1>
+      <p class="subtitle">Download TikTok videos tanpa watermark. Fast, reliable, gratis — siap pakai di project kamu.</p>
+      <div class="stats-row">
+        <div class="stat">
+          <span class="stat-value">1</span>
+          <span class="stat-label">Endpoint</span>
         </div>
+        <div class="stat">
+          <span class="stat-value">GET</span>
+          <span class="stat-label">Method</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">JSON</span>
+          <span class="stat-label">Format</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">FREE</span>
+          <span class="stat-label">Access</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- BASE URL -->
+    <div class="section-label">Base URL</div>
+    <div class="base-url-card">
+      <span class="base-url-label">Base</span>
+      <span class="base-url-value" id="base-url">https://your-project.vercel.app</span>
+      <span class="badge-https">HTTPS</span>
     </div>
 
-    <script>
-        const API_BASE = '/api/v1';
-        
-        document.getElementById('ttsSpeed').addEventListener('input', (e) => {
-            document.getElementById('speedValue').textContent = e.target.value + 'x';
-        });
+    <!-- ENDPOINTS -->
+    <div class="section-label">Downloader</div>
 
-        function showResult(id, html, type = 'success') {
-            const div = document.getElementById(id);
-            const bg = type === 'success' ? 'bg-emerald-100 border-emerald-400' : 
-                      type === 'loading' ? 'bg-yellow-100 border-yellow-400' : 'bg-red-100 border-red-400';
-            div.innerHTML = `<div class="mt-8 p-8 rounded-2xl border-4 ${bg} text-xl">${html}</div>`;
-        }
+    <!-- TIKTOK ENDPOINT -->
+    <div class="endpoint-card" id="card-tiktok">
+      <div class="endpoint-header" onclick="toggleCard('card-tiktok')">
+        <span class="method-badge method-get">GET</span>
+        <span class="endpoint-path">/api/tiktok</span>
+        <span class="endpoint-desc">Download TikTok video tanpa watermark</span>
+        <span class="toggle-icon">▾</span>
+      </div>
+      <div class="endpoint-body">
 
-        async function textToSpeech() {
-            const text = document.getElementById('ttsText').value;
-            const lang = document.getElementById('ttsLang').value;
-            const speed = document.getElementById('ttsSpeed').value;
+        <!-- PARAMS -->
+        <p class="params-title">Parameters</p>
+        <table class="params-table">
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="param-name">url</td>
+              <td class="param-type">string</td>
+              <td><span class="badge-req">Required</span></td>
+              <td>URL video TikTok (vt.tiktok.com / vm.tiktok.com / www.tiktok.com)</td>
+            </tr>
+          </tbody>
+        </table>
 
-            if (!text.trim()) return alert('Tulis teks dulu! 😅');
+        <!-- CURL -->
+        <p class="params-title">cURL</p>
+        <div class="curl-box">
+          <span id="curl-text">curl "https://your-project.vercel.app/api/tiktok?url=https://vt.tiktok.com/ZS9mu8NkJ/"</span>
+          <button class="btn-curl-copy" onclick="copyCurl()">COPY</button>
+        </div>
 
-            showResult('ttsResult', '⏳ Membuat audio... (2-5 detik)', 'loading');
-            document.getElementById('ttsAudio').classList.add('hidden');
+        <!-- TRY IT -->
+        <p class="params-title">Try It</p>
+        <div class="try-section">
+          <div class="input-group">
+            <input
+              type="text"
+              class="url-input"
+              id="tiktok-url-input"
+              placeholder="https://vt.tiktok.com/ZS9mu8NkJ/"
+            />
+            <button class="btn-execute" id="btn-exec" onclick="executeAPI()">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
+              EXECUTE
+            </button>
+          </div>
+          <div class="response-box" id="response-box">
+            <div class="response-topbar">
+              <span class="dot dot-r"></span>
+              <span class="dot dot-y"></span>
+              <span class="dot dot-g"></span>
+              <span class="response-label">JSON Response</span>
+              <span class="status-badge" id="status-badge"></span>
+              <button class="copy-btn" onclick="copyResponse()">COPY</button>
+            </div>
+            <div class="response-code" id="response-code"></div>
+          </div>
+        </div>
 
-            try {
-                const response = await fetch(`${API_BASE}/text-to-speech`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text, lang, speed })
-                });
+        <!-- EXAMPLE RESPONSE -->
+        <div class="example-block">
+          <p class="params-title">Example Response (200 OK)</p>
+          <div class="response-box visible">
+            <div class="response-topbar">
+              <span class="dot dot-r"></span>
+              <span class="dot dot-y"></span>
+              <span class="dot dot-g"></span>
+              <span class="response-label">application/json</span>
+              <span class="status-badge status-ok">200 OK</span>
+            </div>
+            <div class="response-code" id="example-json"></div>
+          </div>
+        </div>
 
-                const data = await response.json();
-                
-                if (data.success) {
-                    const audio = document.getElementById('ttsAudio');
-                    audio.src = data.url + '?t=' + Date.now();
-                    audio.classList.remove('hidden');
-                    showResult('ttsResult', `
-                        ✅ <strong>Audio Siap!</strong><br>
-                        <a href="${data.url}" class="block mt-4 p-4 bg-blue-500 text-white rounded-xl text-center font-bold hover:bg-blue-600" target="_blank">
-                            📥 Download MP3
-                        </a>
-                    `);
-                    audio.play();
-                } else {
-                    throw new Error(data.error || 'Unknown error');
-                }
-            } catch (error) {
-                showResult('ttsResult', `❌ ${error.message}`, 'error');
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+      <p>Built with ☕ · Powered by <a href="https://vercel.com" target="_blank">Vercel</a></p>
+    </footer>
+  </div>
+
+  <script>
+    // ── SET BASE URL DYNAMICALLY ──
+    const baseUrl = window.location.origin;
+    document.getElementById('base-url').textContent = baseUrl;
+    document.getElementById('curl-text').textContent =
+      `curl "${baseUrl}/api/tiktok?url=https://vt.tiktok.com/ZS9mu8NkJ/"`;
+
+    // ── TOGGLE CARD ──
+    function toggleCard(id) {
+      const card = document.getElementById(id);
+      card.classList.toggle('open');
+    }
+    // Open by default
+    document.getElementById('card-tiktok').classList.add('open');
+
+    // ── SYNTAX HIGHLIGHT ──
+    function highlight(json) {
+      return json
+        .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+\.?\d*([eE][+\-]?\d+)?)/g,
+          match => {
+            if (/^"/.test(match)) {
+              if (/:$/.test(match)) return `<span class="json-key">${match}</span>`;
+              return `<span class="json-str">${match}</span>`;
             }
+            if (/true|false/.test(match)) return `<span class="json-bool">${match}</span>`;
+            if (/null/.test(match)) return `<span class="json-null">${match}</span>`;
+            return `<span class="json-num">${match}</span>`;
+          });
+    }
+
+    // ── EXECUTE API ──
+    async function executeAPI() {
+      const urlVal = document.getElementById('tiktok-url-input').value.trim();
+      if (!urlVal) {
+        alert('Masukkan URL TikTok terlebih dahulu!');
+        return;
+      }
+
+      const btn = document.getElementById('btn-exec');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Loading...';
+
+      const resBox   = document.getElementById('response-box');
+      const resCode  = document.getElementById('response-code');
+      const resBadge = document.getElementById('status-badge');
+
+      resBox.classList.add('visible');
+      resCode.textContent = 'Fetching data...';
+      resBadge.className = 'status-badge';
+      resBadge.textContent = '';
+
+      try {
+        const endpoint = `${baseUrl}/api/tiktok?url=${encodeURIComponent(urlVal)}`;
+        const resp = await fetch(endpoint);
+        const data = await resp.json();
+
+        const pretty = JSON.stringify(data, null, 2);
+        resCode.innerHTML = highlight(pretty);
+
+        if (resp.ok && data.status) {
+          resBadge.className = 'status-badge status-ok';
+          resBadge.textContent = `${resp.status} OK`;
+        } else {
+          resBadge.className = 'status-badge status-err';
+          resBadge.textContent = `${resp.status} Error`;
         }
+      } catch (err) {
+        resCode.textContent = `Error: ${err.message}`;
+        resBadge.className = 'status-badge status-err';
+        resBadge.textContent = 'Network Error';
+      }
 
-        async function imageToText() {
-            const file = document.getElementById('ocrFile').files[0];
-            if (!file) return alert('Pilih gambar dulu! 📸');
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg> EXECUTE';
+    }
 
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                showResult('ocrResult', '⏳ Menganalisa gambar... (5-10 detik)', 'loading');
+    // ── COPY RESPONSE ──
+    function copyResponse() {
+      const text = document.getElementById('response-code').textContent;
+      navigator.clipboard.writeText(text).then(() => alert('Response di-copy!'));
+    }
 
-                try {
-                    const response = await fetch(`${API_BASE}/image-to-text`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ image: e.target.result })
-                    });
+    // ── COPY CURL ──
+    function copyCurl() {
+      const text = document.getElementById('curl-text').textContent;
+      navigator.clipboard.writeText(text).then(() => alert('cURL di-copy!'));
+    }
 
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        showResult('ocrResult', `
-                            ✅ <strong>Teks Ditemukan!</strong><br>
-                            <div class="mt-6 p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl font-mono text-lg border">
-                                ${data.text || 'Tidak ada teks'}
-                            </div>
-                            <div class="mt-4 text-sm text-gray-600">
-                                📊 Confidence: ${data.confidence}% | Words: ${data.words}
-                            </div>
-                        `);
-                    } else {
-                        throw new Error(data.error);
-                    }
-                } catch (error) {
-                    showResult('ocrResult', `❌ ${error.message}`, 'error');
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-    </script>
+    // ── ENTER KEY ON INPUT ──
+    document.getElementById('tiktok-url-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') executeAPI();
+    });
+
+    // ── EXAMPLE JSON ──
+    const example = {
+      status: true,
+      code: 200,
+      message: "Berhasil mengambil data video.",
+      author: {
+        uid: "6763749574765922305",
+        username: "savero.mlbb",
+        nickname: "savero 🔥",
+        verified: false
+      },
+      video: {
+        id: "7634919645799009557",
+        title: "seperti biasa savero mengacak acak mpl ph 😎🤩🔥 #MLBB",
+        duration: 23,
+        cover: "https://p16-sign.tiktokcdn-us.com/...",
+        play: "https://api-h2.tiktokcdn-us.com/...",
+        hdplay: "https://api-h2.tiktokcdn-us.com/...",
+        size: 4156606,
+        hd_size: 2238679
+      },
+      audio: {
+        title: "original sound - sahabat.esport.idn",
+        author: "sahabat.esport.idn",
+        play: "https://p19.tiktokcdn-us.com/..."
+      },
+      stats: {
+        play_count: 128400,
+        like_count: 8923,
+        comment_count: 142,
+        share_count: 67
+      }
+    };
+    document.getElementById('example-json').innerHTML = highlight(JSON.stringify(example, null, 2));
+  </script>
 </body>
 </html>
