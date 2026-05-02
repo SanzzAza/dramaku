@@ -78,6 +78,7 @@ async function fetchTikTok(url) {
   const d = json.data;
 
   return {
+    author: "@SanzXD",
     status: true,
     code: 200,
     message: "Berhasil mengambil data video.",
