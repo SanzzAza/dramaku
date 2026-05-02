@@ -1,9 +1,7 @@
 /**
- * Instagram Downloader API — via yt-dlp-exec
+ * Instagram Downloader API — via Cobalt API (no binary needed, works on Vercel)
  * GET /api/instagram?url=https://www.instagram.com/reel/...
  */
-
-import ytDlp from "yt-dlp-exec";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -45,7 +43,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await fetchViaYtDlp(url);
+    const result = await fetchViaCobalt(url);
     return res.status(200).json(result);
   } catch (err) {
     console.error("[Instagram]", err.message);
@@ -57,63 +55,85 @@ export default async function handler(req, res) {
   }
 }
 
-async function fetchViaYtDlp(url) {
-  const info = await ytDlp(url, {
-    dumpSingleJson: true,
-    noWarnings: true,
-    noCallHome: true,
-    preferFreeFormats: true,
-    addHeader: ["referer:instagram.com", "user-agent:Mozilla/5.0"],
-  });
-
+async function fetchViaCobalt(url) {
   const shortcode = url.match(/\/(p|reel|tv|stories)\/([^/?]+)/)?.[2] ?? null;
 
-  // Ambil video URL terbaik
-  const formats = info.formats || [];
-  const videoFormat = formats
-    .filter(f => f.vcodec !== "none" && f.url)
-    .sort((a, b) => (b.height || 0) - (a.height || 0))[0];
-  const audioFormat = formats
-    .filter(f => f.vcodec === "none" && f.acodec !== "none" && f.url)[0];
+  // Cobalt API — free, no API key needed
+  const cobaltRes = await fetch("https://api.cobalt.tools/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      url,
+      downloadMode: "auto",
+    }),
+  });
 
-  const videoUrl = videoFormat?.url || info.url || null;
-  const audioUrl = audioFormat?.url || null;
-  const thumb = info.thumbnail || null;
+  if (!cobaltRes.ok) {
+    throw new Error(`Cobalt API responded ${cobaltRes.status}`);
+  }
+
+  const cobalt = await cobaltRes.json();
+
+  if (cobalt.status === "error") {
+    throw new Error(cobalt.error?.code || "Media tidak dapat diproses.");
+  }
+
+  // Cobalt bisa return "stream", "redirect", atau "picker" (carousel/multiple)
+  let mediaUrl = null;
+  let mediaItems = null;
+
+  if (cobalt.status === "picker" && cobalt.picker?.length) {
+    // Instagram carousel — return semua item
+    mediaItems = cobalt.picker.map((item, i) => ({
+      index: i + 1,
+      type: item.type || "video",
+      url: item.url || null,
+      thumb: item.thumb || null,
+    }));
+    mediaUrl = cobalt.picker[0]?.url || null;
+  } else {
+    mediaUrl = cobalt.url || null;
+  }
 
   return {
     status: true,
     code: 200,
     message: "Berhasil mengambil data media.",
     author: {
-      username: info.uploader_id || info.uploader || null,
+      username: null,
       avatar: null,
       verified: null,
     },
     video: {
-      play: videoUrl,
-      hdplay: videoUrl,
+      play: mediaUrl,
+      hdplay: mediaUrl,
       wmplay: null,
-      cover: thumb,
-      title: info.title || null,
-      duration: info.duration || null,
-      filename: `instagram_${shortcode}.mp4`,
+      cover: null,
+      title: null,
+      duration: null,
+      filename: `instagram_${shortcode || "media"}.mp4`,
     },
     audio: {
-      play: audioUrl,
-      title: info.track || null,
-      author: info.artist || null,
+      play: null,
+      title: null,
+      author: null,
     },
     stats: {
-      play_count: info.view_count || null,
-      like_count: info.like_count || null,
-      comment_count: info.comment_count || null,
+      play_count: null,
+      like_count: null,
+      comment_count: null,
       share_count: null,
     },
+    // Untuk carousel/multi-media post
+    ...(mediaItems ? { items: mediaItems } : {}),
     meta: {
       shortcode,
       source_url: url,
-      thumbnail: thumb,
-      provider: "yt-dlp",
+      thumbnail: null,
+      provider: "cobalt",
     },
   };
 }
