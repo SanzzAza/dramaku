@@ -1,11 +1,11 @@
 /**
- * YouTube Downloader API — via youtubei.js (no 3rd party services)
+ * YouTube Downloader API — via youtubei.js
  * GET /api/youtube?url=https://www.youtube.com/watch?v=...
  * GET /api/youtube?url=...&quality=720        (360, 480, 720, 1080)
- * GET /api/youtube?url=...&audio_only=true    (mp3/audio)
+ * GET /api/youtube?url=...&audio_only=true
  */
 
-import { Innertube } from "youtubei.js";
+import { Innertube, ClientType } from "youtubei.js";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -14,12 +14,11 @@ const CORS_HEADERS = {
   "Content-Type": "application/json",
 };
 
-// Singleton agar tidak init ulang tiap request
 let _yt = null;
 async function getInnertube() {
   if (!_yt) {
     _yt = await Innertube.create({
-      retrieve_player: true,
+      retrieve_player: false,       // skip player JS fetch (yang sering 403)
       generate_session_locally: true,
     });
   }
@@ -44,8 +43,7 @@ export default async function handler(req, res) {
 
   if (!url) {
     return res.status(400).json({
-      status: false,
-      code: 400,
+      status: false, code: 400,
       message: "Parameter 'url' wajib diisi.",
       example: "/api/youtube?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     });
@@ -54,8 +52,7 @@ export default async function handler(req, res) {
   const ytRegex = /^https?:\/\/(www\.)?(youtube\.com\/(watch|shorts|embed)|youtu\.be)\/.+/i;
   if (!ytRegex.test(url)) {
     return res.status(400).json({
-      status: false,
-      code: 400,
+      status: false, code: 400,
       message: "URL tidak valid. Masukkan link YouTube, YouTube Shorts, atau youtu.be.",
     });
   }
@@ -66,39 +63,10 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error("[YouTube]", err.message);
     return res.status(500).json({
-      status: false,
-      code: 500,
+      status: false, code: 500,
       message: err.message || "Gagal mengambil media.",
     });
   }
-}
-
-// ── Pilih format video terbaik sesuai quality yang diminta ──
-function pickVideoFormat(formats, targetQuality) {
-  const order = [targetQuality, "1080", "720", "480", "360", "240"];
-
-  for (const q of order) {
-    const label = `${q}p`;
-    const match = formats.find(
-      (f) =>
-        f.quality_label === label &&
-        f.url &&
-        (f.mime_type?.includes("video/mp4") || f.mime_type?.includes("video/webm"))
-    );
-    if (match) return { format: match, resolvedQuality: q };
-  }
-
-  const fallback = formats.find((f) => f.mime_type?.includes("video") && f.url);
-  return fallback
-    ? { format: fallback, resolvedQuality: fallback.quality_label || "auto" }
-    : { format: null, resolvedQuality: "auto" };
-}
-
-// ── Pilih format audio terbaik ──
-function pickAudioFormat(adaptiveFormats) {
-  return adaptiveFormats
-    .filter((f) => f.mime_type?.includes("audio/") && f.url)
-    .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0))[0] || null;
 }
 
 async function fetchYoutube(url, quality, audioOnly) {
@@ -106,28 +74,76 @@ async function fetchYoutube(url, quality, audioOnly) {
   if (!videoId) throw new Error("Tidak dapat mengambil video ID dari URL.");
 
   const isShorts = /\/shorts\//i.test(url);
+  const yt = await getInnertube();
 
-  const yt    = await getInnertube();
-  const info  = await yt.getBasicInfo(videoId);
-  const basic = info.basic_info;
+  // Gunakan ANDROID client — paling reliable untuk dapat streaming URL langsung
+  const info = await yt.getBasicInfo(videoId, 'ANDROID');
+
+  const basic     = info.basic_info;
   const streaming = info.streaming_data;
 
-  if (!streaming) throw new Error("Streaming data tidak tersedia untuk video ini.");
+  // Jika ANDROID gagal, coba TV_EMBEDDED sebagai fallback
+  if (!streaming) {
+    const info2 = await yt.getBasicInfo(videoId, 'TV_EMBEDDED');
+    if (!info2.streaming_data) {
+      throw new Error("Streaming data tidak tersedia. Video mungkin private, region-locked, atau age-restricted.");
+    }
+    return buildResult({ videoId, isShorts, basic: info2.basic_info, streaming: info2.streaming_data, quality, audioOnly });
+  }
 
+  return buildResult({ videoId, isShorts, basic, streaming, quality, audioOnly });
+}
+
+function pickVideoFormat(formats, targetQuality) {
+  const priorities = [targetQuality, "1080", "720", "480", "360", "240"];
+  for (const q of priorities) {
+    const match = formats.find(
+      f => f.quality_label === `${q}p` && f.url &&
+           (f.mime_type?.includes("video/mp4") || f.mime_type?.includes("video/webm"))
+    );
+    if (match) return { format: match, resolvedQuality: q };
+  }
+  const fallback = formats.find(f => f.mime_type?.includes("video") && f.url);
+  return { format: fallback || null, resolvedQuality: fallback?.quality_label || "auto" };
+}
+
+function pickAudioFormat(formats) {
+  return formats
+    .filter(f => f.mime_type?.includes("audio/") && f.url)
+    .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0))[0] || null;
+}
+
+function buildResult({ videoId, isShorts, basic, streaming, quality, audioOnly }) {
   const formats         = streaming.formats         || [];
   const adaptiveFormats = streaming.adaptive_formats || [];
 
-  // Thumbnail terbaik
   const thumbs    = basic.thumbnail || [];
   const bestThumb = thumbs.sort((a, b) => (b.width || 0) - (a.width || 0))[0];
   const thumbHQ   = bestThumb?.url || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 
-  const channelId  = basic.channel_id || null;
-  const channelUrl = channelId ? `https://www.youtube.com/channel/${channelId}` : null;
+  const channelUrl = basic.channel_id
+    ? `https://www.youtube.com/channel/${basic.channel_id}`
+    : null;
 
-  const safeTitle = basic.title
-    ? basic.title.slice(0, 50).replace(/[\\/:*?"<>|]/g, "_")
-    : `youtube_${videoId}`;
+  const safeTitle = (basic.title || `youtube_${videoId}`)
+    .slice(0, 50)
+    .replace(/[\\/:*?"<>|]/g, "_");
+
+  const stats = {
+    view_count:    basic.view_count    || null,
+    like_count:    basic.like_count    || null,
+    comment_count: null,
+    is_live:       basic.is_live       || false,
+  };
+
+  const meta = {
+    video_id:      videoId,
+    source_url:    `https://www.youtube.com/watch?v=${videoId}`,
+    thumbnail_hq:  thumbHQ,
+    thumbnail_mq:  `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+    is_shorts:     isShorts,
+    provider:      "youtubei.js",
+  };
 
   // ── Audio only ──
   if (audioOnly) {
@@ -135,113 +151,58 @@ async function fetchYoutube(url, quality, audioOnly) {
     if (!audioFmt?.url) throw new Error("Format audio tidak tersedia.");
 
     return {
-      status: true,
-      code: 200,
+      status: true, code: 200,
       message: "Berhasil mengambil data media.",
-      author: {
-        username: basic.author || null,
-        avatar: null,
-        channel_url: channelUrl,
-      },
-      video: {
-        id: videoId,
-        title: basic.title || null,
-        duration: basic.duration || null,
-        type: isShorts ? "shorts" : "video",
-        quality: null,
-        play: null,
-        audio_only: audioFmt.url,
-        cover: thumbHQ,
+      author:  { username: basic.author || null, avatar: null, channel_url: channelUrl },
+      video:   {
+        id: videoId, title: basic.title || null, duration: basic.duration || null,
+        type: isShorts ? "shorts" : "video", quality: null,
+        play: null, audio_only: audioFmt.url, cover: thumbHQ,
         filename: `${safeTitle}.mp3`,
       },
-      audio: {
-        play: audioFmt.url,
-        bitrate: audioFmt.bitrate || null,
-        mime_type: audioFmt.mime_type || null,
-        title: null,
-        author: basic.author || null,
-      },
-      stats: {
-        view_count: basic.view_count || null,
-        like_count: basic.like_count || null,
-        comment_count: null,
-        is_live: basic.is_live || false,
-      },
-      meta: {
-        video_id: videoId,
-        source_url: `https://www.youtube.com/watch?v=${videoId}`,
-        thumbnail_hq: thumbHQ,
-        thumbnail_mq: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-        is_shorts: isShorts,
-        provider: "youtubei.js",
-      },
+      audio: { play: audioFmt.url, bitrate: audioFmt.bitrate || null, mime_type: audioFmt.mime_type || null, author: basic.author || null },
+      stats, meta,
     };
   }
 
-  // ── Video mode: coba muxed dulu (video+audio 1 file) ──
-  let videoUrl = null;
-  let audioUrl = null;
-  let resolvedQuality = quality;
-  let note = "";
+  // ── Video: coba muxed dulu ──
+  const { format: muxed, resolvedQuality: muxedQ } = pickVideoFormat(formats, quality);
 
-  const { format: muxedFmt, resolvedQuality: muxedQ } = pickVideoFormat(formats, quality);
-
-  if (muxedFmt?.url) {
-    videoUrl = muxedFmt.url;
-    resolvedQuality = muxedQ;
-    note = "muxed — video+audio dalam 1 file";
-  } else {
-    // Fallback adaptive (video dan audio terpisah)
-    const { format: adaptiveVideo, resolvedQuality: adaptiveQ } = pickVideoFormat(adaptiveFormats, quality);
-    const audioFmt = pickAudioFormat(adaptiveFormats);
-
-    if (!adaptiveVideo?.url) throw new Error("Format video tidak tersedia.");
-
-    videoUrl = adaptiveVideo.url;
-    audioUrl = audioFmt?.url || null;
-    resolvedQuality = adaptiveQ;
-    note = "adaptive — video dan audio terpisah, perlu di-mux oleh client";
+  if (muxed?.url) {
+    return {
+      status: true, code: 200,
+      message: "Berhasil mengambil data media.",
+      author:  { username: basic.author || null, avatar: null, channel_url: channelUrl },
+      video: {
+        id: videoId, title: basic.title || null, duration: basic.duration || null,
+        type: isShorts ? "shorts" : "video", quality: muxedQ,
+        play: muxed.url, audio_only: null, cover: thumbHQ,
+        filename: `${safeTitle}.mp4`,
+        note: "muxed — video+audio dalam 1 file",
+      },
+      audio: { play: null, author: basic.author || null },
+      stats, meta,
+    };
   }
 
+  // ── Fallback adaptive ──
+  const { format: adaptiveVideo, resolvedQuality: adaptiveQ } = pickVideoFormat(adaptiveFormats, quality);
+  const audioFmt = pickAudioFormat(adaptiveFormats);
+
+  if (!adaptiveVideo?.url) throw new Error("Format video tidak tersedia.");
+
   return {
-    status: true,
-    code: 200,
+    status: true, code: 200,
     message: "Berhasil mengambil data media.",
-    author: {
-      username: basic.author || null,
-      avatar: null,
-      channel_url: channelUrl,
-    },
+    author:  { username: basic.author || null, avatar: null, channel_url: channelUrl },
     video: {
-      id: videoId,
-      title: basic.title || null,
-      duration: basic.duration || null,
-      type: isShorts ? "shorts" : "video",
-      quality: resolvedQuality,
-      play: videoUrl,
-      audio_only: audioUrl,
-      cover: thumbHQ,
+      id: videoId, title: basic.title || null, duration: basic.duration || null,
+      type: isShorts ? "shorts" : "video", quality: adaptiveQ,
+      play: adaptiveVideo.url, audio_only: audioFmt?.url || null, cover: thumbHQ,
       filename: `${safeTitle}.mp4`,
-      note,
+      note: "adaptive — video dan audio terpisah",
     },
-    audio: {
-      play: audioUrl,
-      title: null,
-      author: basic.author || null,
-    },
-    stats: {
-      view_count: basic.view_count || null,
-      like_count: basic.like_count || null,
-      comment_count: null,
-      is_live: basic.is_live || false,
-    },
-    meta: {
-      video_id: videoId,
-      source_url: `https://www.youtube.com/watch?v=${videoId}`,
-      thumbnail_hq: thumbHQ,
-      thumbnail_mq: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-      is_shorts: isShorts,
-      provider: "youtubei.js",
-    },
+    audio: { play: audioFmt?.url || null, author: basic.author || null },
+    stats, meta,
   };
 }
