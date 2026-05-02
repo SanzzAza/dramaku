@@ -3,49 +3,63 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TikTok DL API — Documentation</title>
+  <title>SanzXD API — Media Downloader</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg:        #080c14;
-      --surface:   #0d1220;
-      --surface2:  #111827;
-      --border:    rgba(255,255,255,0.07);
-      --accent:    #00e5a0;
-      --accent2:   #0ea5e9;
-      --accent3:   #a78bfa;
-      --danger:    #f87171;
-      --warn:      #fbbf24;
-      --text:      #e2e8f0;
-      --muted:     #64748b;
-      --code-bg:   #060a10;
-      --radius:    12px;
-      --glow:      0 0 40px rgba(0,229,160,0.12);
+      --bg:       #05070f;
+      --bg2:      #080c18;
+      --surface:  #0c1122;
+      --surface2: #101828;
+      --border:   rgba(99,102,241,0.12);
+      --border2:  rgba(99,102,241,0.25);
+      --indigo:   #6366f1;
+      --violet:   #8b5cf6;
+      --cyan:     #22d3ee;
+      --green:    #10b981;
+      --rose:     #f43f5e;
+      --amber:    #f59e0b;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --muted2:   #94a3b8;
+      --mono:     'JetBrains Mono', monospace;
+      --sans:     'Outfit', sans-serif;
+      --r:        14px;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     html { scroll-behavior: smooth; }
 
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: 'Syne', sans-serif;
+      font-family: var(--sans);
       min-height: 100vh;
       overflow-x: hidden;
     }
 
-    /* ── GRID BACKGROUND ── */
+    /* ── NOISE TEXTURE ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* ── GRID ── */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
       background-image:
-        linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
+        linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
       pointer-events: none;
       z-index: 0;
     }
@@ -54,454 +68,580 @@
     .orb {
       position: fixed;
       border-radius: 50%;
-      filter: blur(120px);
+      filter: blur(100px);
       pointer-events: none;
       z-index: 0;
     }
-    .orb-1 { width: 600px; height: 600px; background: rgba(0,229,160,0.05); top: -200px; left: -200px; }
-    .orb-2 { width: 400px; height: 400px; background: rgba(14,165,233,0.06); top: 40%; right: -100px; }
-    .orb-3 { width: 300px; height: 300px; background: rgba(167,139,250,0.04); bottom: 10%; left: 30%; }
+    .orb-1 { width: 700px; height: 700px; background: rgba(99,102,241,0.08); top: -300px; left: -200px; }
+    .orb-2 { width: 500px; height: 500px; background: rgba(139,92,246,0.07); top: 50%; right: -150px; }
+    .orb-3 { width: 400px; height: 400px; background: rgba(34,211,238,0.05); bottom: 5%; left: 20%; }
 
-    /* ── LAYOUT ── */
-    .wrapper {
-      position: relative;
-      z-index: 1;
-      max-width: 900px;
+    /* ── NAVBAR ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      background: rgba(5,7,15,0.8);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1000px;
       margin: 0 auto;
-      padding: 0 20px 80px;
-    }
-
-    /* ── HEADER ── */
-    header {
-      padding: 60px 0 48px;
-      text-align: center;
-      animation: fadeDown 0.7s ease both;
-    }
-
-    .logo-badge {
-      display: inline-flex;
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
       align-items: center;
-      gap: 8px;
-      background: rgba(0,229,160,0.08);
-      border: 1px solid rgba(0,229,160,0.2);
-      border-radius: 100px;
-      padding: 6px 16px;
-      font-size: 11px;
-      font-family: 'JetBrains Mono', monospace;
-      color: var(--accent);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 20px;
+      justify-content: space-between;
     }
-    .logo-badge::before {
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+    }
+    .nav-logo-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .nav-logo span { color: var(--indigo); }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .nav-links a {
+      color: var(--muted2);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: color 0.2s, background 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+    .nav-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(99,102,241,0.12);
+      border: 1px solid var(--border2);
+      color: var(--indigo);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-family: var(--mono);
+    }
+    .nav-badge::before {
       content: '';
       width: 6px; height: 6px;
-      background: var(--accent);
+      background: var(--green);
       border-radius: 50%;
       animation: pulse 2s infinite;
     }
 
-    h1 {
-      font-size: clamp(2rem, 6vw, 3.2rem);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1.1;
-      margin-bottom: 16px;
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 80px 24px 64px;
+      text-align: center;
     }
-    h1 span { color: var(--accent); }
-
-    .subtitle {
-      font-size: 15px;
-      color: var(--muted);
-      max-width: 480px;
-      margin: 0 auto 32px;
-      line-height: 1.6;
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(99,102,241,0.08);
+      border: 1px solid var(--border2);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--indigo);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      animation: fadeDown 0.6s ease both;
+    }
+    .hero h1 {
+      font-size: clamp(2.4rem, 7vw, 4rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      margin-bottom: 20px;
+      animation: fadeDown 0.6s 0.1s ease both;
+    }
+    .hero h1 .grad {
+      background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 50%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: 16px;
+      color: var(--muted2);
+      max-width: 500px;
+      margin: 0 auto 36px;
+      line-height: 1.7;
       font-weight: 400;
+      animation: fadeDown 0.6s 0.2s ease both;
     }
+    .hero-sub strong { color: var(--text); font-weight: 600; }
 
-    .stats-row {
+    .hero-ctas {
       display: flex;
       justify-content: center;
-      gap: 32px;
+      gap: 12px;
       flex-wrap: wrap;
+      animation: fadeDown 0.6s 0.3s ease both;
     }
-    .stat {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-    }
-    .stat-value {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 20px;
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      color: #fff;
       font-weight: 700;
-      color: var(--accent);
+      font-size: 14px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      letter-spacing: 0.01em;
+      transition: opacity 0.2s, transform 0.2s;
+      box-shadow: 0 0 30px rgba(99,102,241,0.3);
     }
-    .stat-label {
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border2);
+      color: var(--muted2);
+      font-weight: 600;
+      font-size: 14px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-ghost:hover { border-color: rgba(99,102,241,0.5); color: var(--text); }
+
+    /* ── STATS STRIP ── */
+    .stats-strip {
+      position: relative; z-index: 1;
+      max-width: 1000px;
+      margin: 0 auto 64px;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+    .stat-item {
+      background: var(--surface);
+      padding: 24px;
+      text-align: center;
+      transition: background 0.2s;
+    }
+    .stat-item:hover { background: var(--surface2); }
+    .stat-val {
+      font-size: 28px;
+      font-weight: 800;
+      font-family: var(--mono);
+      background: linear-gradient(135deg, var(--indigo), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
+    }
+    .stat-lbl {
       font-size: 11px;
       color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
+      margin-top: 4px;
+      font-weight: 600;
     }
 
-    /* ── SECTION LABEL ── */
-    .section-label {
+    /* ── FEATURE CARDS ── */
+    .features {
+      position: relative; z-index: 1;
+      max-width: 1000px;
+      margin: 0 auto 72px;
+      padding: 0 24px;
+    }
+    .section-title {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--indigo);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      font-weight: 700;
       display: flex;
       align-items: center;
       gap: 12px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      margin: 48px 0 20px;
-      animation: fadeUp 0.5s ease both;
+      margin-bottom: 24px;
     }
-    .section-label::after {
+    .section-title::after {
       content: '';
       flex: 1;
       height: 1px;
       background: var(--border);
     }
-
-    /* ── ENDPOINT CARD ── */
-    .endpoint-card {
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .feat-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      margin-bottom: 16px;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      border-radius: var(--r);
+      padding: 24px;
+      transition: border-color 0.2s, transform 0.2s;
       animation: fadeUp 0.5s ease both;
     }
-    .endpoint-card:hover {
-      border-color: rgba(0,229,160,0.2);
-      box-shadow: var(--glow);
-    }
-
-    .endpoint-header {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 20px 24px;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .method-badge {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 6px;
-      letter-spacing: 0.05em;
-      flex-shrink: 0;
-    }
-    .method-get  { background: rgba(0,229,160,0.12); color: var(--accent); border: 1px solid rgba(0,229,160,0.25); }
-    .method-post { background: rgba(14,165,233,0.12); color: var(--accent2); border: 1px solid rgba(14,165,233,0.25); }
-
-    .endpoint-path {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 14px;
-      color: var(--text);
-      flex: 1;
-    }
-
-    .endpoint-desc {
-      font-size: 13px;
-      color: var(--muted);
-      flex: 2;
-      text-align: right;
-    }
-
-    .toggle-icon {
-      color: var(--muted);
+    .feat-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+    .feat-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
       font-size: 18px;
-      transition: transform 0.3s;
-      flex-shrink: 0;
+      margin-bottom: 14px;
     }
-    .endpoint-card.open .toggle-icon { transform: rotate(180deg); }
-
-    /* ── ENDPOINT BODY ── */
-    .endpoint-body {
-      display: none;
-      border-top: 1px solid var(--border);
-      padding: 24px;
-      background: var(--surface2);
-    }
-    .endpoint-card.open .endpoint-body { display: block; }
-
-    /* ── PARAMS TABLE ── */
-    .params-title {
-      font-size: 11px;
-      font-family: 'JetBrains Mono', monospace;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 12px;
-    }
-
-    .params-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 24px;
-      font-size: 13px;
-    }
-    .params-table th {
-      text-align: left;
-      padding: 8px 12px;
-      background: rgba(255,255,255,0.03);
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      border: 1px solid var(--border);
-    }
-    .params-table td {
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      color: var(--text);
-    }
-    .param-name  { font-family: 'JetBrains Mono', monospace; color: var(--accent); }
-    .param-type  { font-family: 'JetBrains Mono', monospace; color: var(--accent2); font-size: 12px; }
-    .badge-req   { background: rgba(248,113,113,0.12); color: var(--danger); border: 1px solid rgba(248,113,113,0.3); font-size: 10px; padding: 2px 7px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; }
-    .badge-opt   { background: rgba(100,116,139,0.12); color: var(--muted); border: 1px solid var(--border); font-size: 10px; padding: 2px 7px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; }
-
-    /* ── TRY IT ── */
-    .try-section { margin-top: 4px; }
-
-    .input-group {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-    }
-
-    .url-input {
-      flex: 1;
-      min-width: 200px;
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      padding: 12px 16px;
-      border-radius: 8px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .url-input::placeholder { color: var(--muted); }
-    .url-input:focus { border-color: rgba(0,229,160,0.4); }
-
-    .btn-execute {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--accent);
-      color: #000;
-      font-family: 'Syne', sans-serif;
+    .feat-icon.indigo { background: rgba(99,102,241,0.12); }
+    .feat-icon.violet { background: rgba(139,92,246,0.12); }
+    .feat-icon.cyan   { background: rgba(34,211,238,0.12); }
+    .feat-icon.green  { background: rgba(16,185,129,0.12); }
+    .feat-icon.rose   { background: rgba(244,63,94,0.12); }
+    .feat-icon.amber  { background: rgba(245,158,11,0.12); }
+    .feat-card h3 {
+      font-size: 15px;
       font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+    .feat-card p {
       font-size: 13px;
-      padding: 12px 22px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
-      letter-spacing: 0.04em;
-      white-space: nowrap;
-    }
-    .btn-execute:hover  { opacity: 0.88; }
-    .btn-execute:active { transform: scale(0.97); }
-    .btn-execute:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-execute svg { width: 14px; height: 14px; }
-
-    /* ── RESPONSE BOX ── */
-    .response-box {
-      display: none;
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .response-box.visible { display: block; }
-
-    .response-topbar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 16px;
-      background: rgba(255,255,255,0.03);
-      border-bottom: 1px solid var(--border);
-    }
-    .dot { width: 10px; height: 10px; border-radius: 50%; }
-    .dot-r { background: #ff5f57; }
-    .dot-y { background: #febc2e; }
-    .dot-g { background: #28c840; }
-
-    .response-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-left: 4px;
-      flex: 1;
+      color: var(--muted2);
+      line-height: 1.6;
     }
 
-    .status-badge {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 5px;
-    }
-    .status-ok  { background: rgba(0,229,160,0.12); color: var(--accent); }
-    .status-err { background: rgba(248,113,113,0.12); color: var(--danger); }
-
-    .copy-btn {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      padding: 3px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: border-color 0.2s, color 0.2s;
-    }
-    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-    .response-code {
-      padding: 16px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      line-height: 1.7;
-      overflow-x: auto;
-      white-space: pre;
-      color: var(--text);
-      max-height: 420px;
-      overflow-y: auto;
+    /* ── DOCS SECTION ── */
+    .docs {
+      position: relative; z-index: 1;
+      max-width: 1000px;
+      margin: 0 auto 80px;
+      padding: 0 24px;
     }
 
-    .spinner {
-      display: inline-block;
-      width: 14px; height: 14px;
-      border: 2px solid rgba(0,0,0,0.3);
-      border-top-color: #000;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-    }
-
-    /* ── CURL BOX ── */
-    .curl-box {
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px 16px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .curl-box span { color: var(--accent2); flex: 1; word-break: break-all; }
-    .btn-curl-copy {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      padding: 4px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: border-color 0.2s, color 0.2s;
-      flex-shrink: 0;
-    }
-    .btn-curl-copy:hover { border-color: var(--accent2); color: var(--accent2); }
-
-    /* ── EXAMPLE RESPONSE ── */
-    .example-block {
-      margin-top: 24px;
-    }
-
-    /* ── BASE URL INFO ── */
+    /* BASE URL */
     .base-url-card {
       background: var(--surface);
-      border: 1px solid rgba(0,229,160,0.15);
-      border-radius: var(--radius);
-      padding: 20px 24px;
+      border: 1px solid rgba(16,185,129,0.2);
+      border-radius: var(--r);
+      padding: 18px 24px;
       display: flex;
       align-items: center;
       gap: 16px;
       flex-wrap: wrap;
-      animation: fadeUp 0.5s ease 0.1s both;
+      margin-bottom: 32px;
     }
-    .base-url-label {
-      font-size: 11px;
-      font-family: 'JetBrains Mono', monospace;
+    .base-lbl {
+      font-family: var(--mono);
+      font-size: 10px;
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      flex-shrink: 0;
     }
-    .base-url-value {
-      font-family: 'JetBrains Mono', monospace;
+    .base-val {
+      font-family: var(--mono);
       font-size: 14px;
-      color: var(--accent);
+      color: var(--green);
       flex: 1;
     }
     .badge-https {
-      background: rgba(0,229,160,0.08);
-      color: var(--accent);
-      border: 1px solid rgba(0,229,160,0.2);
+      background: rgba(16,185,129,0.1);
+      color: var(--green);
+      border: 1px solid rgba(16,185,129,0.25);
       font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--mono);
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+    }
+
+    /* ENDPOINT CARD */
+    .ep-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+      margin-bottom: 16px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .ep-card.open { border-color: var(--border2); }
+    .ep-card:hover { box-shadow: 0 0 30px rgba(99,102,241,0.06); }
+
+    .ep-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 24px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .method-get {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(16,185,129,0.12);
+      color: var(--green);
+      border: 1px solid rgba(16,185,129,0.25);
       flex-shrink: 0;
+      letter-spacing: 0.05em;
+    }
+    .ep-path {
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--text);
+      font-weight: 600;
+    }
+    .ep-desc {
+      font-size: 13px;
+      color: var(--muted);
+      flex: 1;
+    }
+    .ep-platform {
+      display: flex;
+      gap: 6px;
+    }
+    .platform-tag {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 100px;
+      letter-spacing: 0.04em;
+    }
+    .pt-tiktok  { background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+    .pt-ig      { background: rgba(225,48,108,0.12); color: #e1306c; border: 1px solid rgba(225,48,108,0.2); }
+    .pt-yt      { background: rgba(255,0,0,0.1); color: #ff4444; border: 1px solid rgba(255,0,0,0.2); }
+    .toggle-icon { color: var(--muted); font-size: 18px; transition: transform 0.25s; flex-shrink: 0; }
+    .ep-card.open .toggle-icon { transform: rotate(180deg); }
+
+    .ep-body {
+      display: none;
+      padding: 0 24px 24px;
+      border-top: 1px solid var(--border);
+    }
+    .ep-card.open .ep-body { display: block; }
+
+    .params-title {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+      margin: 20px 0 10px;
+    }
+    .params-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .params-table th {
+      text-align: left;
+      padding: 8px 12px;
+      font-size: 10px;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-weight: 700;
+      border-bottom: 1px solid var(--border);
+    }
+    .params-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      color: var(--muted2);
+      vertical-align: top;
+    }
+    .param-name { font-family: var(--mono); color: var(--indigo); font-size: 13px; }
+    .param-type { font-family: var(--mono); color: var(--amber); font-size: 12px; }
+    .badge-req { background: rgba(244,63,94,0.1); color: var(--rose); border: 1px solid rgba(244,63,94,0.2); font-size: 10px; font-family: var(--mono); padding: 2px 8px; border-radius: 4px; }
+    .badge-opt { background: rgba(99,102,241,0.1); color: var(--indigo); border: 1px solid var(--border2); font-size: 10px; font-family: var(--mono); padding: 2px 8px; border-radius: 4px; }
+
+    /* CURL BOX */
+    .curl-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: var(--muted2);
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      overflow-x: auto;
+    }
+    .curl-box span { flex: 1; white-space: nowrap; }
+    .btn-copy-curl {
+      background: none; border: 1px solid var(--border2);
+      color: var(--muted2); font-family: var(--mono); font-size: 10px;
+      font-weight: 700; padding: 4px 10px; border-radius: 6px; cursor: pointer;
+      letter-spacing: 0.05em; flex-shrink: 0;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-copy-curl:hover { border-color: var(--indigo); color: var(--indigo); }
+
+    /* TRY IT */
+    .try-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .url-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 11px 16px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .url-input::placeholder { color: var(--muted); }
+    .url-input:focus { border-color: var(--indigo); }
+    .btn-exec {
+      display: flex; align-items: center; gap: 7px;
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      color: #fff;
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 13px;
+      padding: 11px 20px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      flex-shrink: 0;
+      letter-spacing: 0.02em;
+      transition: opacity 0.2s;
+    }
+    .btn-exec:hover { opacity: 0.85; }
+    .btn-exec:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-exec svg { width: 13px; height: 13px; }
+
+    /* RESPONSE */
+    .res-box {
+      display: none;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .res-box.visible { display: block; }
+    .res-topbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .dot-r { background: #f87171; }
+    .dot-y { background: #fbbf24; }
+    .dot-g { background: #4ade80; }
+    .res-label { font-family: var(--mono); font-size: 11px; color: var(--muted); flex: 1; letter-spacing: 0.05em; }
+    .res-status { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+    .res-status.ok  { background: rgba(16,185,129,0.1); color: var(--green); }
+    .res-status.err { background: rgba(244,63,94,0.1); color: var(--rose); }
+    .btn-copy-res {
+      background: none; border: 1px solid var(--border2);
+      color: var(--muted); font-family: var(--mono); font-size: 10px;
+      font-weight: 700; padding: 3px 8px; border-radius: 5px; cursor: pointer;
+      transition: color 0.2s;
+    }
+    .btn-copy-res:hover { color: var(--text); }
+    .res-code {
+      padding: 16px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: var(--muted2);
+      max-height: 340px;
+      overflow-y: auto;
+      white-space: pre;
+    }
+    .json-key  { color: #a78bfa; }
+    .json-str  { color: #86efac; }
+    .json-num  { color: #fbbf24; }
+    .json-bool { color: #f87171; }
+    .json-null { color: #94a3b8; }
+
+    /* SPINNER */
+    .spinner {
+      width: 12px; height: 12px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
     }
 
     /* ── FOOTER ── */
     footer {
-      margin-top: 80px;
-      padding: 32px 0;
+      position: relative; z-index: 1;
       border-top: 1px solid var(--border);
+      padding: 32px 24px;
       text-align: center;
     }
-    footer p { font-size: 13px; color: var(--muted); }
-    footer a { color: var(--accent); text-decoration: none; }
-
-    /* ── JSON SYNTAX HIGHLIGHT ── */
-    .json-key    { color: #a78bfa; }
-    .json-str    { color: #86efac; }
-    .json-num    { color: #fbbf24; }
-    .json-bool   { color: #f87171; }
-    .json-null   { color: #94a3b8; }
+    .footer-inner { max-width: 1000px; margin: 0 auto; }
+    .footer-logo { font-size: 16px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+    .footer-logo span { color: var(--indigo); }
+    footer p { font-size: 13px; color: var(--muted); margin-top: 6px; }
+    footer a { color: var(--indigo); text-decoration: none; }
 
     /* ── ANIMATIONS ── */
     @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-20px); }
+      from { opacity: 0; transform: translateY(-18px); }
       to   { opacity: 1; transform: translateY(0); }
     }
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
+      from { opacity: 0; transform: translateY(18px); }
       to   { opacity: 1; transform: translateY(0); }
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes pulse {
       0%, 100% { opacity: 1; }
-      50%       { opacity: 0.4; }
+      50% { opacity: 0.3; }
     }
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 600px) {
-      .endpoint-desc { display: none; }
-      .stats-row { gap: 20px; }
+    @media (max-width: 700px) {
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .stats-strip { grid-template-columns: repeat(2, 1fr); }
+      .ep-desc, .ep-platform { display: none; }
+      .nav-links { display: none; }
+      .hero { padding: 56px 20px 48px; }
+    }
+    @media (max-width: 480px) {
+      .features-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -510,134 +650,168 @@
   <div class="orb orb-2"></div>
   <div class="orb orb-3"></div>
 
-  <div class="wrapper">
-
-    <!-- HEADER -->
-    <header>
-      <div class="logo-badge">v1.0.0 — Live API</div>
-      <h1>Downloader<br><span>API Documentation</span></h1>
-      <p class="subtitle">Download video & media dari TikTok dan Instagram tanpa watermark. Fast, reliable, gratis — siap pakai di project kamu.</p>
-      <div class="stats-row">
-        <div class="stat">
-          <span class="stat-value">2</span>
-          <span class="stat-label">Endpoint</span>
-        </div>
-        <div class="stat">
-          <span class="stat-value">GET</span>
-          <span class="stat-label">Method</span>
-        </div>
-        <div class="stat">
-          <span class="stat-value">JSON</span>
-          <span class="stat-label">Format</span>
-        </div>
-        <div class="stat">
-          <span class="stat-value">FREE</span>
-          <span class="stat-label">Access</span>
-        </div>
+  <!-- NAVBAR -->
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <div class="nav-logo-icon">⚡</div>
+        <span>Sanz<span>XD</span></span>
       </div>
-    </header>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#docs">Docs</a>
+      </div>
+      <div class="nav-badge">v1.0.0 — Live</div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">⚡ Free · No Auth · JSON</div>
+    <h1>Media Downloader<br><span class="grad">API for Developers</span></h1>
+    <p class="hero-sub">
+      Download video dari <strong>TikTok</strong>, <strong>Instagram</strong>, dan <strong>YouTube</strong>
+      tanpa watermark. Fast, reliable, dan gratis — siap pakai di project kamu.
+    </p>
+    <div class="hero-ctas">
+      <a href="#docs" class="btn-primary">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
+        Coba Sekarang
+      </a>
+      <a href="#docs" class="btn-ghost">
+        📄 Dokumentasi
+      </a>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats-strip">
+    <div class="stat-item">
+      <div class="stat-val">3</div>
+      <div class="stat-lbl">Endpoints</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">GET</div>
+      <div class="stat-lbl">Method</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">JSON</div>
+      <div class="stat-lbl">Format</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">FREE</div>
+      <div class="stat-lbl">Access</div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="section-title">// Features</div>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon indigo">🎵</div>
+        <h3>TikTok No WM</h3>
+        <p>Download video TikTok tanpa watermark dalam kualitas HD.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon rose">📸</div>
+        <h3>Instagram Media</h3>
+        <p>Download Reels, Post, Carousel, dan IGTV dari Instagram.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon amber">▶️</div>
+        <h3>YouTube & Shorts</h3>
+        <p>Download video YouTube, Shorts, dan convert ke MP3.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon green">⚡</div>
+        <h3>Ultra Fast</h3>
+        <p>Response cepat dengan auto-retry untuk hasil yang konsisten.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon cyan">🔓</div>
+        <h3>No Auth Needed</h3>
+        <p>Tidak perlu API key atau registrasi. Langsung pakai.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon violet">🌐</div>
+        <h3>CORS Friendly</h3>
+        <p>CORS sudah diaktifkan, cocok untuk web dan mobile apps.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DOCS -->
+  <section class="docs" id="docs">
+    <div class="section-title">// API Reference</div>
 
     <!-- BASE URL -->
-    <div class="section-label">Base URL</div>
     <div class="base-url-card">
-      <span class="base-url-label">Base</span>
-      <span class="base-url-value" id="base-url">https://your-project.vercel.app</span>
+      <span class="base-lbl">Base</span>
+      <span class="base-val" id="base-url">https://your-project.vercel.app</span>
       <span class="badge-https">HTTPS</span>
     </div>
 
-    <!-- ENDPOINTS -->
-    <div class="section-label">Downloader</div>
-
-    <!-- TIKTOK ENDPOINT -->
-    <div class="endpoint-card" id="card-tiktok">
-      <div class="endpoint-header" onclick="toggleCard('card-tiktok')">
-        <span class="method-badge method-get">GET</span>
-        <span class="endpoint-path">/api/tiktok</span>
-        <span class="endpoint-desc">Download TikTok video tanpa watermark</span>
+    <!-- TIKTOK -->
+    <div class="ep-card open" id="card-tiktok">
+      <div class="ep-header" onclick="toggleCard('card-tiktok')">
+        <span class="method-get">GET</span>
+        <span class="ep-path">/api/tiktok</span>
+        <span class="ep-desc">Download TikTok video tanpa watermark</span>
+        <div class="ep-platform"><span class="platform-tag pt-tiktok">TikTok</span></div>
         <span class="toggle-icon">▾</span>
       </div>
-      <div class="endpoint-body">
-
-        <!-- PARAMS -->
+      <div class="ep-body">
         <p class="params-title">Parameters</p>
         <table class="params-table">
-          <thead>
-            <tr>
-              <th>Parameter</th>
-              <th>Type</th>
-              <th>Required</th>
-              <th>Description</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
           <tbody>
             <tr>
               <td class="param-name">url</td>
               <td class="param-type">string</td>
               <td><span class="badge-req">Required</span></td>
-              <td>URL video TikTok (vt.tiktok.com / vm.tiktok.com / www.tiktok.com)</td>
+              <td>URL video TikTok (vt.tiktok.com / vm.tiktok.com)</td>
             </tr>
           </tbody>
         </table>
-
-        <!-- CURL -->
         <p class="params-title">cURL</p>
         <div class="curl-box">
-          <span id="curl-text">curl "https://your-project.vercel.app/api/tiktok?url=https://vt.tiktok.com/ZS9mu8NkJ/"</span>
-          <button class="btn-curl-copy" onclick="copyCurl()">COPY</button>
+          <span id="curl-tt"></span>
+          <button class="btn-copy-curl" onclick="copyCurl('curl-tt')">COPY</button>
         </div>
-
-        <!-- TRY IT -->
         <p class="params-title">Try It</p>
-        <div class="try-section">
-          <div class="input-group">
-            <input
-              type="text"
-              class="url-input"
-              id="tiktok-url-input"
-              placeholder="https://vt.tiktok.com/ZS9mu8NkJ/"
-            />
-            <button class="btn-execute" id="btn-exec" onclick="executeAPI()">
-              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
-              EXECUTE
-            </button>
-          </div>
-          <div class="response-box" id="response-box">
-            <div class="response-topbar">
-              <span class="dot dot-r"></span>
-              <span class="dot dot-y"></span>
-              <span class="dot dot-g"></span>
-              <span class="response-label">JSON Response</span>
-              <span class="status-badge" id="status-badge"></span>
-              <button class="copy-btn" onclick="copyResponse()">COPY</button>
-            </div>
-            <div class="response-code" id="response-code"></div>
-          </div>
+        <div class="try-group">
+          <input class="url-input" id="tt-input" placeholder="https://vt.tiktok.com/ZS9mu8NkJ/" />
+          <button class="btn-exec" id="tt-btn" onclick="execApi('tt')">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
+            EXECUTE
+          </button>
         </div>
-
+        <div class="res-box" id="tt-res">
+          <div class="res-topbar">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            <span class="res-label">JSON Response</span>
+            <span class="res-status" id="tt-badge"></span>
+            <button class="btn-copy-res" onclick="copyRes('tt-code')">COPY</button>
+          </div>
+          <div class="res-code" id="tt-code"></div>
+        </div>
       </div>
     </div>
 
-    <!-- INSTAGRAM ENDPOINT -->
-    <div class="endpoint-card" id="card-instagram">
-      <div class="endpoint-header" onclick="toggleCard('card-instagram')">
-        <span class="method-badge method-get">GET</span>
-        <span class="endpoint-path">/api/instagram</span>
-        <span class="endpoint-desc">Download Instagram Post, Reel & IGTV</span>
+    <!-- INSTAGRAM -->
+    <div class="ep-card" id="card-instagram">
+      <div class="ep-header" onclick="toggleCard('card-instagram')">
+        <span class="method-get">GET</span>
+        <span class="ep-path">/api/instagram</span>
+        <span class="ep-desc">Download Instagram Post, Reel & IGTV</span>
+        <div class="ep-platform"><span class="platform-tag pt-ig">Instagram</span></div>
         <span class="toggle-icon">▾</span>
       </div>
-      <div class="endpoint-body">
-
-        <!-- PARAMS -->
+      <div class="ep-body">
         <p class="params-title">Parameters</p>
         <table class="params-table">
-          <thead>
-            <tr>
-              <th>Parameter</th>
-              <th>Type</th>
-              <th>Required</th>
-              <th>Description</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
           <tbody>
             <tr>
               <td class="param-name">url</td>
@@ -647,377 +821,220 @@
             </tr>
           </tbody>
         </table>
-
-        <!-- CURL -->
         <p class="params-title">cURL</p>
         <div class="curl-box">
-          <span id="ig-curl-text">curl "https://your-project.vercel.app/api/instagram?url=https://www.instagram.com/p/ABC123/"</span>
-          <button class="btn-curl-copy" onclick="copyIgCurl()">COPY</button>
+          <span id="curl-ig"></span>
+          <button class="btn-copy-curl" onclick="copyCurl('curl-ig')">COPY</button>
         </div>
-
-        <!-- TRY IT -->
         <p class="params-title">Try It</p>
-        <div class="try-section">
-          <div class="input-group">
-            <input
-              type="text"
-              class="url-input"
-              id="ig-url-input"
-              placeholder="https://www.instagram.com/p/ABC123/"
-            />
-            <button class="btn-execute" id="btn-exec-ig" onclick="executeIgAPI()">
-              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
-              EXECUTE
-            </button>
-          </div>
-          <div class="response-box" id="ig-response-box">
-            <div class="response-topbar">
-              <span class="dot dot-r"></span>
-              <span class="dot dot-y"></span>
-              <span class="dot dot-g"></span>
-              <span class="response-label">JSON Response</span>
-              <span class="status-badge" id="ig-status-badge"></span>
-              <button class="copy-btn" onclick="copyIgResponse()">COPY</button>
-            </div>
-            <div class="response-code" id="ig-response-code"></div>
-          </div>
+        <div class="try-group">
+          <input class="url-input" id="ig-input" placeholder="https://www.instagram.com/reel/ABC123/" />
+          <button class="btn-exec" id="ig-btn" onclick="execApi('ig')">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
+            EXECUTE
+          </button>
         </div>
-
+        <div class="res-box" id="ig-res">
+          <div class="res-topbar">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            <span class="res-label">JSON Response</span>
+            <span class="res-status" id="ig-badge"></span>
+            <button class="btn-copy-res" onclick="copyRes('ig-code')">COPY</button>
+          </div>
+          <div class="res-code" id="ig-code"></div>
+        </div>
       </div>
     </div>
-    <!-- YOUTUBE ENDPOINT -->
-    <div class="endpoint-card" id="card-youtube">
-      <div class="endpoint-header" onclick="toggleCard('card-youtube')">
-        <span class="method-badge method-get">GET</span>
-        <span class="endpoint-path">/api/youtube</span>
-        <span class="endpoint-desc">Download YouTube Video & Shorts</span>
+
+    <!-- YOUTUBE -->
+    <div class="ep-card" id="card-youtube">
+      <div class="ep-header" onclick="toggleCard('card-youtube')">
+        <span class="method-get">GET</span>
+        <span class="ep-path">/api/youtube</span>
+        <span class="ep-desc">Download YouTube Video, Shorts & MP3</span>
+        <div class="ep-platform"><span class="platform-tag pt-yt">YouTube</span></div>
         <span class="toggle-icon">▾</span>
       </div>
-      <div class="endpoint-body">
-
-        <!-- PARAMS -->
+      <div class="ep-body">
         <p class="params-title">Parameters</p>
         <table class="params-table">
-          <thead>
-            <tr>
-              <th>Parameter</th>
-              <th>Type</th>
-              <th>Required</th>
-              <th>Description</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
           <tbody>
             <tr>
               <td class="param-name">url</td>
               <td class="param-type">string</td>
               <td><span class="badge-req">Required</span></td>
-              <td>URL YouTube, YouTube Shorts, atau youtu.be</td>
+              <td>URL YouTube, Shorts, atau youtu.be</td>
+            </tr>
+            <tr>
+              <td class="param-name">format</td>
+              <td class="param-type">string</td>
+              <td><span class="badge-opt">Optional</span></td>
+              <td>mp3 atau mp4 (default: mp3)</td>
             </tr>
             <tr>
               <td class="param-name">quality</td>
               <td class="param-type">string</td>
               <td><span class="badge-opt">Optional</span></td>
-              <td>Kualitas video: 144, 360, 480, 720, 1080 (default: 1080)</td>
-            </tr>
-            <tr>
-              <td class="param-name">audio_only</td>
-              <td class="param-type">boolean</td>
-              <td><span class="badge-opt">Optional</span></td>
-              <td>Set true untuk download audio saja (MP3)</td>
+              <td>Kualitas: 128, 192, 320, 360, 480, 720, 1080</td>
             </tr>
           </tbody>
         </table>
-
-        <!-- CURL -->
         <p class="params-title">cURL</p>
         <div class="curl-box">
-          <span id="yt-curl-text">curl "https://your-project.vercel.app/api/youtube?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ"</span>
-          <button class="btn-curl-copy" onclick="copyYtCurl()">COPY</button>
+          <span id="curl-yt"></span>
+          <button class="btn-copy-curl" onclick="copyCurl('curl-yt')">COPY</button>
         </div>
-
-        <!-- TRY IT -->
         <p class="params-title">Try It</p>
-        <div class="try-section">
-          <div class="input-group">
-            <input
-              type="text"
-              class="url-input"
-              id="yt-url-input"
-              placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-            />
-            <button class="btn-execute" id="btn-exec-yt" onclick="executeYtAPI()">
-              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
-              EXECUTE
-            </button>
-          </div>
-          <div class="response-box" id="yt-response-box">
-            <div class="response-topbar">
-              <span class="dot dot-r"></span>
-              <span class="dot dot-y"></span>
-              <span class="dot dot-g"></span>
-              <span class="response-label">JSON Response</span>
-              <span class="status-badge" id="yt-status-badge"></span>
-              <button class="copy-btn" onclick="copyYtResponse()">COPY</button>
-            </div>
-            <div class="response-code" id="yt-response-code"></div>
-          </div>
+        <div class="try-group">
+          <input class="url-input" id="yt-input" placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ" />
+          <button class="btn-exec" id="yt-btn" onclick="execApi('yt')">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
+            EXECUTE
+          </button>
         </div>
-
+        <div class="res-box" id="yt-res">
+          <div class="res-topbar">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            <span class="res-label">JSON Response</span>
+            <span class="res-status" id="yt-badge"></span>
+            <button class="btn-copy-res" onclick="copyRes('yt-code')">COPY</button>
+          </div>
+          <div class="res-code" id="yt-code"></div>
+        </div>
       </div>
     </div>
+  </section>
 
-    <footer>
-      <p>Built with ☕ · Powered by <a href="https://vercel.com" target="_blank">Vercel</a></p>
-    </footer>
-  </div>
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">Sanz<span>XD</span> API</div>
+      <p>Built with ☕ by <a href="#">@SanzXD</a> · Powered by <a href="https://vercel.com" target="_blank">Vercel</a></p>
+    </div>
+  </footer>
 
   <script>
-    // ── SET BASE URL DYNAMICALLY ──
-    const baseUrl = window.location.origin;
-    document.getElementById('base-url').textContent = baseUrl;
-    document.getElementById('curl-text').textContent =
-      `curl "${baseUrl}/api/tiktok?url=https://vt.tiktok.com/ZS9mu8NkJ/"`;
-    document.getElementById('ig-curl-text').textContent =
-      `curl "${baseUrl}/api/instagram?url=https://www.instagram.com/p/ABC123/"`;
-    document.getElementById('yt-curl-text').textContent =
-      `curl "${baseUrl}/api/youtube?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ"`;
+    const base = window.location.origin;
 
-    // ── TOGGLE CARD ──
+    const configs = {
+      tt: {
+        path: '/api/tiktok',
+        inputId: 'tt-input',
+        btnId: 'tt-btn',
+        resId: 'tt-res',
+        codeId: 'tt-code',
+        badgeId: 'tt-badge',
+        curlId: 'curl-tt',
+        example: 'https://vt.tiktok.com/ZS9mu8NkJ/',
+      },
+      ig: {
+        path: '/api/instagram',
+        inputId: 'ig-input',
+        btnId: 'ig-btn',
+        resId: 'ig-res',
+        codeId: 'ig-code',
+        badgeId: 'ig-badge',
+        curlId: 'curl-ig',
+        example: 'https://www.instagram.com/p/ABC123/',
+      },
+      yt: {
+        path: '/api/youtube',
+        inputId: 'yt-input',
+        btnId: 'yt-btn',
+        resId: 'yt-res',
+        codeId: 'yt-code',
+        badgeId: 'yt-badge',
+        curlId: 'curl-yt',
+        example: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      },
+    };
+
+    // Init base url & curl
+    document.getElementById('base-url').textContent = base;
+    for (const [key, c] of Object.entries(configs)) {
+      document.getElementById(c.curlId).textContent = `curl "${base}${c.path}?url=${c.example}"`;
+      document.getElementById(c.inputId).addEventListener('input', e => {
+        const v = e.target.value.trim();
+        document.getElementById(c.curlId).textContent = `curl "${base}${c.path}?url=${v || c.example}"`;
+      });
+      document.getElementById(c.inputId).addEventListener('keydown', e => {
+        if (e.key === 'Enter') execApi(key);
+      });
+    }
+
     function toggleCard(id) {
-      const card = document.getElementById(id);
-      card.classList.toggle('open');
+      document.getElementById(id).classList.toggle('open');
     }
-    // Open by default
-    document.getElementById('card-tiktok').classList.add('open');
 
-    // ── SYNTAX HIGHLIGHT ──
     function highlight(json) {
-      return json
-        .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+\.?\d*([eE][+\-]?\d+)?)/g,
-          match => {
-            if (/^"/.test(match)) {
-              if (/:$/.test(match)) return `<span class="json-key">${match}</span>`;
-              return `<span class="json-str">${match}</span>`;
-            }
-            if (/true|false/.test(match)) return `<span class="json-bool">${match}</span>`;
-            if (/null/.test(match)) return `<span class="json-null">${match}</span>`;
-            return `<span class="json-num">${match}</span>`;
-          });
+      return json.replace(
+        /(\"(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*\"(\s*:)?|\b(true|false|null)\b|-?\d+\.?\d*([eE][+\-]?\d+)?)/g,
+        m => {
+          if (/^"/.test(m)) {
+            if (/:$/.test(m)) return `<span class="json-key">${m}</span>`;
+            return `<span class="json-str">${m}</span>`;
+          }
+          if (/true|false/.test(m)) return `<span class="json-bool">${m}</span>`;
+          if (/null/.test(m)) return `<span class="json-null">${m}</span>`;
+          return `<span class="json-num">${m}</span>`;
+        }
+      );
     }
 
-    // ── EXECUTE API ──
-    async function executeAPI() {
-      const urlVal = document.getElementById('tiktok-url-input').value.trim();
-      if (!urlVal) {
-        alert('Masukkan URL TikTok terlebih dahulu!');
-        return;
-      }
+    async function execApi(key) {
+      const c = configs[key];
+      const val = document.getElementById(c.inputId).value.trim();
+      if (!val) { alert('Masukkan URL terlebih dahulu!'); return; }
 
-      const btn = document.getElementById('btn-exec');
+      const btn = document.getElementById(c.btnId);
       btn.disabled = true;
       btn.innerHTML = '<span class="spinner"></span> Loading...';
 
-      const resBox   = document.getElementById('response-box');
-      const resCode  = document.getElementById('response-code');
-      const resBadge = document.getElementById('status-badge');
+      const resBox = document.getElementById(c.resId);
+      const resCode = document.getElementById(c.codeId);
+      const badge = document.getElementById(c.badgeId);
 
       resBox.classList.add('visible');
-      resCode.textContent = 'Fetching data...';
-      resBadge.className = 'status-badge';
-      resBadge.textContent = '';
+      resCode.textContent = 'Fetching...';
+      badge.className = 'res-status';
+      badge.textContent = '';
 
       try {
-        const endpoint = `${baseUrl}/api/tiktok?url=${encodeURIComponent(urlVal)}`;
-        const resp = await fetch(endpoint);
+        const resp = await fetch(`${base}${c.path}?url=${encodeURIComponent(val)}`);
         const data = await resp.json();
-
-        const pretty = JSON.stringify(data, null, 2);
-        resCode.innerHTML = highlight(pretty);
-
+        resCode.innerHTML = highlight(JSON.stringify(data, null, 2));
         if (resp.ok && data.status) {
-          resBadge.className = 'status-badge status-ok';
-          resBadge.textContent = `${resp.status} OK`;
+          badge.className = 'res-status ok';
+          badge.textContent = `${resp.status} OK`;
         } else {
-          resBadge.className = 'status-badge status-err';
-          resBadge.textContent = `${resp.status} Error`;
+          badge.className = 'res-status err';
+          badge.textContent = `${resp.status} Error`;
         }
       } catch (err) {
         resCode.textContent = `Error: ${err.message}`;
-        resBadge.className = 'status-badge status-err';
-        resBadge.textContent = 'Network Error';
+        badge.className = 'res-status err';
+        badge.textContent = 'Network Error';
       }
 
       btn.disabled = false;
       btn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg> EXECUTE';
     }
 
-    // ── COPY RESPONSE ──
-    function copyResponse() {
-      const text = document.getElementById('response-code').textContent;
-      navigator.clipboard.writeText(text).then(() => alert('Response di-copy!'));
+    function copyCurl(id) {
+      navigator.clipboard.writeText(document.getElementById(id).textContent)
+        .then(() => {
+          const btn = document.querySelector(`[onclick="copyCurl('${id}')"]`);
+          const orig = btn.textContent;
+          btn.textContent = '✓ COPIED';
+          setTimeout(() => btn.textContent = orig, 1500);
+        });
     }
 
-    // ── COPY CURL ──
-    function copyCurl() {
-      const text = document.getElementById('curl-text').textContent;
-      navigator.clipboard.writeText(text).then(() => alert('cURL di-copy!'));
+    function copyRes(id) {
+      navigator.clipboard.writeText(document.getElementById(id).textContent)
+        .then(() => alert('Response di-copy!'));
     }
-
-    // ── ENTER KEY ON INPUT ──
-    document.getElementById('tiktok-url-input').addEventListener('keydown', e => {
-      if (e.key === 'Enter') executeAPI();
-    });
-
-    // ── INSTAGRAM EXECUTE ──
-    async function executeIgAPI() {
-      const urlVal = document.getElementById('ig-url-input').value.trim();
-      if (!urlVal) {
-        alert('Masukkan URL Instagram terlebih dahulu!');
-        return;
-      }
-
-      const btn = document.getElementById('btn-exec-ig');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span> Loading...';
-
-      const resBox   = document.getElementById('ig-response-box');
-      const resCode  = document.getElementById('ig-response-code');
-      const resBadge = document.getElementById('ig-status-badge');
-
-      resBox.classList.add('visible');
-      resCode.textContent = 'Fetching data...';
-      resBadge.className = 'status-badge';
-      resBadge.textContent = '';
-
-      try {
-        const endpoint = `${baseUrl}/api/instagram?url=${encodeURIComponent(urlVal)}`;
-        const resp = await fetch(endpoint);
-        const data = await resp.json();
-
-        const pretty = JSON.stringify(data, null, 2);
-        resCode.innerHTML = highlight(pretty);
-
-        if (resp.ok && data.status) {
-          resBadge.className = 'status-badge status-ok';
-          resBadge.textContent = `${resp.status} OK`;
-        } else {
-          resBadge.className = 'status-badge status-err';
-          resBadge.textContent = `${resp.status} Error`;
-        }
-      } catch (err) {
-        resCode.textContent = `Error: ${err.message}`;
-        resBadge.className = 'status-badge status-err';
-        resBadge.textContent = 'Network Error';
-      }
-
-      btn.disabled = false;
-      btn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg> EXECUTE';
-    }
-
-    function copyIgResponse() {
-      const text = document.getElementById('ig-response-code').textContent;
-      navigator.clipboard.writeText(text).then(() => alert('Response di-copy!'));
-    }
-
-    function copyIgCurl() {
-      const text = document.getElementById('ig-curl-text').textContent;
-      navigator.clipboard.writeText(text).then(() => alert('cURL di-copy!'));
-    }
-
-    document.getElementById('ig-url-input').addEventListener('keydown', e => {
-      if (e.key === 'Enter') executeIgAPI();
-    });
-
-    // ── YOUTUBE EXECUTE ──
-    // Update curl box realtime saat user ketik URL
-    document.getElementById('yt-url-input').addEventListener('input', e => {
-      const val = e.target.value.trim();
-      const curlUrl = val
-        ? `${baseUrl}/api/youtube?url=${encodeURIComponent(val)}`
-        : `${baseUrl}/api/youtube?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ`;
-      document.getElementById('yt-curl-text').textContent = `curl "${curlUrl}"`;
-    });
-
-    async function executeYtAPI() {
-      const urlVal = document.getElementById('yt-url-input').value.trim();
-      if (!urlVal) {
-        alert('Masukkan URL YouTube terlebih dahulu!');
-        return;
-      }
-
-      // Update curl box dengan URL yang dipakai
-      document.getElementById('yt-curl-text').textContent =
-        `curl "${baseUrl}/api/youtube?url=${encodeURIComponent(urlVal)}"`;
-
-      const btn = document.getElementById('btn-exec-yt');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span> Loading...';
-
-      const resBox   = document.getElementById('yt-response-box');
-      const resCode  = document.getElementById('yt-response-code');
-      const resBadge = document.getElementById('yt-status-badge');
-
-      resBox.classList.add('visible');
-      resCode.textContent = 'Fetching data...';
-      resBadge.className = 'status-badge';
-      resBadge.textContent = '';
-
-      try {
-        const endpoint = `${baseUrl}/api/youtube?url=${encodeURIComponent(urlVal)}`;
-        const resp = await fetch(endpoint);
-        const data = await resp.json();
-
-        const pretty = JSON.stringify(data, null, 2);
-        resCode.innerHTML = highlight(pretty);
-
-        if (resp.ok && data.status) {
-          resBadge.className = 'status-badge status-ok';
-          resBadge.textContent = `${resp.status} OK`;
-        } else {
-          resBadge.className = 'status-badge status-err';
-          resBadge.textContent = `${resp.status} Error`;
-        }
-      } catch (err) {
-        resCode.textContent = `Error: ${err.message}`;
-        resBadge.className = 'status-badge status-err';
-        resBadge.textContent = 'Network Error';
-      }
-
-      btn.disabled = false;
-      btn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg> EXECUTE';
-    }
-
-    function copyYtResponse() {
-      const text = document.getElementById('yt-response-code').textContent;
-      navigator.clipboard.writeText(text).then(() => alert('Response di-copy!'));
-    }
-
-    function copyYtCurl() {
-      const text = document.getElementById('yt-curl-text').textContent;
-      navigator.clipboard.writeText(text).then(() => alert('cURL di-copy!'));
-    }
-
-    document.getElementById('yt-url-input').addEventListener('keydown', e => {
-      if (e.key === 'Enter') executeYtAPI();
-    });
-
-    // Update curl TikTok & Instagram realtime juga
-    document.getElementById('tiktok-url-input').addEventListener('input', e => {
-      const val = e.target.value.trim();
-      const curlUrl = val
-        ? baseUrl + '/api/tiktok?url=' + encodeURIComponent(val)
-        : baseUrl + '/api/tiktok?url=https://vt.tiktok.com/ZS9mu8NkJ/';
-      document.getElementById('curl-text').textContent = 'curl "' + curlUrl + '"';
-    });
-
-    document.getElementById('ig-url-input').addEventListener('input', e => {
-      const val = e.target.value.trim();
-      const curlUrl = val
-        ? baseUrl + '/api/instagram?url=' + encodeURIComponent(val)
-        : baseUrl + '/api/instagram?url=https://www.instagram.com/p/ABC123/';
-      document.getElementById('ig-curl-text').textContent = 'curl "' + curlUrl + '"';
-    });
-
   </script>
 </body>
 </html>
