@@ -515,11 +515,11 @@
     <!-- HEADER -->
     <header>
       <div class="logo-badge">v1.0.0 — Live API</div>
-      <h1>TikTok DL<br><span>API Documentation</span></h1>
-      <p class="subtitle">Download TikTok videos tanpa watermark. Fast, reliable, gratis — siap pakai di project kamu.</p>
+      <h1>Downloader<br><span>API Documentation</span></h1>
+      <p class="subtitle">Download video & media dari TikTok dan Instagram tanpa watermark. Fast, reliable, gratis — siap pakai di project kamu.</p>
       <div class="stats-row">
         <div class="stat">
-          <span class="stat-value">1</span>
+          <span class="stat-value">2</span>
           <span class="stat-label">Endpoint</span>
         </div>
         <div class="stat">
@@ -617,7 +617,74 @@
       </div>
     </div>
 
-    <!-- FOOTER -->
+    <!-- INSTAGRAM ENDPOINT -->
+    <div class="endpoint-card" id="card-instagram">
+      <div class="endpoint-header" onclick="toggleCard('card-instagram')">
+        <span class="method-badge method-get">GET</span>
+        <span class="endpoint-path">/api/instagram</span>
+        <span class="endpoint-desc">Download Instagram Post, Reel & IGTV</span>
+        <span class="toggle-icon">▾</span>
+      </div>
+      <div class="endpoint-body">
+
+        <!-- PARAMS -->
+        <p class="params-title">Parameters</p>
+        <table class="params-table">
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="param-name">url</td>
+              <td class="param-type">string</td>
+              <td><span class="badge-req">Required</span></td>
+              <td>URL Instagram Post, Reel, IGTV, atau Story</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- CURL -->
+        <p class="params-title">cURL</p>
+        <div class="curl-box">
+          <span id="ig-curl-text">curl "https://your-project.vercel.app/api/instagram?url=https://www.instagram.com/p/ABC123/"</span>
+          <button class="btn-curl-copy" onclick="copyIgCurl()">COPY</button>
+        </div>
+
+        <!-- TRY IT -->
+        <p class="params-title">Try It</p>
+        <div class="try-section">
+          <div class="input-group">
+            <input
+              type="text"
+              class="url-input"
+              id="ig-url-input"
+              placeholder="https://www.instagram.com/p/ABC123/"
+            />
+            <button class="btn-execute" id="btn-exec-ig" onclick="executeIgAPI()">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
+              EXECUTE
+            </button>
+          </div>
+          <div class="response-box" id="ig-response-box">
+            <div class="response-topbar">
+              <span class="dot dot-r"></span>
+              <span class="dot dot-y"></span>
+              <span class="dot dot-g"></span>
+              <span class="response-label">JSON Response</span>
+              <span class="status-badge" id="ig-status-badge"></span>
+              <button class="copy-btn" onclick="copyIgResponse()">COPY</button>
+            </div>
+            <div class="response-code" id="ig-response-code"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
     <footer>
       <p>Built with ☕ · Powered by <a href="https://vercel.com" target="_blank">Vercel</a></p>
     </footer>
@@ -629,6 +696,8 @@
     document.getElementById('base-url').textContent = baseUrl;
     document.getElementById('curl-text').textContent =
       `curl "${baseUrl}/api/tiktok?url=https://vt.tiktok.com/ZS9mu8NkJ/"`;
+    document.getElementById('ig-curl-text').textContent =
+      `curl "${baseUrl}/api/instagram?url=https://www.instagram.com/p/ABC123/"`;
 
     // ── TOGGLE CARD ──
     function toggleCard(id) {
@@ -714,6 +783,66 @@
     // ── ENTER KEY ON INPUT ──
     document.getElementById('tiktok-url-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') executeAPI();
+    });
+
+    // ── INSTAGRAM EXECUTE ──
+    async function executeIgAPI() {
+      const urlVal = document.getElementById('ig-url-input').value.trim();
+      if (!urlVal) {
+        alert('Masukkan URL Instagram terlebih dahulu!');
+        return;
+      }
+
+      const btn = document.getElementById('btn-exec-ig');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Loading...';
+
+      const resBox   = document.getElementById('ig-response-box');
+      const resCode  = document.getElementById('ig-response-code');
+      const resBadge = document.getElementById('ig-status-badge');
+
+      resBox.classList.add('visible');
+      resCode.textContent = 'Fetching data...';
+      resBadge.className = 'status-badge';
+      resBadge.textContent = '';
+
+      try {
+        const endpoint = `${baseUrl}/api/instagram?url=${encodeURIComponent(urlVal)}`;
+        const resp = await fetch(endpoint);
+        const data = await resp.json();
+
+        const pretty = JSON.stringify(data, null, 2);
+        resCode.innerHTML = highlight(pretty);
+
+        if (resp.ok && data.status) {
+          resBadge.className = 'status-badge status-ok';
+          resBadge.textContent = `${resp.status} OK`;
+        } else {
+          resBadge.className = 'status-badge status-err';
+          resBadge.textContent = `${resp.status} Error`;
+        }
+      } catch (err) {
+        resCode.textContent = `Error: ${err.message}`;
+        resBadge.className = 'status-badge status-err';
+        resBadge.textContent = 'Network Error';
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg> EXECUTE';
+    }
+
+    function copyIgResponse() {
+      const text = document.getElementById('ig-response-code').textContent;
+      navigator.clipboard.writeText(text).then(() => alert('Response di-copy!'));
+    }
+
+    function copyIgCurl() {
+      const text = document.getElementById('ig-curl-text').textContent;
+      navigator.clipboard.writeText(text).then(() => alert('cURL di-copy!'));
+    }
+
+    document.getElementById('ig-url-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') executeIgAPI();
     });
 
   </script>
