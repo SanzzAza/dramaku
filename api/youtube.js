@@ -1,15 +1,11 @@
 /**
- * YouTube Downloader API — Multi-format via hub.ytconvert.org
+ * YouTube Downloader API — port dari Python script (hub.ytconvert.org)
+ * Perbedaan utama vs fetch biasa: cookies dari submit diteruskan ke polling
+ * persis seperti requests.Session() di Python.
  *
- * GET /api/youtube?url=https://www.youtube.com/watch?v=...
- *
- * Fetch semua format secara paralel (mp3, mp4 360/720/1080p)
- * lalu return sekaligus dalam satu response.
- *
- * Filter opsional:
- *   &type=video|audio      → filter tipe
- *   &ext=mp3|mp4           → filter ekstensi
- *   &quality=720p|128kbps  → filter kualitas
+ * GET /api/youtube?url=...
+ * GET /api/youtube?url=...&format=mp3|mp4
+ * GET /api/youtube?url=...&quality=128|192|320|360|480|720|1080
  */
 
 const CORS_HEADERS = {
@@ -20,26 +16,14 @@ const CORS_HEADERS = {
 };
 
 const API_BASE = "https://hub.ytconvert.org";
-const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
-const FETCH_HEADERS = {
-  "User-Agent": UA,
+const BASE_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
   "Referer": "https://ytconvert.org/",
   "Origin": "https://ytconvert.org",
   "Content-Type": "application/json",
   "Accept": "application/json",
 };
-
-// Semua kombinasi format yang akan di-fetch paralel
-const FORMAT_TARGETS = [
-  { type: "audio", format: "mp3", quality: "128",  label: "mp3 (128kbps)",  ext: "mp3" },
-  { type: "audio", format: "mp3", quality: "192",  label: "mp3 (192kbps)",  ext: "mp3" },
-  { type: "audio", format: "mp3", quality: "320",  label: "mp3 (320kbps)",  ext: "mp3" },
-  { type: "video", format: "mp4", quality: "360",  label: "mp4 (360p)",     ext: "mp4" },
-  { type: "video", format: "mp4", quality: "480",  label: "mp4 (480p)",     ext: "mp4" },
-  { type: "video", format: "mp4", quality: "720",  label: "mp4 (720p)",     ext: "mp4" },
-  { type: "video", format: "mp4", quality: "1080", label: "mp4 (1080p)",    ext: "mp4" },
-];
 
 // ─── Handler ──────────────────────────────────────────────────────────────────
 
@@ -55,222 +39,231 @@ export default async function handler(req, res) {
     return res.status(405).json({ status: false, code: 405, message: "Method Not Allowed." });
   }
 
-  const url        = req.query.url     || req.body?.url;
-  const typeFilter = req.query.type    || req.body?.type    || null;
-  const extFilter  = req.query.ext     || req.body?.ext     || null;
-  const qualFilter = req.query.quality || req.body?.quality || null;
+  const url     = req.query.url     || req.body?.url;
+  const format  = req.query.format  || req.body?.format  || "mp3";
+  const quality = req.query.quality || req.body?.quality || "128";
 
   if (!url) {
     return res.status(400).json({
-      status: false,
-      code: 400,
+      status: false, code: 400,
       message: "Parameter 'url' wajib diisi.",
-      example: "/api/youtube?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      filters: "Opsional: &type=video|audio  &ext=mp3|mp4  &quality=720p|128kbps",
+      example: "/api/youtube?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ&format=mp3&quality=128",
     });
   }
 
   const ytRegex = /^https?:\/\/(www\.)?(youtube\.com\/(watch|shorts|embed)|youtu\.be)\/.+/i;
   if (!ytRegex.test(url)) {
     return res.status(400).json({
-      status: false,
-      code: 400,
+      status: false, code: 400,
       message: "URL tidak valid. Masukkan link YouTube, YouTube Shorts, atau youtu.be.",
     });
   }
 
   try {
-    const result = await fetchAllFormats(url, { typeFilter, extFilter, qualFilter });
+    const result = await convertYoutube(url, format, quality);
     return res.status(200).json(result);
   } catch (err) {
     console.error("[YouTube]", err.message);
     return res.status(500).json({
-      status: false,
-      code: 500,
-      message: err.message || "Gagal mengambil data media.",
+      status: false, code: 500,
+      message: err.message || "Gagal mengambil media.",
     });
   }
 }
 
-// ─── Core ─────────────────────────────────────────────────────────────────────
+// ─── Core — port 1:1 dari Python convert_youtube() ───────────────────────────
 
-async function fetchAllFormats(url, { typeFilter, extFilter, qualFilter } = {}) {
-  const videoId = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/)?.[1];
+async function convertYoutube(url, format, quality) {
+  const videoId   = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/)?.[1];
   if (!videoId) throw new Error("Tidak dapat mengambil video ID dari URL.");
 
   const isShorts  = /\/shorts\//i.test(url);
+  const sourceUrl = `https://www.youtube.com/watch?v=${videoId}`;
   const thumbHQ   = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   const thumbMQ   = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-  const sourceUrl = `https://www.youtube.com/watch?v=${videoId}`;
+  const audioOnly = format !== "mp4";
+  const outputType = audioOnly ? "audio" : "video";
 
-  // Tentukan targets berdasarkan filter (kalau ada filter, cuma fetch yang relevan)
-  let targets = FORMAT_TARGETS;
-  if (typeFilter) targets = targets.filter((t) => t.type === typeFilter);
-  if (extFilter)  targets = targets.filter((t) => t.ext  === extFilter);
-  if (qualFilter) {
-    const q = qualFilter.toLowerCase().replace("p", "").replace("kbps", "");
-    targets = targets.filter((t) => t.quality === q);
-  }
-
-  if (targets.length === 0) {
-    throw new Error("Tidak ada format yang cocok dengan filter yang diberikan.");
-  }
-
-  // Fetch semua format secara paralel
-  // Tiap format: submit job → polling status → return downloadUrl
-  const results = await Promise.allSettled(
-    targets.map((target) => fetchOneFormat(videoId, target))
-  );
-
-  // Kumpulkan yang berhasil
-  let medias = [];
-  let sharedMeta = null;
-
-  for (let i = 0; i < results.length; i++) {
-    const r = results[i];
-    const t = targets[i];
-    if (r.status === "fulfilled" && r.value) {
-      const { meta, media } = r.value;
-      if (!sharedMeta && meta) sharedMeta = meta;
-      medias.push(media);
-    } else {
-      console.warn(`[YouTube] Format ${t.label} gagal:`, r.reason?.message ?? r.reason);
-    }
-  }
-
-  if (medias.length === 0) {
-    throw new Error("Semua format gagal diambil. Server mungkin sedang down atau URL tidak valid.");
-  }
-
-  const videoFormats = medias.filter((m) => m.type === "video");
-  const audioFormats = medias.filter((m) => m.type === "audio");
-
-  return {
-    status: true,
-    code: 200,
-    message: "Berhasil mengambil data media.",
-    video: {
-      id:           videoId,
-      title:        sharedMeta?.title    ?? null,
-      author:       sharedMeta?.author   ?? null,
-      duration:     sharedMeta?.duration ?? null,
-      type:         isShorts ? "shorts" : "video",
-      source_url:   sourceUrl,
-      thumbnail_hq: thumbHQ,
-      thumbnail_mq: thumbMQ,
-      is_shorts:    isShorts,
-    },
-    summary: {
-      total_formats:        medias.length,
-      video_formats:        videoFormats.length,
-      audio_formats:        audioFormats.length,
-      qualities_available:  [...new Set(videoFormats.map((m) => m.qualityLabel).filter(Boolean))],
-      extensions_available: [...new Set(medias.map((m) => m.extension).filter(Boolean))],
-    },
-    best: {
-      video_1080p: videoFormats.find((m) => m.qualityLabel === "1080p") ?? null,
-      video_720p:  videoFormats.find((m) => m.qualityLabel === "720p")  ?? null,
-      video_360p:  videoFormats.find((m) => m.qualityLabel === "360p")  ?? null,
-      audio_320:   audioFormats.find((m) => m.quality === "320kbps")    ?? null,
-      audio_128:   audioFormats.find((m) => m.quality === "128kbps")    ?? null,
-    },
-    medias,
-  };
-}
-
-// ─── Fetch satu format: submit + polling ──────────────────────────────────────
-
-async function fetchOneFormat(videoId, target) {
-  const sourceUrl = `https://www.youtube.com/watch?v=${videoId}`;
-
-  // Step 1: Submit job
+  // ── Step 1: Submit — sama persis dengan Python ────────────────────────────
   const payload = {
     url: sourceUrl,
     output: {
-      type: target.type,
-      format: target.format,
-      quality: target.quality,
+      type: outputType,
+      format,
+      quality,
     },
   };
 
+  console.log("[YouTube] Submitting:", sourceUrl);
+
   const submitResp = await fetch(`${API_BASE}/api/download`, {
     method: "POST",
-    headers: FETCH_HEADERS,
+    headers: BASE_HEADERS,
     body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(12_000),
+    signal: AbortSignal.timeout(30_000),
   });
 
   if (!submitResp.ok) {
-    throw new Error(`Submit gagal (${target.label}): HTTP ${submitResp.status}`);
+    const text = await submitResp.text().catch(() => "");
+    throw new Error(`Submit gagal: ${submitResp.status} — ${text}`);
   }
 
-  const submitData = await submitResp.json();
+  // ⚡ Simpan cookies dari response submit — ini yang bikin Python bisa tapi JS tidak
+  // requests.Session() otomatis forward cookies, kita harus manual
+  const setCookieHeader = submitResp.headers.get("set-cookie");
+  const sessionCookies  = parseCookies(setCookieHeader);
 
-  // Kalau langsung completed
+  const submitData = await submitResp.json();
+  console.log("[YouTube] Submit response:", JSON.stringify(submitData));
+
+  // Kalau langsung completed (jarang terjadi)
   if (submitData?.status === "completed" && submitData?.downloadUrl) {
-    return buildFormatResult(target, submitData, submitData);
+    return buildResponse({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality, audioOnly, data: { ...submitData, ...submitData } });
   }
 
   const statusUrl = submitData?.statusUrl;
   if (!statusUrl) {
-    throw new Error(`Tidak ada statusUrl untuk format ${target.label}`);
+    throw new Error("Tidak ada statusUrl dari server. Response: " + JSON.stringify(submitData));
   }
 
-  // Step 2: Polling — max 6x × 1.5 detik = 9 detik per format
-  // (paralel semua format, jadi total waktu ≈ waktu format terlama ≤ ~15 detik)
-  const MAX_ATTEMPTS = 6;
-  const POLL_DELAY   = 1_500;
+  // ── Step 2: Polling — sama persis dengan Python, + forward cookies ────────
+  console.log("[YouTube] Polling:", statusUrl);
+
+  // Python pakai max 60x × 2 detik = 2 menit
+  // Vercel limit ~20 detik → pakai 7x × 2 detik = 14 detik (aman)
+  const MAX_ATTEMPTS = 7;
+  const POLL_DELAY   = 2_000;
+
+  // Header polling dengan cookies dari submit (meniru Session behavior)
+  const pollHeaders = {
+    ...BASE_HEADERS,
+    ...(sessionCookies ? { "Cookie": sessionCookies } : {}),
+  };
+  // Content-Type tidak perlu di GET
+  delete pollHeaders["Content-Type"];
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     await sleep(POLL_DELAY);
 
     const statusResp = await fetch(statusUrl, {
-      headers: FETCH_HEADERS,
-      signal: AbortSignal.timeout(8_000),
+      method: "GET",
+      headers: pollHeaders,
+      signal: AbortSignal.timeout(10_000),
     });
 
-    if (!statusResp.ok) continue;
+    if (!statusResp.ok) {
+      console.warn(`[YouTube] Poll ${attempt + 1} gagal: ${statusResp.status}`);
+      continue;
+    }
+
+    // Update cookies kalau ada yang baru dari response poll
+    const newCookies = statusResp.headers.get("set-cookie");
+    if (newCookies) {
+      const merged = mergeCookies(sessionCookies, parseCookies(newCookies));
+      pollHeaders["Cookie"] = merged;
+    }
 
     const statusData = await statusResp.json();
     const status = statusData?.status;
+    console.log(`[YouTube] Poll ${attempt + 1}: status=${status}`);
 
     if (status === "completed" && statusData?.downloadUrl) {
-      return buildFormatResult(target, submitData, statusData);
+      return buildResponse({
+        videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality, audioOnly,
+        data: { ...submitData, ...statusData },
+      });
     }
 
     if (status === "failed" || status === "error") {
-      throw new Error(`Konversi ${target.label} gagal: ${statusData?.message ?? "unknown"}`);
+      throw new Error(statusData?.message || "Konversi gagal di server.");
     }
+
+    // masih "processing" → lanjut poll
   }
 
-  throw new Error(`Timeout untuk format ${target.label}`);
+  throw new Error("Timeout: konversi memakan waktu terlalu lama. Coba lagi sebentar.");
 }
 
-// ─── Build normalized format object ──────────────────────────────────────────
+// ─── Response builder ─────────────────────────────────────────────────────────
 
-function buildFormatResult(target, submitData, statusData) {
-  const isAudio = target.type === "audio";
-  const title   = submitData?.title ?? statusData?.title ?? null;
+function buildResponse({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality, audioOnly, data }) {
+  const title    = data?.title    ?? null;
+  const duration = data?.duration ?? null;
+  const fileSize = data?.fileSize ?? null;
+  const safeTitle = (title || `youtube_${videoId}`)
+    .slice(0, 80)
+    .replace(/[\\/:*?"<>|]/g, "_")
+    .trim();
 
   return {
-    meta: {
+    status: true, code: 200,
+    message: "Berhasil mengambil data media.",
+    author:  { username: null, avatar: null, channel_url: null },
+    video: {
+      id:        videoId,
       title,
-      author:   submitData?.author   ?? null,
-      duration: submitData?.duration ?? null,
+      duration,
+      type:      isShorts ? "shorts" : "video",
+      quality:   audioOnly ? null : `${quality}p`,
+      play:      audioOnly ? null : data?.downloadUrl,
+      audio_only: audioOnly ? data?.downloadUrl : null,
+      cover:     thumbHQ,
+      filename:  `${safeTitle}.${format}`,
+      file_size: fileSize,
     },
-    media: {
-      type:         target.type,
-      extension:    target.ext,
-      format:       target.format,
-      quality:      isAudio ? `${target.quality}kbps` : `${target.quality}p`,
-      qualityLabel: isAudio ? `${target.quality}kbps` : `${target.quality}p`,
-      label:        target.label,
-      is_audio:     isAudio,
-      file_size:    statusData?.fileSize ?? null,
-      url:          statusData?.downloadUrl,
-      filename: `${(title ?? "youtube").slice(0, 80).replace(/[\\/:*?"<>|]/g, "_")}.${target.ext}`,
+    audio: {
+      play:    audioOnly ? data?.downloadUrl : null,
+      quality: audioOnly ? `${quality}kbps`  : null,
+    },
+    stats: { view_count: null, like_count: null, comment_count: null },
+    meta: {
+      video_id:      videoId,
+      source_url:    sourceUrl,
+      thumbnail_hq:  thumbHQ,
+      thumbnail_mq:  thumbMQ,
+      is_shorts:     isShorts,
+      format,
+      quality,
+      provider: "hub.ytconvert.org",
     },
   };
+}
+
+// ─── Cookie helpers (meniru requests.Session) ─────────────────────────────────
+
+/**
+ * Parse "set-cookie" header string → "key=value; key2=value2"
+ * set-cookie bisa berisi beberapa cookies dipisah koma
+ */
+function parseCookies(setCookieHeader) {
+  if (!setCookieHeader) return "";
+
+  // set-cookie header bisa "a=1; Path=/, b=2; Path=/"
+  // Kita hanya ambil key=value pertama dari tiap cookie
+  return setCookieHeader
+    .split(/,(?=[^ ])/)           // split antar cookies (hati-hati koma di dalam value)
+    .map((c) => c.split(";")[0].trim())  // ambil hanya "key=value"
+    .filter(Boolean)
+    .join("; ");
+}
+
+/**
+ * Merge existing cookies dengan cookies baru (update nilai yang sama)
+ */
+function mergeCookies(existing, incoming) {
+  if (!existing) return incoming;
+  if (!incoming) return existing;
+
+  const map = new Map();
+  for (const part of existing.split(";")) {
+    const [k] = part.trim().split("=");
+    if (k) map.set(k.trim(), part.trim());
+  }
+  for (const part of incoming.split(";")) {
+    const [k] = part.trim().split("=");
+    if (k) map.set(k.trim(), part.trim());
+  }
+  return [...map.values()].join("; ");
 }
 
 // ─── Util ─────────────────────────────────────────────────────────────────────
