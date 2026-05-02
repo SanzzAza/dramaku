@@ -1,5 +1,5 @@
 /**
- * Instagram Downloader API — via Cobalt API (no binary needed, works on Vercel)
+ * Instagram Downloader API — via igdl.me (same approach as tikwm for TikTok)
  * GET /api/instagram?url=https://www.instagram.com/reel/...
  */
 
@@ -43,7 +43,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await fetchViaCobalt(url);
+    const result = await fetchInstagram(url);
     return res.status(200).json(result);
   } catch (err) {
     console.error("[Instagram]", err.message);
@@ -55,85 +55,63 @@ export default async function handler(req, res) {
   }
 }
 
-async function fetchViaCobalt(url) {
+async function fetchInstagram(url) {
   const shortcode = url.match(/\/(p|reel|tv|stories)\/([^/?]+)/)?.[2] ?? null;
 
-  // Cobalt API — free, no API key needed
-  const cobaltRes = await fetch("https://api.cobalt.tools/", {
+  // igdl.me — free public API, no key needed
+  const apiUrl = `https://v3.igdownloader.app/api/ajaxSearch`;
+  const body = new URLSearchParams({ recaptchaToken: "", q: url, t: "media", lang: "id" });
+
+  const resp = await fetch(apiUrl, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
+      "Content-Type": "application/x-www-form-urlencoded",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "Referer": "https://igdownloader.app/",
+      "Origin": "https://igdownloader.app",
     },
-    body: JSON.stringify({
-      url,
-      downloadMode: "auto",
-    }),
+    body: body.toString(),
   });
 
-  if (!cobaltRes.ok) {
-    throw new Error(`Cobalt API responded ${cobaltRes.status}`);
+  if (!resp.ok) throw new Error(`igdownloader responded ${resp.status}`);
+
+  const json = await resp.json();
+
+  if (json.status !== "ok") {
+    throw new Error(json.message || "Gagal memproses URL Instagram.");
   }
 
-  const cobalt = await cobaltRes.json();
+  // Parse HTML response to extract media URLs
+  const html = json.data || "";
+  const videoUrls = [...html.matchAll(/href="(https:\/\/[^"]+\.mp4[^"]*)"/g)].map(m => m[1]);
+  const imageUrls = [...html.matchAll(/src="(https:\/\/[^"]+\.(jpg|jpeg|png|webp)[^"]*)"/g)].map(m => m[1]);
 
-  if (cobalt.status === "error") {
-    throw new Error(cobalt.error?.code || "Media tidak dapat diproses.");
-  }
+  const primaryUrl = videoUrls[0] || imageUrls[0] || null;
 
-  // Cobalt bisa return "stream", "redirect", atau "picker" (carousel/multiple)
-  let mediaUrl = null;
-  let mediaItems = null;
-
-  if (cobalt.status === "picker" && cobalt.picker?.length) {
-    // Instagram carousel — return semua item
-    mediaItems = cobalt.picker.map((item, i) => ({
-      index: i + 1,
-      type: item.type || "video",
-      url: item.url || null,
-      thumb: item.thumb || null,
-    }));
-    mediaUrl = cobalt.picker[0]?.url || null;
-  } else {
-    mediaUrl = cobalt.url || null;
+  // Build items for carousel
+  const items = [];
+  videoUrls.forEach((u, i) => items.push({ index: i + 1, type: "video", url: u }));
+  if (videoUrls.length === 0) {
+    imageUrls.forEach((u, i) => items.push({ index: i + 1, type: "image", url: u }));
   }
 
   return {
     status: true,
     code: 200,
     message: "Berhasil mengambil data media.",
-    author: {
-      username: null,
-      avatar: null,
-      verified: null,
-    },
+    author: { username: null, avatar: null, verified: null },
     video: {
-      play: mediaUrl,
-      hdplay: mediaUrl,
+      play: primaryUrl,
+      hdplay: primaryUrl,
       wmplay: null,
-      cover: null,
+      cover: imageUrls[0] || null,
       title: null,
       duration: null,
       filename: `instagram_${shortcode || "media"}.mp4`,
     },
-    audio: {
-      play: null,
-      title: null,
-      author: null,
-    },
-    stats: {
-      play_count: null,
-      like_count: null,
-      comment_count: null,
-      share_count: null,
-    },
-    // Untuk carousel/multi-media post
-    ...(mediaItems ? { items: mediaItems } : {}),
-    meta: {
-      shortcode,
-      source_url: url,
-      thumbnail: null,
-      provider: "cobalt",
-    },
+    audio: { play: null, title: null, author: null },
+    stats: { play_count: null, like_count: null, comment_count: null, share_count: null },
+    ...(items.length > 1 ? { items } : {}),
+    meta: { shortcode, source_url: url, thumbnail: imageUrls[0] || null, provider: "igdownloader" },
   };
 }
