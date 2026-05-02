@@ -210,7 +210,7 @@ function buildResponse({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format,
     .trim();
 
   return {
-    author: "@SanzXD",
+    creator: "@SanzXD",
     status: true, code: 200,
     message: "Berhasil mengambil data media.",
     author: { username: null, avatar: null, channel_url: null },
