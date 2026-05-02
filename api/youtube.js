@@ -1,8 +1,9 @@
 /**
- * YouTube Downloader API — scraping ytdl.y2mp3.co (backend of ytconvert.org)
- * GET /api/youtube?url=https://www.youtube.com/watch?v=...
- * GET /api/youtube?url=...&quality=128|192|320      (audio bitrate)
- * GET /api/youtube?url=...&format=mp3|mp4
+ * YouTube Downloader API — via hub.ytconvert.org
+ * GET  /api/youtube?url=https://www.youtube.com/watch?v=...
+ * GET  /api/youtube?url=...&format=mp3|mp4
+ * GET  /api/youtube?url=...&quality=128|192|320        (audio)
+ * GET  /api/youtube?url=...&quality=360|480|720|1080   (video)
  */
 
 const CORS_HEADERS = {
@@ -12,17 +13,19 @@ const CORS_HEADERS = {
   "Content-Type": "application/json",
 };
 
-const API_BASE = "https://ytdl.y2mp3.co";
-const UA = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Mobile Safari/537.36";
+const API_BASE = "https://hub.ytconvert.org";
+const UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
 const HEADERS = {
-  "Accept": "application/json",
-  "Accept-Encoding": "gzip, deflate, br",
-  "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
-  "Origin": "https://ytconvert.org",
-  "Referer": "https://ytconvert.org/",
   "User-Agent": UA,
+  "Referer": "https://ytconvert.org/",
+  "Origin": "https://ytconvert.org",
+  "Content-Type": "application/json",
+  "Accept": "application/json",
 };
+
+// ─── Handler ────────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
@@ -36,23 +39,24 @@ export default async function handler(req, res) {
     return res.status(405).json({ status: false, code: 405, message: "Method Not Allowed." });
   }
 
-  const url      = req.query.url    || req.body?.url;
-  const format   = req.query.format || req.body?.format   || "mp3";
-  const quality  = req.query.quality|| req.body?.quality  || "128";
-  const audioOnly = format !== "mp4";
+  const url     = req.query.url     || req.body?.url;
+  const format  = req.query.format  || req.body?.format  || "mp3";
+  const quality = req.query.quality || req.body?.quality || "128";
 
   if (!url) {
     return res.status(400).json({
-      status: false, code: 400,
+      status: false,
+      code: 400,
       message: "Parameter 'url' wajib diisi.",
-      example: "/api/youtube?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ&format=mp3",
+      example: "/api/youtube?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ&format=mp3&quality=128",
     });
   }
 
   const ytRegex = /^https?:\/\/(www\.)?(youtube\.com\/(watch|shorts|embed)|youtu\.be)\/.+/i;
   if (!ytRegex.test(url)) {
     return res.status(400).json({
-      status: false, code: 400,
+      status: false,
+      code: 400,
       message: "URL tidak valid. Masukkan link YouTube, YouTube Shorts, atau youtu.be.",
     });
   }
@@ -63,110 +67,157 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error("[YouTube]", err.message);
     return res.status(500).json({
-      status: false, code: 500,
+      status: false,
+      code: 500,
       message: err.message || "Gagal mengambil media.",
     });
   }
 }
 
+// ─── Core fetcher ────────────────────────────────────────────────────────────
+
 async function fetchYoutube(url, format, quality) {
   const videoId = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/)?.[1];
   if (!videoId) throw new Error("Tidak dapat mengambil video ID dari URL.");
 
+  const audioOnly = format !== "mp4";
+  const outputType = audioOnly ? "audio" : "video";
   const isShorts  = /\/shorts\//i.test(url);
   const thumbHQ   = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   const thumbMQ   = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
   const sourceUrl = `https://www.youtube.com/watch?v=${videoId}`;
-  const audioOnly = format !== "mp4";
 
-  // Step 1: Submit convert job
-  // URL pattern dari ytconvert.org: /?v={videoId}&format=mp3&quality=128
-  const convertUrl = `${API_BASE}/api/convert?v=${videoId}&format=${format}&quality=${quality}`;
-  
-  const submitResp = await fetch(convertUrl, {
+  // ── Step 1: Submit conversion job ──
+  const payload = {
+    url: sourceUrl,
+    output: {
+      type: outputType,
+      format,
+      quality,
+    },
+  };
+
+  console.log("[YouTube] Submitting:", sourceUrl);
+
+  const submitResp = await fetch(`${API_BASE}/api/download`, {
+    method: "POST",
     headers: HEADERS,
-    signal: AbortSignal.timeout(15000),
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(30_000),
   });
 
-  if (!submitResp.ok) throw new Error(`Submit job failed: ${submitResp.status}`);
+  if (!submitResp.ok) {
+    throw new Error(`Submit gagal: ${submitResp.status} — ${await submitResp.text()}`);
+  }
 
   const submitData = await submitResp.json();
   console.log("[YouTube] Submit response:", JSON.stringify(submitData));
 
-  // Jika langsung dapat downloadUrl (status completed)
-  if (submitData?.downloadUrl || submitData?.status === "completed") {
-    return buildResponse({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality, data: submitData });
+  // Kalau langsung completed
+  if (submitData?.status === "completed" && submitData?.downloadUrl) {
+    return buildResponse({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality, audioOnly, data: submitData });
   }
 
-  // Step 2: Polling status jika ada jobId
-  const jobId = submitData?.jobId || submitData?.id || videoId;
-  const maxTries = 20;
-  const delay = 2000; // 2 detik tiap poll
+  // ── Step 2: Polling via statusUrl ──
+  const statusUrl = submitData?.statusUrl;
+  if (!statusUrl) {
+    throw new Error("Tidak ada statusUrl dari server. Response: " + JSON.stringify(submitData));
+  }
 
-  for (let i = 0; i < maxTries; i++) {
-    await sleep(delay);
+  console.log("[YouTube] Polling:", statusUrl);
 
-    const statusResp = await fetch(`${API_BASE}/api/status/${jobId}`, {
+  // Vercel maxDuration = 20s → sisakan ~17s untuk polling (submit sudah ~3s)
+  // 7 percobaan × 2 detik = 14 detik aman
+  const MAX_ATTEMPTS = 7;
+  const POLL_DELAY   = 2_000;
+
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    await sleep(POLL_DELAY);
+
+    const statusResp = await fetch(statusUrl, {
       headers: HEADERS,
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(8_000),
     });
 
-    if (!statusResp.ok) continue;
+    if (!statusResp.ok) {
+      console.warn(`[YouTube] Poll ${attempt + 1} gagal: ${statusResp.status}`);
+      continue;
+    }
 
     const statusData = await statusResp.json();
-    console.log(`[YouTube] Poll ${i+1}:`, JSON.stringify(statusData));
+    const status = statusData?.status;
+    console.log(`[YouTube] Poll ${attempt + 1}: status=${status}`);
 
-    if (statusData?.status === "completed" && statusData?.downloadUrl) {
-      return buildResponse({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality, data: statusData });
+    if (status === "completed" && statusData?.downloadUrl) {
+      return buildResponse({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality, audioOnly, data: { ...submitData, ...statusData } });
     }
 
-    if (statusData?.status === "failed" || statusData?.status === "error") {
+    if (status === "failed" || status === "error") {
       throw new Error(statusData?.message || "Konversi gagal di server.");
     }
+
+    // masih processing → lanjut poll
   }
 
-  throw new Error("Timeout: konversi memakan waktu terlalu lama.");
+  throw new Error("Timeout: konversi memakan waktu terlalu lama. Coba lagi sebentar.");
 }
 
-function buildResponse({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality, data }) {
-  const title     = data?.title || null;
-  const audioOnly = format !== "mp4";
+// ─── Response builder ────────────────────────────────────────────────────────
+
+function buildResponse({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality, audioOnly, data }) {
+  const title     = data?.title    || null;
+  const duration  = data?.duration || null;
+  const fileSize  = data?.fileSize || null;
   const safeTitle = (title || `youtube_${videoId}`)
-    .slice(0, 50)
-    .replace(/[\\/:*?"<>|]/g, "_");
+    .slice(0, 80)
+    .replace(/[\\/:*?"<>|]/g, "_")
+    .trim();
 
   return {
-    status: true, code: 200,
+    status: true,
+    code: 200,
     message: "Berhasil mengambil data media.",
-    author: { username: null, avatar: null, channel_url: null },
+    author: {
+      username: null,
+      avatar: null,
+      channel_url: null,
+    },
     video: {
       id: videoId,
       title,
-      duration: data?.duration || null,
+      duration,
       type: isShorts ? "shorts" : "video",
       quality: audioOnly ? null : quality,
       play: audioOnly ? null : data?.downloadUrl,
       audio_only: audioOnly ? data?.downloadUrl : null,
       cover: thumbHQ,
       filename: `${safeTitle}.${format}`,
+      file_size: fileSize,
     },
     audio: {
       play: audioOnly ? data?.downloadUrl : null,
       quality: audioOnly ? `${quality}kbps` : null,
       author: null,
     },
-    stats: { view_count: null, like_count: null, comment_count: null },
+    stats: {
+      view_count: null,
+      like_count: null,
+      comment_count: null,
+    },
     meta: {
       video_id: videoId,
       source_url: sourceUrl,
       thumbnail_hq: thumbHQ,
       thumbnail_mq: thumbMQ,
       is_shorts: isShorts,
-      provider: "ytdl.y2mp3.co",
+      format,
+      provider: "hub.ytconvert.org",
     },
   };
 }
 
+// ─── Util ────────────────────────────────────────────────────────────────────
+
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
