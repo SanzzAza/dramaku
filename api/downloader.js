@@ -287,82 +287,106 @@ async function fetchFacebook(url) {
   const fbRegex = /^https?:\/\/(www\.|m\.|web\.)?(facebook\.com|fb\.watch)\/.+/i;
   if (!fbRegex.test(url)) throw new Error("URL tidak valid. Masukkan link Facebook yang benar.");
 
-  // Resolve fb.watch / short URL dulu
+  // Step 1: Ambil cookie dari facebook.com dulu (supaya tidak 400)
+  let cookieJar = "locale=en_US; wd=1920x1080";
+  try {
+    const initResp = await fetch("https://www.facebook.com/", {
+      headers: {
+        "User-Agent": FB_UA,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+      signal: AbortSignal.timeout(10_000),
+    });
+    const rawCookies = initResp.headers.get("set-cookie") || "";
+    // Ambil semua nama=nilai dari set-cookie header
+    const parsed = rawCookies
+      .split(/,(?=[^ ][^=]+=)/)
+      .map(c => c.split(";")[0].trim())
+      .filter(c => c.includes("="))
+      .join("; ");
+    if (parsed) cookieJar = parsed + "; locale=en_US; wd=1920x1080";
+  } catch { /* pakai default cookie */ }
+
+  // Step 2: Resolve short URL / share URL
   let finalUrl = url;
-  if (url.includes("fb.watch") || url.includes("/share/")) {
-    try {
-      const headResp = await fetch(url, {
-        method: "GET",
-        headers: { "User-Agent": FB_UA },
-        redirect: "follow",
-        signal: AbortSignal.timeout(10_000),
-      });
-      finalUrl = headResp.url || url;
-    } catch { finalUrl = url; }
-  }
+  try {
+    const resolveResp = await fetch(url, {
+      method: "GET",
+      headers: { "User-Agent": FB_UA, "Cookie": cookieJar },
+      redirect: "follow",
+      signal: AbortSignal.timeout(10_000),
+    });
+    finalUrl = resolveResp.url || url;
+  } catch { finalUrl = url; }
 
-  // Fetch halaman Facebook langsung (pakai mobile UA supaya HTML lebih simpel)
-  const mobileUA = "Mozilla/5.0 (Linux; Android 12; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36";
-  const mUrl = finalUrl.replace("www.facebook.com", "m.facebook.com");
-
-  const pageResp = await fetch(mUrl, {
+  // Step 3: Fetch halaman video dengan cookie + header lengkap
+  const pageResp = await fetch(finalUrl, {
     headers: {
-      "User-Agent": mobileUA,
-      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "User-Agent": FB_UA,
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
       "Accept-Language": "en-US,en;q=0.9",
-      "sec-fetch-mode": "navigate",
+      "Cache-Control": "no-cache",
+      "Pragma": "no-cache",
+      "Sec-Ch-Ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+      "Sec-Ch-Ua-Mobile": "?0",
+      "Sec-Ch-Ua-Platform": '"Windows"',
+      "Sec-Fetch-Dest": "document",
+      "Sec-Fetch-Mode": "navigate",
+      "Sec-Fetch-Site": "none",
+      "Sec-Fetch-User": "?1",
+      "Upgrade-Insecure-Requests": "1",
+      "Cookie": cookieJar,
     },
     signal: AbortSignal.timeout(15_000),
   });
 
-  if (!pageResp.ok) throw new Error(`Facebook merespons ${pageResp.status}.`);
+  if (!pageResp.ok) throw new Error(`Gagal mengakses halaman Facebook (${pageResp.status}). Pastikan video bersifat publik.`);
   const html = await pageResp.text();
 
-  // Extract title
+  // Step 4: Extract title
   const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-  const title = titleMatch ? titleMatch[1].replace(" | Facebook", "").trim() : "No video title";
+  const title = titleMatch ? titleMatch[1].replace(/\s*[\|\-]\s*Facebook.*$/i, "").trim() : "No video title";
 
-  // Cari semua URL video fbcdn.net dari HTML
+  // Step 5: Extract URL video dari embedded JSON di HTML
   const hdUrl = extractFbVideo(html, ["hd_src", "playable_url_quality_hd", "browser_native_hd_url"]);
   const sdUrl = extractFbVideo(html, ["sd_src", "playable_url", "browser_native_sd_url"]);
 
   if (!hdUrl && !sdUrl) {
-    // Fallback: cari pattern fbcdn langsung
-    const fbcdnMatch = html.match(/https:\\\/\\\/video[-\w.]+\.fbcdn\.net\\\/[^"'\s]+\.mp4[^"'\s]*/g);
-    if (fbcdnMatch && fbcdnMatch.length > 0) {
-      const cleanUrl = fbcdnMatch[0].replace(/\\\//g, "/");
+    // Fallback: cari pola fbcdn.net langsung di HTML
+    const allMp4 = [...html.matchAll(/https:\\\/\\\/video[-\w.]+\.fbcdn\.net\\\/[^"' \\]+/g)]
+      .map(m => m[0].replace(/\\\//g, "/").replace(/\\u0026/g, "&"));
+    if (allMp4.length > 0) {
       return {
         creator: "@SanzXD", status: true, code: 200,
         message: "Berhasil mengambil data video Facebook.",
-        data: { title, description: null, sd: cleanUrl, hd: fbcdnMatch[1] ? fbcdnMatch[1].replace(/\\\//g, "/") : cleanUrl },
+        data: { title, description: null, sd: allMp4[0], hd: allMp4[1] || allMp4[0] },
       };
     }
-    throw new Error("Video tidak ditemukan. Pastikan video bersifat publik.");
+    throw new Error("Video tidak ditemukan. Pastikan video bersifat publik dan tidak dibatasi.");
   }
 
   return {
     creator: "@SanzXD", status: true, code: 200,
     message: "Berhasil mengambil data video Facebook.",
-    data: {
-      title,
-      description: null,
-      sd: sdUrl || hdUrl,
-      hd: hdUrl || sdUrl,
-    },
+    data: { title, description: null, sd: sdUrl || hdUrl, hd: hdUrl || sdUrl },
   };
 }
 
 function extractFbVideo(html, keys) {
   for (const key of keys) {
-    // Pattern: "key":"url" atau "key": "url"
-    const re1 = new RegExp(`"${key}"\\s*:\\s*"(https:[^"]+\\.mp4[^"]*)"`, "i");
+    const re1 = new RegExp(`"${key}"\\s*:\\s*"(https:[^"]+)"`, "i");
     const m1  = html.match(re1);
-    if (m1) return m1[1].replace(/\\u0026/g, "&").replace(/\\\//g, "/");
-
-    // Pattern: key:"url" (tanpa quote di key)
-    const re2 = new RegExp(`${key}:"(https:[^"]+\\.mp4[^"]*)"`, "i");
+    if (m1) {
+      const u = m1[1].replace(/\\u0026/g, "&").replace(/\\\//g, "/");
+      if (u.includes("fbcdn.net") || u.includes(".mp4")) return u;
+    }
+    const re2 = new RegExp(`${key}:"(https:[^"]+)"`, "i");
     const m2  = html.match(re2);
-    if (m2) return m2[1].replace(/\\u0026/g, "&").replace(/\\\//g, "/");
+    if (m2) {
+      const u = m2[1].replace(/\\u0026/g, "&").replace(/\\\//g, "/");
+      if (u.includes("fbcdn.net") || u.includes(".mp4")) return u;
+    }
   }
   return null;
 }
