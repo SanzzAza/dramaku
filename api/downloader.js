@@ -807,6 +807,11 @@ const TERABOX_DOMAINS = [
 const TERABOX_UA   = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 const TERABOX_HOST = "https://www.1024terabox.com";
 
+// ⚠️  Isi dengan cookie akun Terabox kamu yang sudah login
+// Cara ambil: buka 1024terabox.com → login → F12 → Network → request apapun → copy header Cookie
+// Cookie penting: ndus, ndut, csrfToken, lang, PANWEB, browserid
+const TERABOX_ACCOUNT_COOKIE = process.env.TERABOX_COOKIE || "";
+
 /** Parse semua Set-Cookie header → object { name: value } */
 function parseCookies(headers) {
   const out = {};
@@ -892,15 +897,28 @@ async function fetchTerabox(inputUrl) {
     }
   }
 
+  if (!jsToken && TERABOX_ACCOUNT_COOKIE) {
+    const m = TERABOX_ACCOUNT_COOKIE.match(/(?:^|;)\s*csrfToken=([^;]+)/i);
+    if (m) jsToken = decodeURIComponent(m[1]);
+  }
+
   if (!jsToken) {
-    // Debug: tampilkan potongan HTML yang relevan (jangan expose ke production log besar)
     const snippet = pageHtml.slice(0, 3000);
     const hasRedirect = /location\.href|window\.location/i.test(snippet);
     if (hasRedirect) throw new Error("Terabox redirect ke login. Link ini memerlukan akun untuk mengaksesnya.");
     throw new Error("Tidak dapat mengambil jsToken dari halaman. Terabox mungkin mengubah struktur HTML-nya.");
   }
 
-  const cookieStr = cookieObjToStr({ ...cookies });
+  // Gabungkan cookie dari scraping + cookie akun (akun override jika ada)
+  const accountCookies = TERABOX_ACCOUNT_COOKIE
+    ? Object.fromEntries(
+        TERABOX_ACCOUNT_COOKIE.split(";").map(c => {
+          const [k, ...v] = c.trim().split("=");
+          return [k.trim(), v.join("=").trim()];
+        })
+      )
+    : {};
+  const cookieStr = cookieObjToStr({ ...cookies, ...accountCookies });
 
   // ── Step 2: GET /api/shorturlinfo ─────────────────────────────────────────
   const infoParams = new URLSearchParams({
