@@ -1055,6 +1055,93 @@ async function fetchTerabox(inputUrl) {
     }
   }
 
+  // Strategi D: /api/download via share endpoint (method terbaru)
+  if (Object.keys(dlinkMap).length === 0) {
+    for (const file of onlyFiles.slice(0, 5)) {
+      try {
+        const dlParams = new URLSearchParams({
+          app_id    : "250528",
+          web       : "1",
+          channel   : "dubox",
+          clienttype: "0",
+          jsToken,
+          sign,
+          timestamp : String(timestamp),
+          shareid   : String(shareid),
+          uk        : String(uk),
+          primaryid : String(file.fs_id),
+          fid_list  : JSON.stringify([file.fs_id]),
+          product   : "share",
+          nozip     : "0",
+        });
+
+        const dlResp = await fetch(`${TERABOX_HOST}/api/download?${dlParams}`, {
+          headers: {
+            "User-Agent": TERABOX_UA,
+            "Cookie"    : cookieStr,
+            "Referer"   : shareUrl,
+            "Accept"    : "application/json, text/plain, */*",
+          },
+          signal: AbortSignal.timeout(20_000),
+        });
+
+        const dlText = await dlResp.text();
+        if (!dlDebug.download_api) dlDebug.download_api = { status: dlResp.status, body: dlText.slice(0, 500) };
+
+        const dlData = JSON.parse(dlText);
+        if (dlData?.dlink) dlinkMap[String(file.fs_id)] = dlData.dlink;
+        if (dlData?.list?.length) {
+          for (const item of dlData.list) {
+            if (item.fs_id && item.dlink) dlinkMap[String(item.fs_id)] = item.dlink;
+          }
+        }
+        // beberapa response pakai field "downloadlink"
+        if (dlData?.downloadlink) dlinkMap[String(file.fs_id)] = dlData.downloadlink;
+      } catch (_) {}
+    }
+  }
+
+  // Strategi E: /api/sharedownload
+  if (Object.keys(dlinkMap).length === 0) {
+    try {
+      const sdParams = new URLSearchParams({
+        app_id    : "250528",
+        web       : "1",
+        channel   : "dubox",
+        clienttype: "0",
+        jsToken,
+        sign,
+        timestamp : String(timestamp),
+        shareid   : String(shareid),
+        uk        : String(uk),
+        fs_id     : JSON.stringify(allFsIds),
+        product   : "share",
+        nozip     : "1",
+      });
+
+      const sdResp = await fetch(`${TERABOX_HOST}/api/sharedownload?${sdParams}`, {
+        headers: {
+          "User-Agent": TERABOX_UA,
+          "Cookie"    : cookieStr,
+          "Referer"   : shareUrl,
+          "Accept"    : "application/json, text/plain, */*",
+        },
+        signal: AbortSignal.timeout(20_000),
+      });
+
+      const sdText = await sdResp.text();
+      dlDebug.sharedownload = { status: sdResp.status, body: sdText.slice(0, 500) };
+
+      const sdData = JSON.parse(sdText);
+      if (sdData?.list?.length) {
+        for (const item of sdData.list) {
+          if (item.fs_id && item.dlink) dlinkMap[String(item.fs_id)] = item.dlink;
+        }
+      }
+      if (sdData?.dlink) dlinkMap[String(allFsIds[0])] = sdData.dlink;
+    } catch (_) {}
+  }
+
   dlDebug.shorturlinfo_sample = JSON.stringify(onlyFiles[0]).slice(0, 600);
 
   const files = onlyFiles.map(file => ({
