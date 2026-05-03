@@ -642,7 +642,7 @@ async function fetchTwitter(url) {
 
 async function fetchThreads(url) {
   // Support URL dengan query params seperti ?xmt=...
-  const threadsRegex = /^https?:\/\/(www\.)?threads\.net\/@?[\w.]+\/post\/[a-zA-Z0-9_-]+/i;
+  const threadsRegex = /^https?:\/\/(www\.)?(threads\.net|threads\.com)\/@?[\w.]+\/post\/[a-zA-Z0-9_-]+/i;
   const cleanUrl = url.split("?")[0]; // hapus query params untuk validasi
   if (!threadsRegex.test(cleanUrl)) throw new Error("URL tidak valid. Masukkan link post Threads yang benar.");
 
