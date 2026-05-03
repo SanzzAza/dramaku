@@ -66,6 +66,7 @@ const server = createServer(async (req, res) => {
   const apiMap = {
     "/api/downloader": "./api/downloader.js",
     "/api/tools":      "./api/tools.js",
+    "/api/proxy":      "./api/proxy.js",
   };
 
   if (apiMap[pathname]) {
