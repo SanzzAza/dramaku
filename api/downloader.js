@@ -80,9 +80,18 @@ const YT_HEADERS = {
   "Accept": "application/json",
 };
 
+// YouTube Internal API pakai client ANDROID_VR — langsung dapat googlevideo URL
+const YT_INNERTUBE_KEY = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8";
+const YT_INNERTUBE_CLIENT = {
+  clientName: "ANDROID_VR",
+  clientVersion: "1.60.19",
+  androidSdkVersion: 30,
+  userAgent: "com.google.android.apps.youtube.vr.oculus/1.60.19 (Linux; U; Android 10; GB) gzip",
+};
+
 async function fetchYoutube(req, url) {
-  const format  = req.query.format  || req.body?.format  || "mp3";
-  const quality = req.query.quality || req.body?.quality || "128";
+  const format  = (req.query.format  || req.body?.format  || "mp3").toLowerCase();
+  const quality = req.query.quality || req.body?.quality || (format === "mp4" ? "360" : "128");
 
   const ytRegex = /^https?:\/\/(www\.)?(youtube\.com\/(watch|shorts|embed)|youtu\.be)\/.+/i;
   if (!ytRegex.test(url)) throw new Error("URL tidak valid. Masukkan link YouTube, YouTube Shorts, atau youtu.be.");
@@ -94,11 +103,109 @@ async function fetchYoutube(req, url) {
   const thumbHQ   = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   const thumbMQ   = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
   const sourceUrl = `https://www.youtube.com/watch?v=${videoId}`;
-  const audioOnly = format !== "mp4";
 
+  // ── MP4: pakai YouTube InnerTube API langsung ──
+  if (format === "mp4") {
+    return await fetchYoutubeMP4({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, quality });
+  }
+
+  // ── MP3 / audio: pakai ytconvert.org ──
+  return await fetchYoutubeAudio({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality });
+}
+
+async function fetchYoutubeMP4({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, quality }) {
+  const payload = {
+    videoId,
+    context: {
+      client: YT_INNERTUBE_CLIENT,
+      thirdParty: { embedUrl: "https://www.youtube.com/" },
+    },
+    playbackContext: {
+      contentPlaybackContext: { html5Preference: "HTML5_PREF_WANTS" },
+    },
+    racyCheckOk: true,
+    contentCheckOk: true,
+  };
+
+  const resp = await fetch(`https://www.youtube.com/youtubei/v1/player?key=${YT_INNERTUBE_KEY}&prettyPrint=false`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "User-Agent": YT_INNERTUBE_CLIENT.userAgent,
+      "X-YouTube-Client-Name": "28",
+      "X-YouTube-Client-Version": YT_INNERTUBE_CLIENT.clientVersion,
+      "Origin": "https://www.youtube.com",
+    },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(15_000),
+  });
+
+  if (!resp.ok) throw new Error(`YouTube API merespons ${resp.status}.`);
+  const data = await resp.json();
+
+  const videoDetails = data?.videoDetails || {};
+  const title        = videoDetails?.title || null;
+  const duration     = videoDetails?.lengthSeconds ? parseInt(videoDetails.lengthSeconds) : null;
+  const formats      = data?.streamingData?.formats || [];
+  const adaptiveFormats = data?.streamingData?.adaptiveFormats || [];
+  const allFormats   = [...formats, ...adaptiveFormats];
+
+  if (!allFormats.length) throw new Error("Tidak ada format video yang tersedia. Video mungkin dibatasi atau privat.");
+
+  // Filter yang ada URL langsung (bukan encrypted)
+  const videoFormats = allFormats
+    .filter(f => f.url && f.mimeType?.includes("video/mp4") && f.width)
+    .sort((a, b) => (b.width || 0) - (a.width || 0));
+
+  const audioFormats = allFormats
+    .filter(f => f.url && f.mimeType?.includes("audio/mp4"))
+    .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
+
+  // Pilih resolusi sesuai quality param
+  const targetQ = parseInt(quality) || 360;
+  const QUALITY_MAP = { 2160: "2160p", 1440: "1440p", 1080: "1080p", 720: "720p", 480: "480p", 360: "360p", 240: "240p", 144: "144p" };
+  let chosen = videoFormats.find(f => f.height === targetQ)
+    || videoFormats.find(f => f.height <= targetQ)
+    || videoFormats[videoFormats.length - 1];
+
+  // Fallback ke format combined (video+audio dalam 1 file, biasanya <=360p)
+  const combinedFormats = formats
+    .filter(f => f.url && f.mimeType?.includes("video/mp4"))
+    .sort((a, b) => (b.height || 0) - (a.height || 0));
+
+  const bestCombined = combinedFormats.find(f => f.height <= targetQ) || combinedFormats[0];
+  const bestAudio    = audioFormats[0];
+
+  // Prioritas: combined (sudah ada audio) > adaptive video (butuh merge, kasih URL keduanya)
+  const useCombined = bestCombined && (!chosen || bestCombined.height >= (chosen.height || 0));
+  const finalVideo  = useCombined ? bestCombined : chosen;
+  const finalQ      = finalVideo?.height ? `${finalVideo.height}p` : `${targetQ}p`;
+
+  return {
+    creator: "@SanzXD", status: true, code: 200,
+    message: "Berhasil mengambil data video YouTube.",
+    result: {
+      title, duration,
+      type: isShorts ? "shorts" : "video",
+      quality: finalQ,
+      video_url: finalVideo?.url || null,
+      audio_url: useCombined ? null : (bestAudio?.url || null),
+      note: !useCombined && bestAudio ? "Video dan audio terpisah, gabungkan dengan FFmpeg untuk kualitas penuh." : null,
+      cover: thumbHQ,
+      thumbnail_mq: thumbMQ,
+      filename: `${(title || videoId).slice(0, 80).replace(/[\\/:*?"<>|]/g, "_")}.mp4`,
+      format: "mp4",
+    },
+    stats: { view_count: videoDetails.viewCount || null, like_count: null },
+    meta: { video_id: videoId, source_url: sourceUrl, is_shorts: isShorts, provider: "youtube-innertube" },
+  };
+}
+
+async function fetchYoutubeAudio({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality }) {
+  const audioOnly = true;
   const payload = {
     url: sourceUrl,
-    output: { type: audioOnly ? "audio" : "video", format, quality },
+    output: { type: "audio", format, quality },
   };
 
   const MAX_SUBMIT_RETRIES = 4;
