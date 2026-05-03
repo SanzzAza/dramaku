@@ -645,99 +645,32 @@ async function fetchThreads(url) {
   const cleanUrl = url.split("?")[0];
   if (!threadsRegex.test(cleanUrl)) throw new Error("URL tidak valid. Masukkan link post Threads yang benar.");
 
-  // Normalize ke threads.net (yang threadster.app support)
-  const netUrl = cleanUrl
-    .replace("www.threads.com", "www.threads.net")
-    .replace(/^(https?:\/\/)threads\.com/, "$1www.threads.net");
+  // Forward ke Cloudflare Worker (IP bukan datacenter, tidak diblock)
+  const workerUrl = `https://polished-salad-040b.sonicmlbb522.workers.dev/links?url=${encodeURIComponent(url)}`;
+  const resp = await fetch(workerUrl, {
+    headers: {
+      "Accept": "application/json",
+      "User-Agent": "Mozilla/5.0",
+    },
+    signal: AbortSignal.timeout(30_000),
+  });
 
-  // Helper: decode JWT payload
-  function decodeJwt(token) {
-    try {
-      const payload = token.split(".")[1];
-      const padded = payload + "=".repeat((4 - payload.length % 4) % 4);
-      return JSON.parse(Buffer.from(padded, "base64").toString("utf8"));
-    } catch { return {}; }
-  }
+  if (!resp.ok) throw new Error(`Worker merespons ${resp.status}.`);
+  const data = await resp.json();
 
-  // Helper: extract CDN info dari HTML threadster
-  function extractCdnInfo(html) {
-    const raw = html.replace(/&amp;/g, "&");
-    const cdnPattern = /https:\/\/downloads\.acxcdn\.com\/(?:vdfr|threadster)\/(?:video|image)\?token=[A-Za-z0-9_\-.]+/g;
-    const cdnUrls = [...new Set(raw.match(cdnPattern) || [])];
-
-    const result = { videoCdn: [], imageCdn: [], realVideoUrls: [], realImageUrls: [] };
-    for (const cdnUrl of cdnUrls) {
-      const isVideo = cdnUrl.includes("/video?");
-      const tokenMatch = cdnUrl.match(/token=([\w\-.]+)/);
-      if (tokenMatch) {
-        const payload = decodeJwt(tokenMatch[1]);
-        const realUrl = payload?.url || "";
-        if (isVideo) { result.videoCdn.push(cdnUrl); if (realUrl) result.realVideoUrls.push(realUrl); }
-        else         { result.imageCdn.push(cdnUrl); if (realUrl) result.realImageUrls.push(realUrl); }
-      }
-    }
-
-    // Fallback: direct mp4
-    if (result.videoCdn.length === 0) {
-      const mp4s = [...new Set((raw.match(/https?:\/\/[^\s"'<>&]+\.mp4[^\s"'<>&]*/g) || []))];
-      result.directMp4 = mp4s;
-    }
-    return result;
-  }
-
-  // POST ke threadster.app
-  async function fetchFromThreadster(tryUrl) {
-    const resp = await fetch("https://threadster.app/download", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "User-Agent": "Mozilla/5.0 (Linux; Android 12; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
-        "Referer": "https://threadster.app/download",
-        "Origin": "https://threadster.app",
-        "Accept": "text/html,application/xhtml+xml,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
-      },
-      body: `url=${encodeURIComponent(tryUrl)}`,
-      signal: AbortSignal.timeout(30_000),
-    });
-    if (!resp.ok) throw new Error(`threadster merespons ${resp.status}`);
-    return extractCdnInfo(await resp.text());
-  }
-
-  // Coba beberapa variant URL
-  const variants = [...new Set([cleanUrl, netUrl, url.split("?")[0]])];
-  let info = null;
-  for (const tryUrl of variants) {
-    try {
-      const result = await fetchFromThreadster(tryUrl);
-      const hasMedia = result.videoCdn.length > 0 || result.imageCdn.length > 0 ||
-                       result.realVideoUrls.length > 0 || (result.directMp4?.length > 0);
-      if (hasMedia) { info = result; break; }
-    } catch (_) {}
-    await new Promise(r => setTimeout(r, 1000));
-  }
-
-  if (!info) throw new Error("Media tidak ditemukan. Post mungkin privat atau tidak mengandung media.");
+  if (!data?.success) throw new Error(data?.error || "Media tidak ditemukan.");
 
   const medias = [];
-  // Prioritas: real URL dari JWT > CDN URL > direct mp4
-  if (info.realVideoUrls.length > 0) {
-    for (const u of info.realVideoUrls) medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: u });
-  } else if (info.videoCdn.length > 0) {
-    for (const u of info.videoCdn) medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: u });
-  } else if (info.directMp4?.length > 0) {
-    for (const u of info.directMp4.slice(0, 2)) medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: u });
+  for (const v of (data?.media?.videos || [])) {
+    medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: v.direct_url || v.cdn_url });
+  }
+  for (const img of (data?.media?.images || [])) {
+    medias.push({ type: "image", extension: "jpg", quality: "HD Image", url: img.direct_url || img.cdn_url });
   }
 
-  if (info.realImageUrls.length > 0) {
-    for (const u of info.realImageUrls) medias.push({ type: "image", extension: "jpg", quality: "HD Image", url: u });
-  } else if (info.imageCdn.length > 0) {
-    for (const u of info.imageCdn) medias.push({ type: "image", extension: "jpg", quality: "HD Image", url: u });
-  }
+  if (medias.length === 0) throw new Error("Media tidak ditemukan. Post mungkin privat atau tidak mengandung media.");
 
-  if (medias.length === 0) throw new Error("Tidak ada media yang bisa diekstrak.");
-
-  const thumbnail = info.realImageUrls[0] || info.imageCdn[0] || null;
+  const thumbnail = data?.media?.images?.[0]?.direct_url || null;
 
   return {
     creator: "@SanzXD", status: true, code: 200,
