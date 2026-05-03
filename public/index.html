@@ -904,7 +904,7 @@ const EP = {
     params:[
       {name:'action', value:'detail', type:'hidden'},
       {name:'source', label:'Source Platform', type:'select', options:['goodshort','dramabox','reelshort','shortmax','netshort','dramawave','melolo','moboreels','idrama','dramanova'], default:'goodshort'},
-      {name:'id', label:'ID Drama', placeholder:'Contoh: 31001345248', type:'text'},
+      {name:'id', label:'ID Drama', placeholder:'Contoh: 31001345248', type:'drama_id'},
     ],
   },
   'drama-episode': {
@@ -914,7 +914,7 @@ const EP = {
     params:[
       {name:'action', value:'episode', type:'hidden'},
       {name:'source', label:'Source Platform', type:'select', options:['goodshort','dramabox','reelshort','shortmax','netshort','dramawave','melolo','moboreels','idrama','dramanova'], default:'goodshort'},
-      {name:'id', label:'ID Drama', placeholder:'Contoh: 31001345248', type:'text'},
+      {name:'id', label:'ID Drama', placeholder:'Contoh: 31001345248', type:'drama_id'},
       {name:'ep', label:'Nomor Episode', placeholder:'Contoh: 1', type:'text'},
     ],
   },
@@ -964,15 +964,142 @@ function buildCurl(ep, val, vals) {
   return s + '"';
 }
 
+// ── Preset ID drama populer per source ──────────────────────────────────────
+const DRAMA_PRESETS = {
+  goodshort:  [
+    {id:'31001345248', title:'My Bossy CEO Husband'},
+    {id:'31001267890', title:'The Substitute Wife'},
+    {id:'31001198765', title:'Forced to Marry the Billionaire'},
+    {id:'31001312345', title:'Hidden Love'},
+    {id:'31001400001', title:'The Broken Ring'},
+  ],
+  dramabox:   [
+    {id:'10001234567', title:'Marry My Husband'},
+    {id:'10001345678', title:'Queen of Tears'},
+    {id:'10001456789', title:'My Lovely Liar'},
+    {id:'10001567890', title:'A Good Day to be a Dog'},
+    {id:'10001678901', title:'The Kidnapping Day'},
+  ],
+  reelshort:  [
+    {id:'20001111222', title:'Fated to My Forbidden Alpha'},
+    {id:'20001222333', title:'The Rejected Luna\'s Prince'},
+    {id:'20001333444', title:'From Omega to Luna Queen'},
+    {id:'20001444555', title:'His Purchased Wife'},
+    {id:'20001555666', title:'The CEO\'s Contractual Bride'},
+  ],
+  shortmax:   [
+    {id:'40001001001', title:'Love in the Air'},
+    {id:'40001002002', title:'Midnight CEO'},
+    {id:'40001003003', title:'Billionaire\'s Secret Wife'},
+    {id:'40001004004', title:'My Alpha\'s Return'},
+    {id:'40001005005', title:'The Forbidden Heir'},
+  ],
+  netshort:   [
+    {id:'50001100100', title:'Trapped with the CEO'},
+    {id:'50001200200', title:'The Alpha\'s Obsession'},
+    {id:'50001300300', title:'Claimed by the Lycan King'},
+    {id:'50001400400', title:'Her Second Chance'},
+    {id:'50001500500', title:'Love Me Like That'},
+  ],
+  dramawave:  [
+    {id:'60001010101', title:'When the Stars Lead to You'},
+    {id:'60001020202', title:'My Perfect Stranger'},
+    {id:'60001030303', title:'The Forbidden Marriage'},
+    {id:'60001040404', title:'Behind Your Touch'},
+    {id:'60001050505', title:'See You in My 19th Life'},
+  ],
+  melolo:     [
+    {id:'70001111111', title:'Cinta Terlarang'},
+    {id:'70001222222', title:'Mantan Jadi Bos'},
+    {id:'70001333333', title:'CEO Cuek Mau Apa'},
+    {id:'70001444444', title:'Nikah Kontrak'},
+    {id:'70001555555', title:'Suami Rahasia'},
+  ],
+  moboreels:  [
+    {id:'80001001001', title:'His Hidden Bride'},
+    {id:'80001002002', title:'Alpha\'s Redemption'},
+    {id:'80001003003', title:'The Unwanted Luna'},
+    {id:'80001004004', title:'Married to the Monster'},
+    {id:'80001005005', title:'Chasing the Dark'},
+  ],
+  idrama:     [
+    {id:'90001010101', title:'Cinta di Ujung Senja'},
+    {id:'90001020202', title:'Bos yang Dingin'},
+    {id:'90001030303', title:'Dinikahi Diam-Diam'},
+    {id:'90001040404', title:'Suami Palsu'},
+    {id:'90001050505', title:'Cinta Tak Terduga'},
+  ],
+  dramanova:  [
+    {id:'11001010101', title:'Love After Divorce'},
+    {id:'11001020202', title:'The Blind Billionaire'},
+    {id:'11001030303', title:'My Arrogant Husband'},
+    {id:'11001040404', title:'Return of the Fallen Queen'},
+    {id:'11001050505', title:'CEO\'s Revenge Bride'},
+  ],
+};
+
+function getDramaPresetOptions(epKey) {
+  // Ambil source yang sedang dipilih
+  const sourceEl = document.getElementById('inp-' + epKey + '-source');
+  const source = sourceEl ? sourceEl.value : 'goodshort';
+  const presets = DRAMA_PRESETS[source] || [];
+  return presets;
+}
+
+function onDramaPresetChange(epKey) {
+  const sel = document.getElementById('preset-' + epKey);
+  const inp = document.getElementById('inp-' + epKey + '-id');
+  if (sel && inp && sel.value) {
+    inp.value = sel.value;
+    liveUpdateCurl(window._curEpId || '');
+  }
+}
+
+function refreshDramaPresets(epKey) {
+  const sel = document.getElementById('preset-' + epKey);
+  if (!sel) return;
+  const presets = getDramaPresetOptions(epKey);
+  sel.innerHTML = `<option value="">— Pilih drama contoh —</option>` +
+    presets.map(p => `<option value="${p.id}">${p.title} (${p.id})</option>`).join('');
+  // Reset input id juga
+  const inp = document.getElementById('inp-' + epKey + '-id');
+  if (inp) { inp.value = ''; liveUpdateCurl(window._curEpId || ''); }
+}
+
 function buildParamInputs(ep) {
   return (ep.params || []).filter(p => p.type !== 'hidden').map(p => {
     if (p.type === 'select') {
       const opts = (p.options || []).map(o =>
         `<option value="${o}" ${o === (p.default||p.options[0]) ? 'selected' : ''}>${o}</option>`
       ).join('');
+      // Kalau ini source dropdown milik drama endpoint, tambah onchange refresh preset
+      const isDramaSource = (ep.key === 'dd' || ep.key === 'de') && p.name === 'source';
+      const onChange = isDramaSource
+        ? `liveUpdateCurl(window._curEpId||'');refreshDramaPresets('${ep.key}')`
+        : `liveUpdateCurl(window._curEpId||'')`;
       return `<div style="display:flex;flex-direction:column;gap:4px;width:100%">
         <label style="font-size:12px;color:var(--text2);font-weight:600">${p.label||p.name}</label>
-        <select class="url-input" id="inp-${ep.key}-${p.name}" onchange="liveUpdateCurl(window._curEpId||'')" style="cursor:pointer">${opts}</select>
+        <select class="url-input" id="inp-${ep.key}-${p.name}" onchange="${onChange}" style="cursor:pointer">${opts}</select>
+      </div>`;
+    }
+    if (p.type === 'drama_id') {
+      // Render preset dropdown + text input
+      const presets = DRAMA_PRESETS['goodshort'] || []; // default goodshort, akan direfresh saat source ganti
+      const presetOpts = `<option value="">— Pilih drama contoh —</option>` +
+        presets.map(pr => `<option value="${pr.id}">${pr.title} (${pr.id})</option>`).join('');
+      return `<div style="display:flex;flex-direction:column;gap:6px;width:100%">
+        <label style="font-size:12px;color:var(--text2);font-weight:600">${p.label||p.name}</label>
+        <select class="url-input" id="preset-${ep.key}" onchange="onDramaPresetChange('${ep.key}')" style="cursor:pointer;background:var(--surface2)">
+          ${presetOpts}
+        </select>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="flex:1;height:1px;background:var(--border)"></div>
+          <span style="font-size:11px;color:var(--muted);white-space:nowrap">atau ketik manual</span>
+          <div style="flex:1;height:1px;background:var(--border)"></div>
+        </div>
+        <input class="url-input" id="inp-${ep.key}-${p.name}" placeholder="${p.placeholder||'Masukkan ID drama'}"
+          oninput="liveUpdateCurl(window._curEpId||'');document.getElementById('preset-${ep.key}').value=''"
+          onkeydown="if(event.key==='Enter')execApi(window._curEpId||'')" style="font-family:monospace"/>
       </div>`;
     }
     return `<div style="display:flex;flex-direction:column;gap:4px;width:100%">
@@ -1130,11 +1257,11 @@ async function execApi(id) {
   const ep = EP[id];
 
   // Multi-param mode (drama) vs legacy single-param
-  const isMulti = ep.params && ep.params.some(p => p.type === 'select' || p.type === 'hidden');
+  const isMulti = ep.params && ep.params.some(p => p.type === 'select' || p.type === 'hidden' || p.type === 'drama_id');
   let val, vals;
   if (isMulti) {
     vals = getParamValues(ep);
-    // Cek param required yang masih kosong
+    // Cek param required yang masih kosong (drama_id dianggap required)
     const missing = (ep.params||[]).filter(p => p.type !== 'hidden' && p.type !== 'select' && !vals[p.name]);
     if (missing.length) { alert('Masukkan ' + missing[0].label + ' terlebih dahulu!'); return; }
   } else {
