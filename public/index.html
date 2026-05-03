@@ -679,6 +679,42 @@ body::before{
       </div>
     </div>
   </div>
+
+  <div class="cat-label">DRAMA</div>
+  <div class="api-list">
+    <div class="api-item" data-name="Drama Search" data-desc="Cari drama dari GoodShort, DramaBox, Melolo, dll." data-cat="drama" onclick="openEndpoint('drama-search')">
+      <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+      <div class="api-info">
+        <div class="api-name-row"><span class="api-name">Drama Search</span><span class="api-badge">DRAMA</span></div>
+        <div class="api-desc">Cari drama dari GoodShort, DramaBox, Melolo, dan 12 platform lainnya.</div>
+      </div>
+      <span class="api-chevron">›</span>
+    </div>
+    <div class="api-item" data-name="Drama Trending" data-desc="Drama trending dari berbagai platform." data-cat="drama" onclick="openEndpoint('drama-trending')">
+      <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+      <div class="api-info">
+        <div class="api-name-row"><span class="api-name">Drama Trending</span><span class="api-badge">DRAMA</span></div>
+        <div class="api-desc">Drama yang sedang trending di platform pilihan.</div>
+      </div>
+      <span class="api-chevron">›</span>
+    </div>
+    <div class="api-item" data-name="Drama Detail" data-desc="Info lengkap drama beserta daftar episode." data-cat="drama" onclick="openEndpoint('drama-detail')">
+      <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+      <div class="api-info">
+        <div class="api-name-row"><span class="api-name">Drama Detail</span><span class="api-badge">DRAMA</span></div>
+        <div class="api-desc">Sinopsis, poster, genre, dan list episode dari drama.</div>
+      </div>
+      <span class="api-chevron">›</span>
+    </div>
+    <div class="api-item" data-name="Drama Episode" data-desc="Link video episode langsung bisa diputar." data-cat="drama" onclick="openEndpoint('drama-episode')">
+      <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+      <div class="api-info">
+        <div class="api-name-row"><span class="api-name">Drama Episode</span><span class="api-badge">DRAMA</span></div>
+        <div class="api-desc">Dapatkan URL video episode (.mp4) yang bisa langsung diputar.</div>
+      </div>
+      <span class="api-chevron">›</span>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════ DETAIL ═══════════ -->
@@ -842,6 +878,46 @@ const EP = {
     placeholder:'https://www.threads.net/@user/post/abc123',
     params:[{name:'url',type:'string',req:true,desc:'URL post Threads'}]
   },
+  'drama-search': {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>',
+    name:'Drama Search', badge:'DRAMA', method:'GET', path:'/api/drama', key:'ds',
+    desc:'Cari drama dari berbagai platform short drama. Pilih source dan masukkan kata kunci pencarian.',
+    params:[
+      {name:'action', value:'search', type:'hidden'},
+      {name:'source', label:'Source Platform', type:'select', options:['goodshort','dramabox','reelshort','shortmax','netshort','dramawave','melolo','moboreels','idrama','dramanova'], default:'goodshort'},
+      {name:'query', label:'Kata Kunci', placeholder:'Contoh: cinta, CEO, balas dendam...', type:'text'},
+    ],
+  },
+  'drama-trending': {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
+    name:'Drama Trending', badge:'DRAMA', method:'GET', path:'/api/drama', key:'dt',
+    desc:'Drama yang sedang trending di platform pilihan.',
+    params:[
+      {name:'action', value:'trending', type:'hidden'},
+      {name:'source', label:'Source Platform', type:'select', options:['goodshort','dramabox','reelshort','shortmax','netshort','dramawave','melolo','moboreels','idrama','dramanova'], default:'goodshort'},
+    ],
+  },
+  'drama-detail': {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+    name:'Drama Detail', badge:'DRAMA', method:'GET', path:'/api/drama', key:'dd',
+    desc:'Info lengkap drama: sinopsis, poster, genre, total episode, dan list episode.',
+    params:[
+      {name:'action', value:'detail', type:'hidden'},
+      {name:'source', label:'Source Platform', type:'select', options:['goodshort','dramabox','reelshort','shortmax','netshort','dramawave','melolo','moboreels','idrama','dramanova'], default:'goodshort'},
+      {name:'id', label:'ID Drama', placeholder:'Contoh: 31001345248', type:'text'},
+    ],
+  },
+  'drama-episode': {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
+    name:'Drama Episode', badge:'DRAMA', method:'GET', path:'/api/drama', key:'de',
+    desc:'Dapatkan URL video episode (.mp4) yang bisa langsung diputar. Beberapa episode mungkin terkunci (locked) di platform aslinya.',
+    params:[
+      {name:'action', value:'episode', type:'hidden'},
+      {name:'source', label:'Source Platform', type:'select', options:['goodshort','dramabox','reelshort','shortmax','netshort','dramawave','melolo','moboreels','idrama','dramanova'], default:'goodshort'},
+      {name:'id', label:'ID Drama', placeholder:'Contoh: 31001345248', type:'text'},
+      {name:'ep', label:'Nomor Episode', placeholder:'Contoh: 1', type:'text'},
+    ],
+  },
   terabox: {
     icon:'<svg viewBox="0 0 24 24" width="28" height="28" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#1677ff"/><path d="M12 5L5 8.5v7L12 19l7-3.5v-7L12 5z" fill="none" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path d="M5 8.5l7 3.5 7-3.5M12 12v7" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>',
     name:'Terabox DL', badge:'DOWNLOADER', method:'GET', path:'/api/downloader', platform:'terabox', key:'tb',
@@ -872,15 +948,50 @@ const EP = {
   }
 };
 
-function buildCurl(ep, val) {
-  val = val || ep.placeholder;
-  let paramName = ep.params[0].name;
+function buildCurl(ep, val, vals) {
   let s = `curl "${base}${ep.path}?`;
   if (ep.platform) s += `platform=${ep.platform}&`;
-  if (ep.tool) s += `tool=${ep.tool}&`;
-  s += `${paramName}=${encodeURIComponent(val)}`;
-  if (ep.key === 'yt') s += `&format=${ytFormat}&quality=${ytQuality}`;
+  if (ep.tool)     s += `tool=${ep.tool}&`;
+  if (vals) {
+    // multi-param mode (drama endpoints)
+    s += Object.entries(vals).map(([k,v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+  } else {
+    // legacy single-param mode
+    val = val || ep.placeholder;
+    s += `${ep.params[0].name}=${encodeURIComponent(val)}`;
+    if (ep.key === 'yt') s += `&format=${ytFormat}&quality=${ytQuality}`;
+  }
   return s + '"';
+}
+
+function buildParamInputs(ep) {
+  return (ep.params || []).filter(p => p.type !== 'hidden').map(p => {
+    if (p.type === 'select') {
+      const opts = (p.options || []).map(o =>
+        `<option value="${o}" ${o === (p.default||p.options[0]) ? 'selected' : ''}>${o}</option>`
+      ).join('');
+      return `<div style="display:flex;flex-direction:column;gap:4px;width:100%">
+        <label style="font-size:12px;color:var(--text2);font-weight:600">${p.label||p.name}</label>
+        <select class="url-input" id="inp-${ep.key}-${p.name}" onchange="liveUpdateCurl(window._curEpId||'')" style="cursor:pointer">${opts}</select>
+      </div>`;
+    }
+    return `<div style="display:flex;flex-direction:column;gap:4px;width:100%">
+      <label style="font-size:12px;color:var(--text2);font-weight:600">${p.label||p.name}</label>
+      <input class="url-input" id="inp-${ep.key}-${p.name}" placeholder="${p.placeholder||''}"
+        oninput="liveUpdateCurl(window._curEpId||'')"
+        onkeydown="if(event.key==='Enter')execApi(window._curEpId||'')"/>
+    </div>`;
+  }).join('');
+}
+
+function getParamValues(ep) {
+  const vals = {};
+  (ep.params || []).forEach(p => {
+    if (p.type === 'hidden') { vals[p.name] = p.value; return; }
+    const el = document.getElementById('inp-' + ep.key + '-' + p.name);
+    if (el) vals[p.name] = el.value.trim() || p.placeholder || '';
+  });
+  return vals;
 }
 
 function openEndpoint(id) {
@@ -954,11 +1065,9 @@ function openEndpoint(id) {
       </div>
       ${ytOpts}
       <div class="try-body">
-        <div class="try-row">
-          <input class="url-input" id="inp-${ep.key}" placeholder="${ep.placeholder}"
-            oninput="liveUpdateCurl('${id}')"
-            onkeydown="if(event.key==='Enter')execApi('${id}')"/>
-          <button class="btn-exec" id="btn-${ep.key}" onclick="execApi('${id}')">
+        <div class="try-row" style="flex-direction:column;gap:8px">
+          ${buildParamInputs(ep)}
+          <button class="btn-exec" id="btn-${ep.key}" onclick="execApi('${id}')" style="width:100%">
             <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
             Execute
           </button>
@@ -980,10 +1089,12 @@ function openEndpoint(id) {
 }
 
 function liveUpdateCurl(id) {
+  if (!id) return;
   const ep = EP[id];
-  const val = document.getElementById('inp-' + ep.key)?.value.trim() || ep.placeholder;
+  if (!ep) return;
+  const vals = getParamValues(ep);
   const el = document.getElementById('curl-' + ep.key);
-  if (el) el.textContent = buildCurl(ep, val);
+  if (el) el.textContent = buildCurl(ep, null, vals);
 }
 
 function setFmt(f, btn, id) {
@@ -1017,8 +1128,19 @@ function setQual(q, btn, id) {
 
 async function execApi(id) {
   const ep = EP[id];
-  const val = document.getElementById('inp-' + ep.key)?.value.trim();
-  if (!val) { alert('Masukkan ' + ep.params[0].name + ' terlebih dahulu!'); return; }
+
+  // Multi-param mode (drama) vs legacy single-param
+  const isMulti = ep.params && ep.params.some(p => p.type === 'select' || p.type === 'hidden');
+  let val, vals;
+  if (isMulti) {
+    vals = getParamValues(ep);
+    // Cek param required yang masih kosong
+    const missing = (ep.params||[]).filter(p => p.type !== 'hidden' && p.type !== 'select' && !vals[p.name]);
+    if (missing.length) { alert('Masukkan ' + missing[0].label + ' terlebih dahulu!'); return; }
+  } else {
+    val = document.getElementById('inp-' + ep.key)?.value.trim();
+    if (!val) { alert('Masukkan ' + ep.params[0].name + ' terlebih dahulu!'); return; }
+  }
 
   const btn = document.getElementById('btn-' + ep.key);
   btn.disabled = true;
@@ -1032,12 +1154,18 @@ async function execApi(id) {
   rb.innerHTML = '';
 
   try {
-    const paramName = ep.params[0].name;
     let url = `${base}${ep.path}?`;
-    if (ep.platform) url += `platform=${ep.platform}&`;
-    if (ep.tool) url += `tool=${ep.tool}&`;
-    url += `${paramName}=${encodeURIComponent(val)}`;
-    if (id === 'youtube') url += `&format=${ytFormat}&quality=${ytQuality}`;
+    if (isMulti) {
+      if (ep.platform) url += `platform=${ep.platform}&`;
+      if (ep.tool) url += `tool=${ep.tool}&`;
+      url += Object.entries(vals).map(([k,v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+    } else {
+      const paramName = ep.params[0].name;
+      if (ep.platform) url += `platform=${ep.platform}&`;
+      if (ep.tool) url += `tool=${ep.tool}&`;
+      url += `${paramName}=${encodeURIComponent(val)}`;
+      if (id === 'youtube') url += `&format=${ytFormat}&quality=${ytQuality}`;
+    }
     const resp = await fetch(url);
     const data = await resp.json();
     rc.innerHTML = hl(JSON.stringify(data, null, 2));
