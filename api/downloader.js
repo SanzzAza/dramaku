@@ -963,18 +963,34 @@ async function fetchTerabox(inputUrl) {
   const onlyFiles = listData.list.filter(f => f.isdir !== "1");
   if (!onlyFiles.length) throw new Error("Tidak ada file yang ditemukan.");
 
-  // ── Fetch dlink via /api/download pakai fs_id ─────────────────────────────
-  // /share/list tidak return dlink, perlu request terpisah
-  const uk      = listData.uk      || listData.list?.[0]?.uk      || "";
-  const shareid = listData.shareid || listData.list?.[0]?.shareid || "";
-  const sign    = listData.sign    || "";
-  const timestamp = listData.timestamp || "";
-
   const fsIds = onlyFiles.map(f => f.fs_id).filter(Boolean);
-
   let dlinkMap = {};
 
-  if (fsIds.length && uk && shareid) {
+  // ── Step 1: Ambil uk, shareid, sign, timestamp dari shorturlinfo ──────────
+  let uk = "", shareid = "", sign = "", timestamp = "";
+  try {
+    const infoResp = await fetch(
+      `https://www.1024tera.com/api/shorturlinfo?${new URLSearchParams({
+        app_id: "250528", web: "1", channel: "dubox", clienttype: "0",
+        jsToken, dplogid: logId, shorturl: finalSurl, root: "1",
+      })}`,
+      { headers: { "User-Agent": TERABOX_UA, "Cookie": cookieStr, "Referer": finalUrl }, signal: AbortSignal.timeout(15_000) }
+    );
+    const infoData = await infoResp.json();
+    if (infoData.errno === 0) {
+      uk        = String(infoData.uk        || "");
+      shareid   = String(infoData.shareid   || "");
+      sign      = String(infoData.sign      || "");
+      timestamp = String(infoData.timestamp || "");
+      // Kadang dlink sudah ada di sini
+      for (const f of (infoData.list || [])) {
+        if (f.dlink) dlinkMap[String(f.fs_id)] = f.dlink;
+      }
+    }
+  } catch (_) {}
+
+  // ── Step 2: Fetch dlink via /api/download pakai fs_id ────────────────────
+  if (fsIds.length && uk && shareid && !Object.keys(dlinkMap).length) {
     try {
       const dlParams = new URLSearchParams({
         app_id    : "250528",
@@ -983,11 +999,8 @@ async function fetchTerabox(inputUrl) {
         clienttype: "0",
         jsToken   : jsToken,
         dplogid   : logId,
-        sign      : sign,
-        timestamp : String(timestamp),
-        shareid   : String(shareid),
-        uk        : String(uk),
-        primaryid : fsIds[0],
+        sign, timestamp, shareid, uk,
+        primaryid : String(fsIds[0]),
         fid_list  : JSON.stringify(fsIds),
       });
       const dlResp = await fetch(`https://www.1024tera.com/api/download?${dlParams}`, {
@@ -1003,7 +1016,7 @@ async function fetchTerabox(inputUrl) {
     } catch (_) {}
   }
 
-  // Fallback: cek dlink langsung dari list item
+  // Fallback: ambil dlink langsung dari list item kalau ada
   for (const f of onlyFiles) {
     if (f.dlink && !dlinkMap[String(f.fs_id)]) {
       dlinkMap[String(f.fs_id)] = f.dlink;
