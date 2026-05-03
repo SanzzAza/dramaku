@@ -1,20 +1,27 @@
 /**
- * Terabox Proxy — stream/download file langsung dari server
- * 
+ * Terabox Proxy — redirect ke URL Terabox dengan header yang benar
+ *
  * GET /api/proxy?url=https://d8.freeterabox.com/...
- * 
- * Endpoint ini mem-proxy request ke Terabox dengan header yang benar,
- * sehingga file bisa diplay/download langsung dari browser.
+ *
+ * Karena Vercel tidak bisa stream file besar (limit 4.5MB / 10s timeout),
+ * endpoint ini fetch URL final dari Terabox (ikuti redirect), lalu
+ * kembalikan 302 redirect ke URL final tersebut.
+ * Browser akan download langsung dari CDN Terabox.
  */
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin" : "*",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Range",
-  "Access-Control-Expose-Headers": "Content-Length, Content-Range, Content-Type",
 };
 
 const TERABOX_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+
+const ALLOWED_DOMAINS = [
+  "freeterabox.com", "1024terabox.com", "terabox.com",
+  "teraboxapp.com", "terafileshare.com", "nephobox.com",
+  "4funbox.com", "mirrorbox.cc", "gibibox.com",
+];
 
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
@@ -38,13 +45,6 @@ export default async function handler(req, res) {
     }));
   }
 
-  // Validasi hanya domain Terabox yang diizinkan
-  const ALLOWED_DOMAINS = [
-    "freeterabox.com", "1024terabox.com", "terabox.com",
-    "teraboxapp.com", "terafileshare.com", "nephobox.com",
-    "4funbox.com", "mirrorbox.cc", "gibibox.com",
-  ];
-
   let parsedUrl;
   try {
     parsedUrl = new URL(url);
@@ -60,57 +60,35 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Forward Range header untuk support video seeking
-    const reqHeaders = {
-      "User-Agent": TERABOX_UA,
-      "Referer"   : "https://www.1024terabox.com/",
-      "Origin"    : "https://www.1024terabox.com",
-      "Accept"    : "*/*",
-    };
-
-    if (req.headers?.range) {
-      reqHeaders["Range"] = req.headers.range;
-    }
-
+    // Fetch HEAD dulu untuk ikuti redirect dan dapat final URL
+    // Terabox biasanya redirect 1-2x ke CDN node yang sebenarnya
     const upstream = await fetch(url, {
-      headers: reqHeaders,
+      method  : "HEAD",
+      headers : {
+        "User-Agent": TERABOX_UA,
+        "Referer"   : "https://www.1024terabox.com/",
+        "Origin"    : "https://www.1024terabox.com",
+      },
       redirect: "follow",
-      signal  : AbortSignal.timeout(30_000),
+      signal  : AbortSignal.timeout(10_000),
     });
 
-    // Forward headers penting ke client
-    const resHeaders = { ...CORS_HEADERS };
-    const forwardHeaders = [
-      "content-type", "content-length", "content-range",
-      "accept-ranges", "last-modified", "etag",
-    ];
-    for (const h of forwardHeaders) {
-      const val = upstream.headers.get(h);
-      if (val) resHeaders[h] = val;
-    }
+    // URL final setelah semua redirect diikuti
+    const finalUrl = upstream.url || url;
 
-    // Force download atau inline tergantung parameter
-    const filename = req.query?.filename || parsedUrl.pathname.split("/").pop() || "file";
-    const mode = req.query?.mode || "inline"; // inline = play di browser, attachment = download
-    resHeaders["Content-Disposition"] = `${mode}; filename="${decodeURIComponent(filename)}"`;
+    // Redirect browser langsung ke CDN Terabox
+    res.writeHead(302, {
+      ...CORS_HEADERS,
+      "Location": finalUrl,
+    });
+    return res.end();
 
-    res.writeHead(upstream.status, resHeaders);
-
-    // Stream response langsung ke client
-    if (upstream.body) {
-      const reader = upstream.body.getReader();
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        res.write(Buffer.from(value));
-      }
-    }
-
-    res.end();
-  } catch (err) {
-    if (!res.headersSent) {
-      res.writeHead(500, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ status: false, message: err.message || "Gagal proxy file." }));
-    }
+  } catch (_) {
+    // Kalau HEAD gagal, langsung redirect ke URL original
+    res.writeHead(302, {
+      ...CORS_HEADERS,
+      "Location": url,
+    });
+    return res.end();
   }
 }
