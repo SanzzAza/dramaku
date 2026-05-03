@@ -645,38 +645,138 @@ async function fetchThreads(url) {
   const cleanUrl = url.split("?")[0];
   if (!threadsRegex.test(cleanUrl)) throw new Error("URL tidak valid. Masukkan link post Threads yang benar.");
 
-  // Forward ke Cloudflare Worker (IP bukan datacenter, tidak diblock)
-  const workerUrl = `https://polished-salad-040b.sonicmlbb522.workers.dev/links?url=${encodeURIComponent(url)}`;
-  const resp = await fetch(workerUrl, {
-    headers: {
-      "Accept": "application/json",
-      "User-Agent": "Mozilla/5.0",
-    },
-    signal: AbortSignal.timeout(30_000),
-  });
-
-  if (!resp.ok) throw new Error(`Worker merespons ${resp.status}.`);
-  const data = await resp.json();
-
-  if (!data?.success) throw new Error(data?.error || "Media tidak ditemukan.");
-
-  const medias = [];
-  for (const v of (data?.media?.videos || [])) {
-    medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: v.direct_url || v.cdn_url });
-  }
-  for (const img of (data?.media?.images || [])) {
-    medias.push({ type: "image", extension: "jpg", quality: "HD Image", url: img.direct_url || img.cdn_url });
-  }
-
-  if (medias.length === 0) throw new Error("Media tidak ditemukan. Post mungkin privat atau tidak mengandung media.");
-
-  const thumbnail = data?.media?.images?.[0]?.direct_url || null;
-
-  return {
-    creator: "@SanzXD", status: true, code: 200,
-    message: "Berhasil mengambil media Threads.",
-    result: { title: null, thumbnail, medias },
+  const BASE = "https://threadsmate.com";
+  const HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Linux; Android 12; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
+    "Accept": "text/html,application/json,*/*",
+    "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Referer": "https://threadsmate.com/",
+    "Origin": "https://threadsmate.com",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "same-origin",
+    "Cache-Control": "max-age=0",
   };
+
+  // Normalize URL ke threads.net
+  const netUrl = cleanUrl
+    .replace("www.threads.com", "www.threads.net")
+    .replace(/^https:\/\/threads\.com/, "https://www.threads.net");
+  const variants = [...new Set([cleanUrl, url.split("?")[0], netUrl])];
+
+  // Helper: extract video/image dari HTML response
+  function extractMedia(html) {
+    const medias = [];
+    const seen = new Set();
+
+    // Pattern 1: direct mp4 URLs
+    const mp4Matches = [...html.matchAll(/https?:\/\/[^\s"'<>&]+\.mp4[^\s"'<>&]*/gi)];
+    for (const m of mp4Matches) {
+      const u = m[0].replace(/&amp;/g, "&");
+      if (!seen.has(u)) { seen.add(u); medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: u }); }
+    }
+
+    // Pattern 2: CDN token URLs (acxcdn style)
+    const cdnMatches = [...html.matchAll(/https:\/\/[^\s"'<>&]*(?:cdn|download|media)[^\s"'<>&]*token=[^\s"'<>&]+/gi)];
+    for (const m of cdnMatches) {
+      const u = m[0].replace(/&amp;/g, "&");
+      if (!seen.has(u)) { seen.add(u); medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: u }); }
+    }
+
+    // Pattern 3: video src dalam tag
+    const videoSrc = [...html.matchAll(/<(?:video|source)[^>]+src=["\'"]([^"\'">]+)["\'"][^>]*>/gi)];
+    for (const m of videoSrc) {
+      const u = m[1].replace(/&amp;/g, "&");
+      if (!seen.has(u)) { seen.add(u); medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: u }); }
+    }
+
+    // Pattern 4: download link href
+    const dlLinks = [...html.matchAll(/href=["\'"]([^"\'">]+\.mp4[^"\'">]*)["\'"][^>]*>/gi)];
+    for (const m of dlLinks) {
+      const u = m[1].replace(/&amp;/g, "&");
+      if (!seen.has(u)) { seen.add(u); medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: u }); }
+    }
+
+    // Pattern 5: image URLs (cdninstagram, fbcdn, pinimg)
+    const imgMatches = [...html.matchAll(/https?:\/\/[^\s"'<>&]*(?:cdninstagram|fbcdn|scontent)[^\s"'<>&]*\.jpg[^\s"'<>&]*/gi)];
+    for (const m of imgMatches) {
+      const u = m[0].replace(/&amp;/g, "&");
+      if (!seen.has(u)) { seen.add(u); medias.push({ type: "image", extension: "jpg", quality: "HD Image", url: u }); }
+    }
+
+    return medias;
+  }
+
+  // Step 1: GET homepage dulu untuk dapat cookies & token
+  let cookies = "";
+  let csrfToken = "";
+  try {
+    const homeResp = await fetch(BASE + "/id", {
+      headers: HEADERS,
+      signal: AbortSignal.timeout(15_000),
+    });
+    const setCookie = homeResp.headers.get("set-cookie") || "";
+    cookies = setCookie.split(",").map(c => c.split(";")[0].trim()).filter(Boolean).join("; ");
+
+    if (homeResp.ok) {
+      const homeHtml = await homeResp.text();
+      // Cari CSRF token / hidden input
+      const csrfMatch = homeHtml.match(/name=["\'"](?:_token|csrf|token)["\'"][^>]*value=["\'"]([^"\'">]+)["\'"]/) ||
+                        homeHtml.match(/value=["\'"]([^"\'">]+)["\'"][^>]*name=["\'"](?:_token|csrf|token)["\'"]/);
+      if (csrfMatch) csrfToken = csrfMatch[1];
+    }
+  } catch (_) {}
+
+  // Step 2: POST ke berbagai endpoint dengan berbagai payload
+  const endpoints = ["/id", "/"];
+  const payloadKeys = ["url", "link", "q", "video_url"];
+
+  for (const endpoint of endpoints) {
+    for (const tryUrl of variants) {
+      for (const key of payloadKeys) {
+        try {
+          const formData = new URLSearchParams();
+          formData.append(key, tryUrl);
+          if (csrfToken) formData.append("_token", csrfToken);
+
+          const postHeaders = {
+            ...HEADERS,
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Referer": BASE + endpoint,
+            "Origin": BASE,
+          };
+          if (cookies) postHeaders["Cookie"] = cookies;
+
+          const resp = await fetch(BASE + endpoint, {
+            method: "POST",
+            headers: postHeaders,
+            body: formData.toString(),
+            redirect: "follow",
+            signal: AbortSignal.timeout(20_000),
+          });
+
+          if (!resp.ok) continue;
+          const html = await resp.text();
+
+          const medias = extractMedia(html);
+          if (medias.length > 0) {
+            const thumbnail = medias.find(m => m.type === "image")?.url || null;
+            return {
+              creator: "@SanzXD", status: true, code: 200,
+              message: "Berhasil mengambil media Threads.",
+              result: { title: null, thumbnail, medias },
+            };
+          }
+        } catch (_) { continue; }
+        await new Promise(r => setTimeout(r, 500));
+      }
+    }
+  }
+
+  throw new Error("Media tidak ditemukan. Post mungkin privat atau tidak mengandung media.");
 }
 
 // ─── Util ─────────────────────────────────────────────────────────────────────
