@@ -507,9 +507,23 @@ const PIN_UA = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/b
 
 async function fetchPinterest(url) {
   const pinRegex = /^https?:\/\/(www\.|id\.|in\.)?pinterest\.(com|co\.uk|co\.id)\/pin\/.+/i;
-  if (!pinRegex.test(url)) throw new Error("URL tidak valid. Masukkan link Pinterest pin yang benar.");
+  const shortRegex = /^https?:\/\/pin\.it\/[a-zA-Z0-9]+/i;
 
-  const resp = await fetch(url, {
+  // Resolve pin.it short URL dulu
+  let resolvedUrl = url;
+  if (shortRegex.test(url)) {
+    const r = await fetch(url, {
+      method: "HEAD",
+      headers: { "User-Agent": PIN_UA },
+      redirect: "follow",
+      signal: AbortSignal.timeout(10_000),
+    });
+    resolvedUrl = r.url || url;
+  }
+
+  if (!pinRegex.test(resolvedUrl)) throw new Error("URL tidak valid. Masukkan link Pinterest pin atau pin.it yang benar.");
+
+  const resp = await fetch(resolvedUrl, {
     headers: { "User-Agent": PIN_UA, "Accept": "text/html,application/xhtml+xml", "Accept-Language": "en-US,en;q=0.9" },
     signal: AbortSignal.timeout(12_000),
   });
@@ -525,14 +539,29 @@ async function fetchPinterest(url) {
   const videoUrl = getMeta("og:video") || getMeta("og:video:url");
   const imageUrl = getMeta("og:image");
   const title    = getMeta("og:title");
-  const desc     = getMeta("og:description");
 
   if (!videoUrl && !imageUrl) throw new Error("Media tidak ditemukan di pin ini.");
+
+  // Build medias array
+  const medias = [];
+  if (videoUrl) {
+    medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: videoUrl });
+  }
+  if (imageUrl) {
+    // Upgrade ke HD: ganti /236x/, /474x/, /736x/ dengan /originals/
+    const hdImage = imageUrl.replace(/\/\d+x\//, "/originals/");
+    medias.push({ type: "image", extension: "jpg", quality: "HD Image", url: hdImage });
+  }
 
   return {
     creator: "@SanzXD", status: true, code: 200,
     message: "Berhasil mengambil media Pinterest.",
-    result: { source_url: url, type: videoUrl ? "video" : "image", title: title || null, description: desc || null, media: { url: videoUrl || imageUrl, video: videoUrl || null, image: imageUrl || null }, provider: "pinterest.com" },
+    result: {
+      title: title || null,
+      duration: null,
+      thumbnail: imageUrl || null,
+      medias,
+    },
   };
 }
 
