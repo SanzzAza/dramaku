@@ -640,143 +640,145 @@ async function fetchTwitter(url) {
 
 // ─── Threads ──────────────────────────────────────────────────────────────────
 
+/**
+ * Decode ssscdn.io URL yang di-encode base64
+ * https://ssscdn.io/savethr/aHR0cH... → real URL
+ * Port dari Python: decode_ssscdn_url()
+ */
+function decodeSsscdnUrl(encodedUrl) {
+  try {
+    let path = encodedUrl.split("/savethr/").pop();
+    path = path.replace(/^[ap]\//, ""); // hapus prefix a/ atau p/
+    path += "=".repeat((4 - (path.length % 4)) % 4); // fix padding
+    return Buffer.from(path, "base64").toString("utf-8");
+  } catch (_) {
+    return "";
+  }
+}
+
 async function fetchThreads(url) {
   const threadsRegex = /^https?:\/\/(www\.)?(threads\.net|threads\.com)\/@?[\w.]+\/post\/[a-zA-Z0-9_-]+/i;
   const cleanUrl = url.split("?")[0];
   if (!threadsRegex.test(cleanUrl)) throw new Error("URL tidak valid. Masukkan link post Threads yang benar.");
 
-  const BASE = "https://threadsmate.com";
-  const HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Linux; Android 12; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
-    "Accept": "text/html,application/json,*/*",
-    "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Referer": "https://threadsmate.com/",
-    "Origin": "https://threadsmate.com",
-    "Connection": "keep-alive",
-    "Upgrade-Insecure-Requests": "1",
-    "Sec-Fetch-Dest": "document",
-    "Sec-Fetch-Mode": "navigate",
-    "Sec-Fetch-Site": "same-origin",
-    "Cache-Control": "max-age=0",
-  };
+  const SAVETHR_BASE = "https://savethr.com";
+  const UA = "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36";
 
-  // Normalize URL ke threads.net
-  const netUrl = cleanUrl
-    .replace("www.threads.com", "www.threads.net")
-    .replace(/^https:\/\/threads\.com/, "https://www.threads.net");
-  const variants = [...new Set([cleanUrl, url.split("?")[0], netUrl])];
-
-  // Helper: extract video/image dari HTML response
-  function extractMedia(html) {
-    const medias = [];
-    const seen = new Set();
-
-    // Pattern 1: direct mp4 URLs
-    const mp4Matches = [...html.matchAll(/https?:\/\/[^\s"'<>&]+\.mp4[^\s"'<>&]*/gi)];
-    for (const m of mp4Matches) {
-      const u = m[0].replace(/&amp;/g, "&");
-      if (!seen.has(u)) { seen.add(u); medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: u }); }
-    }
-
-    // Pattern 2: CDN token URLs (acxcdn style)
-    const cdnMatches = [...html.matchAll(/https:\/\/[^\s"'<>&]*(?:cdn|download|media)[^\s"'<>&]*token=[^\s"'<>&]+/gi)];
-    for (const m of cdnMatches) {
-      const u = m[0].replace(/&amp;/g, "&");
-      if (!seen.has(u)) { seen.add(u); medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: u }); }
-    }
-
-    // Pattern 3: video src dalam tag
-    const videoSrc = [...html.matchAll(/<(?:video|source)[^>]+src=["\'"]([^"\'">]+)["\'"][^>]*>/gi)];
-    for (const m of videoSrc) {
-      const u = m[1].replace(/&amp;/g, "&");
-      if (!seen.has(u)) { seen.add(u); medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: u }); }
-    }
-
-    // Pattern 4: download link href
-    const dlLinks = [...html.matchAll(/href=["\'"]([^"\'">]+\.mp4[^"\'">]*)["\'"][^>]*>/gi)];
-    for (const m of dlLinks) {
-      const u = m[1].replace(/&amp;/g, "&");
-      if (!seen.has(u)) { seen.add(u); medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: u }); }
-    }
-
-    // Pattern 5: image URLs (cdninstagram, fbcdn, pinimg)
-    const imgMatches = [...html.matchAll(/https?:\/\/[^\s"'<>&]*(?:cdninstagram|fbcdn|scontent)[^\s"'<>&]*\.jpg[^\s"'<>&]*/gi)];
-    for (const m of imgMatches) {
-      const u = m[0].replace(/&amp;/g, "&");
-      if (!seen.has(u)) { seen.add(u); medias.push({ type: "image", extension: "jpg", quality: "HD Image", url: u }); }
-    }
-
-    return medias;
-  }
-
-  // Step 1: GET homepage dulu untuk dapat cookies & token
+  // ── Step 1: GET homepage untuk dapat cookies ──────────────────────────────
   let cookies = "";
-  let csrfToken = "";
   try {
-    const homeResp = await fetch(BASE + "/id", {
-      headers: HEADERS,
-      signal: AbortSignal.timeout(15_000),
+    const homeResp = await fetch(SAVETHR_BASE + "/", {
+      headers: {
+        "User-Agent"     : UA,
+        "Accept"         : "text/html,*/*",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+      signal: AbortSignal.timeout(12_000),
     });
-    const setCookie = homeResp.headers.get("set-cookie") || "";
-    cookies = setCookie.split(",").map(c => c.split(";")[0].trim()).filter(Boolean).join("; ");
-
-    if (homeResp.ok) {
-      const homeHtml = await homeResp.text();
-      // Cari CSRF token / hidden input
-      const csrfMatch = homeHtml.match(/name=["\'"](?:_token|csrf|token)["\'"][^>]*value=["\'"]([^"\'">]+)["\'"]/) ||
-                        homeHtml.match(/value=["\'"]([^"\'">]+)["\'"][^>]*name=["\'"](?:_token|csrf|token)["\'"]/);
-      if (csrfMatch) csrfToken = csrfMatch[1];
-    }
+    const raw = homeResp.headers.get("set-cookie") || "";
+    cookies = raw.split(",").map(c => c.split(";")[0].trim()).filter(Boolean).join("; ");
   } catch (_) {}
 
-  // Step 2: POST ke berbagai endpoint dengan berbagai payload
-  const endpoints = ["/id", "/"];
-  const payloadKeys = ["url", "link", "q", "video_url"];
+  // ── Step 2: POST /process dengan HTMX headers persis seperti browser ─────
+  const postHeaders = {
+    "User-Agent"      : UA,
+    "Accept"          : "text/html, */*",
+    "Accept-Language" : "en-US,en;q=0.9",
+    "Content-Type"    : "application/x-www-form-urlencoded",
+    "HX-Current-URL"  : SAVETHR_BASE + "/",
+    "HX-Request"      : "true",
+    "HX-Target"       : "result-container",
+    "HX-Trigger"      : "search-form",
+    "HX-Trigger-Name" : "",
+    "Origin"          : SAVETHR_BASE,
+    "Referer"         : SAVETHR_BASE + "/",
+    "Sec-Fetch-Site"  : "same-origin",
+    "Sec-Fetch-Mode"  : "cors",
+    "Sec-Fetch-Dest"  : "empty",
+  };
+  if (cookies) postHeaders["Cookie"] = cookies;
 
-  for (const endpoint of endpoints) {
-    for (const tryUrl of variants) {
-      for (const key of payloadKeys) {
-        try {
-          const formData = new URLSearchParams();
-          formData.append(key, tryUrl);
-          if (csrfToken) formData.append("_token", csrfToken);
+  const formBody = new URLSearchParams({ id: cleanUrl, locale: "en" }).toString();
 
-          const postHeaders = {
-            ...HEADERS,
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Referer": BASE + endpoint,
-            "Origin": BASE,
-          };
-          if (cookies) postHeaders["Cookie"] = cookies;
+  const postResp = await fetch(SAVETHR_BASE + "/process", {
+    method : "POST",
+    headers: postHeaders,
+    body   : formBody,
+    signal : AbortSignal.timeout(25_000),
+  });
 
-          const resp = await fetch(BASE + endpoint, {
-            method: "POST",
-            headers: postHeaders,
-            body: formData.toString(),
-            redirect: "follow",
-            signal: AbortSignal.timeout(20_000),
-          });
+  if (!postResp.ok) throw new Error(`savethr.com merespons ${postResp.status}`);
 
-          if (!resp.ok) continue;
-          const html = await resp.text();
+  const html = await postResp.text();
+  if (html.length > 50_000) throw new Error("Response tidak valid dari savethr.com.");
 
-          const medias = extractMedia(html);
-          if (medias.length > 0) {
-            const thumbnail = medias.find(m => m.type === "image")?.url || null;
-            return {
-              creator: "@SanzXD", status: true, code: 200,
-              message: "Berhasil mengambil media Threads.",
-              result: { title: null, thumbnail, medias },
-            };
-          }
-        } catch (_) { continue; }
-        await new Promise(r => setTimeout(r, 500));
-      }
+  // ── Step 3: Parse HTML result ─────────────────────────────────────────────
+  const medias  = [];
+  const seen    = new Set();
+  let thumbnail = null;
+
+  function addMedia(type, mediaUrl, quality = "HD") {
+    if (!mediaUrl || seen.has(mediaUrl)) return;
+    seen.add(mediaUrl);
+    medias.push({ type, extension: type === "video" ? "mp4" : "jpg", quality, url: mediaUrl });
+  }
+
+  // Pattern A: Direct Instagram/Facebook CDN .mp4
+  for (const m of html.matchAll(/https?:\/\/[^\s"'<>&]+(?:cdninstagram\.com|fbcdn\.net)[^\s"'<>&]*\.mp4[^\s"'<>&]*/gi)) {
+    addMedia("video", m[0].replace(/&amp;/g, "&"), "HD Video");
+  }
+
+  // Pattern B: ssscdn.io proxy URLs dalam <a href=...>
+  for (const m of html.matchAll(/href=["']?(https:\/\/ssscdn\.io\/savethr\/[^"'\s>]+)["']?/gi)) {
+    const cdnUrl  = m[1].replace(/&amp;/g, "&");
+    const decoded = decodeSsscdnUrl(cdnUrl);
+    const context = html.substring(Math.max(0, m.index - 200), m.index + 200).toLowerCase();
+    if (!context.includes("mp3") && !context.includes("audio")) {
+      addMedia("video", decoded || cdnUrl, "HD Video");
     }
   }
 
-  throw new Error("Media tidak ditemukan. Post mungkin privat atau tidak mengandung media.");
+  // Pattern C: ssscdn.io dalam <img src=...> (thumbnail)
+  for (const m of html.matchAll(/src=["']?(https:\/\/ssscdn\.io\/savethr\/[^"'\s>]+)["']?/gi)) {
+    const decoded = decodeSsscdnUrl(m[1].replace(/&amp;/g, "&"));
+    const imgUrl  = decoded || m[1];
+    if (!thumbnail) thumbnail = imgUrl;
+    addMedia("image", imgUrl, "Thumbnail");
+  }
+
+  // Pattern D: Direct CDN image URLs
+  for (const m of html.matchAll(/https?:\/\/[^\s"'<>&]+(?:cdninstagram\.com|fbcdn\.net)[^\s"'<>&]*\.jpg[^\s"'<>&]*/gi)) {
+    const imgUrl = m[0].replace(/&amp;/g, "&");
+    if (!thumbnail) thumbnail = imgUrl;
+    addMedia("image", imgUrl, "HD Image");
+  }
+
+  if (medias.length === 0) {
+    throw new Error("Media tidak ditemukan. Post mungkin privat atau tidak mengandung media.");
+  }
+
+  const videos = medias.filter(m => m.type === "video");
+  const images = medias.filter(m => m.type === "image");
+
+  return {
+    creator: "@SanzXD",
+    status : true,
+    code   : 200,
+    message: "Berhasil mengambil media Threads.",
+    result : {
+      title    : null,
+      thumbnail: thumbnail,
+      medias   : medias,
+      video_url: videos[0]?.url || null,
+      image_url: images[0]?.url || null,
+    },
+    meta: {
+      source_url : cleanUrl,
+      provider   : "savethr.com",
+      video_count: videos.length,
+      image_count: images.length,
+    },
+  };
 }
 
 // ─── Util ─────────────────────────────────────────────────────────────────────
