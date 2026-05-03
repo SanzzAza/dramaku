@@ -102,6 +102,8 @@ server.listen(PORT, () => {
   console.log(`   Instagram → http://localhost:${PORT}/api/downloader?platform=instagram&url=...`);
   console.log(`   Facebook  → http://localhost:${PORT}/api/downloader?platform=facebook&url=...`);
   console.log(`   Pinterest → http://localhost:${PORT}/api/downloader?platform=pinterest&url=...`);
+  console.log(`   Twitter/X → http://localhost:${PORT}/api/downloader?platform=twitter&url=...`);
+  console.log(`   Threads   → http://localhost:${PORT}/api/downloader?platform=threads&url=...`);
   console.log(`\n  🛠️  TOOLS`);
   console.log(`   AI Image  → http://localhost:${PORT}/api/tools?tool=aiimage&prompt=...`);
   console.log(`   Anime     → http://localhost:${PORT}/api/tools?tool=anime&type=neko`);
