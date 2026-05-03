@@ -974,8 +974,11 @@ async function fetchTerabox(inputUrl) {
     signal: AbortSignal.timeout(30_000),
   });
 
+  let dlDebug = { status: dlResp.status, ok: dlResp.ok, data: null };
+
   if (dlResp.ok) {
     const dlData = await dlResp.json();
+    dlDebug.data = dlData;
     // Response bisa berupa { dlink } (single) atau { list: [{dlink, fs_id},...] }
     if (dlData?.list?.length) {
       for (const item of dlData.list) {
@@ -1013,7 +1016,7 @@ async function fetchTerabox(inputUrl) {
     code   : 200,
     message: `Berhasil mengambil ${files.length} file dari Terabox.`,
     result : isSingle ? files[0] : files,
-    meta   : { source_url: inputUrl, file_count: files.length, shareid, uk },
+    meta   : { source_url: inputUrl, file_count: files.length, shareid, uk, _dl_debug: dlDebug },
   };
 }
 
