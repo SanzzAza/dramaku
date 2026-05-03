@@ -915,7 +915,7 @@ const EP = {
     params:[
       {name:'action', value:'detail', type:'hidden'},
       {name:'source', label:'Source Platform', type:'select', options:['goodshort','dramabox','reelshort','shortmax','netshort','dramawave','melolo','moboreels','idrama','dramanova'], default:'goodshort'},
-      {name:'id', label:'ID Drama', placeholder:'Contoh: 42000002888', type:'drama_id'},
+      {name:'id', label:'ID Drama', type:'drama_id'},
     ],
   },
   'drama-episode': {
@@ -925,7 +925,7 @@ const EP = {
     params:[
       {name:'action', value:'episode', type:'hidden'},
       {name:'source', label:'Source Platform', type:'select', options:['goodshort','dramabox','reelshort','shortmax','netshort','dramawave','melolo','moboreels','idrama','dramanova'], default:'goodshort'},
-      {name:'id', label:'ID Drama', placeholder:'Contoh: 42000002888', type:'drama_id'},
+      {name:'id', label:'ID Drama', type:'drama_id'},
       {name:'ep', label:'Nomor Episode', placeholder:'Contoh: 1', type:'text'},
     ],
   },
@@ -1051,7 +1051,7 @@ function openDramaEndpoint(epId) {
       params:[
         {name:'action', value:'detail', type:'hidden'},
         {name:'source', value:source, type:'hidden'},
-        {name:'id', label:'ID Drama', placeholder:'Contoh: 42000002888', type:'drama_id'},
+        {name:'id', label:'ID Drama', type:'drama_id'},
       ],
     },
     episode: {
@@ -1062,7 +1062,7 @@ function openDramaEndpoint(epId) {
       params:[
         {name:'action', value:'episode', type:'hidden'},
         {name:'source', value:source, type:'hidden'},
-        {name:'id', label:'ID Drama', placeholder:'Contoh: 42000002888', type:'drama_id'},
+        {name:'id', label:'ID Drama', type:'drama_id'},
         {name:'ep', label:'Nomor Episode', placeholder:'Contoh: 1', type:'text'},
       ],
     },
@@ -1113,9 +1113,11 @@ function buildCurl(ep, val, vals) {
   let s = `curl "${base}${ep.path}?`;
   if (ep.platform) s += `platform=${ep.platform}&`;
   if (ep.tool)     s += `tool=${ep.tool}&`;
-  if (vals) {
-    // multi-param mode (drama endpoints)
-    s += Object.entries(vals).map(([k,v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+  const isMultiEp = ep.params && ep.params.some(p => p.type === 'hidden' || p.type === 'select' || p.type === 'drama_id');
+  if (isMultiEp) {
+    // Selalu pakai getParamValues supaya hidden params ikut masuk
+    const v = vals || getParamValues(ep);
+    s += Object.entries(v).map(([k,v]) => `${k}=${encodeURIComponent(v)}`).join('&');
   } else {
     // legacy single-param mode
     val = val || ep.placeholder;
@@ -1232,10 +1234,13 @@ function buildParamInputs(ep) {
       </div>`;
     }
     if (p.type === 'drama_id') {
-      // Render preset dropdown + text input
-      const presets = DRAMA_PRESETS['goodshort'] || []; // default goodshort, akan direfresh saat source ganti
+      // Cari source dari hidden param
+      const srcParam = ep.params.find(x => x.name === 'source');
+      const src = srcParam?.value || 'dramabox';
+      const presets = DRAMA_PRESETS[src] || [];
+      const firstId = presets[0]?.id || '';
       const presetOpts = `<option value="">— Pilih drama contoh —</option>` +
-        presets.map(pr => `<option value="${pr.id}">${pr.title} (${pr.id})</option>`).join('');
+        presets.map(pr => `<option value="${pr.id}" ${pr.id===firstId?'selected':''}>${pr.title} (${pr.id})</option>`).join('');
       return `<div style="display:flex;flex-direction:column;gap:6px;width:100%">
         <label style="font-size:12px;color:var(--text2);font-weight:600">${p.label||p.name}</label>
         <select class="url-input" id="preset-${ep.key}" onchange="onDramaPresetChange('${ep.key}')" style="cursor:pointer;background:var(--surface2)">
@@ -1246,7 +1251,7 @@ function buildParamInputs(ep) {
           <span style="font-size:11px;color:var(--muted);white-space:nowrap">atau ketik manual</span>
           <div style="flex:1;height:1px;background:var(--border)"></div>
         </div>
-        <input class="url-input" id="inp-${ep.key}-${p.name}" placeholder="${p.placeholder||'Masukkan ID drama'}"
+        <input class="url-input" id="inp-${ep.key}-${p.name}" value="${firstId}"
           oninput="liveUpdateCurl(window._curEpId||'');document.getElementById('preset-${ep.key}').value=''"
           onkeydown="if(event.key==='Enter')execApi(window._curEpId||'')" style="font-family:monospace"/>
       </div>`;
@@ -1265,7 +1270,16 @@ function getParamValues(ep) {
   (ep.params || []).forEach(p => {
     if (p.type === 'hidden') { vals[p.name] = p.value; return; }
     const el = document.getElementById('inp-' + ep.key + '-' + p.name);
-    if (el) vals[p.name] = el.value.trim() || p.placeholder || '';
+    if (!el) return;
+    let v = el.value.trim();
+    // Untuk drama_id: kalau kosong, ambil preset pertama sesuai source
+    if (!v && p.type === 'drama_id') {
+      const sourceEl = document.getElementById('inp-' + ep.key + '-source');
+      const src = sourceEl ? sourceEl.value : (ep.params.find(x=>x.name==='source')?.value || 'dramabox');
+      const firstPreset = (DRAMA_PRESETS[src] || [])[0];
+      v = firstPreset ? firstPreset.id : '';
+    }
+    vals[p.name] = v;
   });
   return vals;
 }
@@ -1362,6 +1376,8 @@ function openEndpoint(id) {
 
   showPage('detail');
   window._curEpId = id;
+  // Update curl example setelah DOM render dengan nilai yang sudah ada
+  setTimeout(() => liveUpdateCurl(id), 0);
 }
 
 function liveUpdateCurl(id) {
