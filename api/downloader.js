@@ -977,17 +977,19 @@ async function fetchTerabox(inputUrl) {
       { headers: { "User-Agent": TERABOX_UA, "Cookie": cookieStr, "Referer": finalUrl }, signal: AbortSignal.timeout(15_000) }
     );
     const infoData = await infoResp.json();
+    console.log("[Terabox] shorturlinfo errno:", infoData.errno, "uk:", infoData.uk, "shareid:", infoData.shareid);
     if (infoData.errno === 0) {
       uk        = String(infoData.uk        || "");
       shareid   = String(infoData.shareid   || "");
       sign      = String(infoData.sign      || "");
       timestamp = String(infoData.timestamp || "");
-      // Kadang dlink sudah ada di sini
       for (const f of (infoData.list || [])) {
         if (f.dlink) dlinkMap[String(f.fs_id)] = f.dlink;
       }
+    } else {
+      console.log("[Terabox] shorturlinfo full response:", JSON.stringify(infoData));
     }
-  } catch (_) {}
+  } catch (e) { console.log("[Terabox] shorturlinfo error:", e.message); }
 
   // ── Step 2: Fetch dlink via /api/download pakai fs_id ────────────────────
   if (fsIds.length && uk && shareid && !Object.keys(dlinkMap).length) {
@@ -1008,12 +1010,15 @@ async function fetchTerabox(inputUrl) {
         signal : AbortSignal.timeout(20_000),
       });
       const dlData = await dlResp.json();
+      console.log("[Terabox] /api/download errno:", dlData.errno, "list len:", dlData?.list?.length);
       if (dlData?.errno === 0 && dlData?.list?.length) {
         for (const item of dlData.list) {
           if (item.dlink) dlinkMap[String(item.fs_id)] = item.dlink;
         }
+      } else {
+        console.log("[Terabox] /api/download full response:", JSON.stringify(dlData));
       }
-    } catch (_) {}
+    } catch (e) { console.log("[Terabox] /api/download error:", e.message); }
   }
 
   // Fallback: ambil dlink langsung dari list item kalau ada
