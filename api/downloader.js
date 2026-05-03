@@ -940,63 +940,70 @@ async function fetchTerabox(inputUrl) {
   const { uk, shareid, sign, timestamp, list: fileList = [] } = info;
   if (!fileList.length) throw new Error("Tidak ada file yang ditemukan di folder ini.");
 
-  // ── Step 3: GET /api/download → dlink per file ───────────────────────────
-  const files = [];
+  // Filter hanya file (bukan folder)
+  const onlyFiles = fileList.filter(f => f.isdir !== "1");
+  if (!onlyFiles.length) throw new Error("Tidak ada file (non-folder) yang ditemukan di link ini.");
 
-  for (const file of fileList) {
-    if (file.isdir === "1") continue; // skip subfolder
+  // ── Step 3: GET /api/download → dlink semua file sekaligus ───────────────
+  // Terabox butuh semua fs_id dalam satu request, bukan per file
+  const allFsIds = onlyFiles.map(f => f.fs_id);
 
-    const dlParams = new URLSearchParams({
-      app_id    : "250528",
-      web       : "1",
-      channel   : "dubox",
-      clienttype: "0",
-      jsToken,
-      sign,
-      timestamp : String(timestamp),
-      shareid   : String(shareid),
-      uk        : String(uk),
-      primaryid : file.fs_id,
-      fid_list  : JSON.stringify([file.fs_id]),
-    });
+  const dlParams = new URLSearchParams({
+    app_id      : "250528",
+    web         : "1",
+    channel     : "dubox",
+    clienttype  : "0",
+    jsToken,
+    sign,
+    timestamp   : String(timestamp),
+    shareid     : String(shareid),
+    uk          : String(uk),
+    primaryid   : allFsIds[0],
+    fid_list    : JSON.stringify(allFsIds),
+  });
 
-    let dlink = null;
-    try {
-      const dlResp = await fetch(`${TERABOX_HOST}/api/download?${dlParams}`, {
-        headers: {
-          "User-Agent": TERABOX_UA,
-          "Cookie"    : cookieStr,
-          "Referer"   : shareUrl,
-          "Accept"    : "application/json, text/plain, */*",
-        },
-        signal: AbortSignal.timeout(20_000),
-      });
-      if (dlResp.ok) {
-        const dlData = await dlResp.json();
-        dlink = dlData?.dlink || dlData?.list?.[0]?.dlink || null;
+  let dlinkMap = {}; // fs_id → dlink
+
+  const dlResp = await fetch(`${TERABOX_HOST}/api/download?${dlParams}`, {
+    headers: {
+      "User-Agent": TERABOX_UA,
+      "Cookie"    : cookieStr,
+      "Referer"   : shareUrl,
+      "Accept"    : "application/json, text/plain, */*",
+    },
+    signal: AbortSignal.timeout(30_000),
+  });
+
+  if (dlResp.ok) {
+    const dlData = await dlResp.json();
+    // Response bisa berupa { dlink } (single) atau { list: [{dlink, fs_id},...] }
+    if (dlData?.list?.length) {
+      for (const item of dlData.list) {
+        if (item.fs_id && item.dlink) dlinkMap[String(item.fs_id)] = item.dlink;
       }
-    } catch (_) { /* tetap lanjut */ }
-
-    files.push({
-      filename : file.server_filename || file.filename || "unknown",
-      size     : Number(file.size) || null,
-      size_text: file.size ? formatBytes(Number(file.size)) : null,
-      type     : file.category === "1" ? "video"
-               : file.category === "3" ? "image"
-               : file.category === "6" ? "audio"
-               : "file",
-      thumbnail: file.thumbs?.url3 || file.thumbs?.url2 || file.thumbs?.url1 || null,
-      fs_id    : file.fs_id,
-      download : {
-        url : dlink,
-        note: dlink
-          ? "Sertakan header 'User-Agent' yang sama saat mengunduh URL ini."
-          : "dlink tidak tersedia untuk file ini.",
-      },
-    });
+    } else if (dlData?.dlink) {
+      // single file response — map ke fs_id pertama
+      dlinkMap[String(allFsIds[0])] = dlData.dlink;
+    }
   }
 
-  if (!files.length) throw new Error("Tidak ada file (non-folder) yang ditemukan di link ini.");
+  const files = onlyFiles.map(file => ({
+    filename : file.server_filename || file.filename || "unknown",
+    size     : Number(file.size) || null,
+    size_text: file.size ? formatBytes(Number(file.size)) : null,
+    type     : file.category === "1" ? "video"
+             : file.category === "3" ? "image"
+             : file.category === "6" ? "audio"
+             : "file",
+    thumbnail: file.thumbs?.url3 || file.thumbs?.url2 || file.thumbs?.url1 || null,
+    fs_id    : file.fs_id,
+    download : {
+      url : dlinkMap[String(file.fs_id)] || null,
+      note: dlinkMap[String(file.fs_id)]
+        ? "Sertakan header 'User-Agent' yang sama saat mengunduh URL ini."
+        : "dlink tidak tersedia untuk file ini.",
+    },
+  }));
 
   const isSingle = files.length === 1;
 
