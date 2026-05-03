@@ -849,6 +849,7 @@ async function fetchTerabox(inputUrl) {
   const ndus = ndusMatch ? ndusMatch[1].trim() : "";
 
   // ── Strategi 1: terasnap.netlify.app (butuh ndus cookie) ─────────────────
+  let _snapDebug = "skip";
   if (ndus) {
     try {
       const resp = await fetch("https://terasnap.netlify.app/api/download", {
@@ -857,8 +858,10 @@ async function fetchTerabox(inputUrl) {
         body   : JSON.stringify({ link: inputUrl, cookies: `ndus=${ndus}` }),
         signal : AbortSignal.timeout(20_000),
       });
+      const rawText = await resp.text();
+      _snapDebug = `status=${resp.status} body=${rawText.slice(0, 300)}`;
       if (resp.ok) {
-        const data = await resp.json();
+        const data = JSON.parse(rawText);
         const dlink = data?.download_link || data?.dlink || null;
         if (dlink) {
           return {
@@ -936,7 +939,7 @@ async function fetchTerabox(inputUrl) {
     }
   } catch (_) {}
 
-  throw new Error(`Semua metode gagal. [debug: ndus=${ndus ? ndus.slice(0,8)+"..." : "KOSONG"}, cookie_env=${TERABOX_ACCOUNT_COOKIE ? "ADA" : "KOSONG"}]`);
+  throw new Error(`Semua metode gagal. [snap: ${_snapDebug}]`);
 }
 
 function formatBytes(bytes) {
