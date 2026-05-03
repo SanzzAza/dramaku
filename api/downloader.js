@@ -641,59 +641,98 @@ async function fetchTwitter(url) {
 // ─── Threads ──────────────────────────────────────────────────────────────────
 
 async function fetchThreads(url) {
-  // Support URL dengan query params seperti ?xmt=...
   const threadsRegex = /^https?:\/\/(www\.)?(threads\.net|threads\.com)\/@?[\w.]+\/post\/[a-zA-Z0-9_-]+/i;
-  const cleanUrl = url.split("?")[0]; // hapus query params untuk validasi
+  const cleanUrl = url.split("?")[0];
   if (!threadsRegex.test(cleanUrl)) throw new Error("URL tidak valid. Masukkan link post Threads yang benar.");
 
-  // Fetch halaman Threads dengan user-agent mobile
-  const resp = await fetch(url, {
+  // Ekstrak shortcode dari URL
+  const shortcodeMatch = cleanUrl.match(/\/post\/([a-zA-Z0-9_-]+)/);
+  if (!shortcodeMatch) throw new Error("Tidak bisa ekstrak post ID dari URL.");
+  const shortcode = shortcodeMatch[1];
+
+  // Hit Threads oEmbed / internal API
+  const apiUrl = `https://www.threads.net/api/graphql`;
+  const resp = await fetch(apiUrl, {
+    method: "POST",
     headers: {
-      "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
-      "Accept": "text/html,application/xhtml+xml,*/*",
-      "Accept-Language": "en-US,en;q=0.9",
+      "User-Agent": "Barcelona 289.0.0.77.109 Android",
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-IG-App-ID": "238260118697367",
+      "Accept-Language": "en-US",
+      "Accept": "*/*",
+      "Sec-Fetch-Site": "same-origin",
     },
+    body: `lsd=AVqbxe3J_YA&variables={"postID":"${shortcode}"}&server_timestamps=true&doc_id=7428053580716445`,
     signal: AbortSignal.timeout(15_000),
   });
-  if (!resp.ok) throw new Error(`Threads merespons ${resp.status}.`);
-  const html = await resp.text();
 
-  const getMeta = (prop) => {
-    const m = html.match(new RegExp(`<meta[^>]+(?:property|name)="${prop}"[^>]+content="([^"]+)"`, "i"))
-      || html.match(new RegExp(`<meta[^>]+content="([^"]+)"[^>]+(?:property|name)="${prop}"`, "i"));
-    return m ? m[1].replace(/&amp;/g, "&").replace(/&quot;/g, '"') : null;
-  };
-
-  const imageUrl  = getMeta("og:image");
-  const title     = getMeta("og:title") || getMeta("og:description");
-  const thumbnail = imageUrl;
-
-  // Threads tidak expose og:video — cari dari script tag / JSON embedded
+  // Fallback: scrape HTML jika API gagal
   let videoUrl = null;
+  let imageUrl = null;
+  let title    = null;
 
-  // Pattern 1: video_url di JSON data
-  const p1 = html.match(/"video_url"\s*:\s*"([^"]+)"/);
-  if (p1) videoUrl = p1[1].replace(/\u0026/g, "&").replace(/\\/g, "");
+  if (resp.ok) {
+    try {
+      const json = await resp.json();
+      const post = json?.data?.data?.edges?.[0]?.node?.thread_items?.[0]?.post;
+      title    = post?.user?.username ? `@${post.user.username}` : null;
+      imageUrl = post?.image_versions2?.candidates?.[0]?.url || null;
 
-  // Pattern 2: playable_url
-  if (!videoUrl) {
-    const p2 = html.match(/"playable_url"\s*:\s*"([^"]+)"/);
-    if (p2) videoUrl = p2[1].replace(/\u0026/g, "&").replace(/\\/g, "");
+      const videoVersions = post?.video_versions;
+      if (videoVersions?.length > 0) {
+        // Pilih kualitas tertinggi (index 0 biasanya HD)
+        videoUrl = videoVersions[0].url;
+      }
+
+      // Carousel / multiple media
+      const carouselMedia = post?.carousel_media;
+      if (carouselMedia?.length > 0 && !videoUrl) {
+        for (const item of carouselMedia) {
+          if (item?.video_versions?.length > 0) {
+            videoUrl = item.video_versions[0].url;
+            break;
+          }
+        }
+        if (!imageUrl) imageUrl = carouselMedia[0]?.image_versions2?.candidates?.[0]?.url || null;
+      }
+    } catch (_) {}
   }
 
-  // Pattern 3: og:video meta (kadang ada)
-  if (!videoUrl) {
-    videoUrl = getMeta("og:video") || getMeta("og:video:secure_url") || getMeta("og:video:url");
-  }
+  // Fallback HTML scraping jika API tidak return media
+  if (!videoUrl && !imageUrl) {
+    const htmlResp = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+        "Accept": "text/html,*/*",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (htmlResp.ok) {
+      const html = await htmlResp.text();
+      const getMeta = (prop) => {
+        const m = html.match(new RegExp(`<meta[^>]+(?:property|name)="${prop}"[^>]+content="([^"]+)"`, "i"))
+          || html.match(new RegExp(`<meta[^>]+content="([^"]+)"[^>]+(?:property|name)="${prop}"`, "i"));
+        return m ? m[1].replace(/&amp;/g, "&").replace(/&quot;/g, '"') : null;
+      };
+      imageUrl = imageUrl || getMeta("og:image");
+      title    = title    || getMeta("og:title") || getMeta("og:description");
 
-  // Pattern 4: src di video tag
-  if (!videoUrl) {
-    const p4 = html.match(/<source[^>]+src="([^"]+\.mp4[^"]*)"/i);
-    if (p4) videoUrl = p4[1].replace(/&amp;/g, "&");
+      const patterns = [
+        /"video_url":"([^"]+)"/,
+        /"playable_url":"([^"]+)"/,
+        /"playable_url_quality_hd":"([^"]+)"/,
+      ];
+      for (const p of patterns) {
+        const m = html.match(p);
+        if (m) { videoUrl = m[1].replace(/\u0026/g, "&").replace(/\\/g, ""); break; }
+      }
+    }
   }
 
   if (!videoUrl && !imageUrl) throw new Error("Media tidak ditemukan. Post mungkin privat atau tidak mengandung media.");
 
+  const thumbnail = imageUrl;
   const medias = [];
   if (videoUrl) medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: videoUrl });
   if (imageUrl) medias.push({ type: "image", extension: "jpg", quality: "HD Image", url: imageUrl });
