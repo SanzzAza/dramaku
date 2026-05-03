@@ -287,37 +287,61 @@ async function fetchFacebook(url) {
   const fbRegex = /^https?:\/\/(www\.|m\.|web\.)?(facebook\.com|fb\.watch)\/.+/i;
   if (!fbRegex.test(url)) throw new Error("URL tidak valid. Masukkan link Facebook yang benar.");
 
-  const pageResp = await fetch("https://getfvid.com/", { headers: { "User-Agent": FB_UA, "Accept": "text/html" } });
-  const pageHtml = await pageResp.text();
+  // --- Provider 1: SnapSave ---
+  try {
+    const snapResp = await fetch("https://snapsave.app/action.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": FB_UA,
+        "Referer": "https://snapsave.app/",
+        "Origin": "https://snapsave.app",
+      },
+      body: new URLSearchParams({ url }).toString(),
+      signal: AbortSignal.timeout(15_000),
+    });
+    const snapHtml = await snapResp.text();
+    const hdMatch = snapHtml.match(/href="(https?:\/\/[^"]+)"[^>]*>\s*(?:HD|Download HD)/i);
+    const sdMatch = snapHtml.match(/href="(https?:\/\/[^"]+)"[^>]*>\s*(?:SD|Download SD|Normal)/i);
+    const hdUrl   = hdMatch ? hdMatch[1] : null;
+    const sdUrl   = sdMatch ? sdMatch[1] : null;
+    if (hdUrl || sdUrl) {
+      return {
+        creator: "@SanzXD", status: true, code: 200,
+        message: "Berhasil mengambil data video Facebook.",
+        result: { source_url: url, video: { hd: hdUrl, sd: sdUrl, cover: null }, provider: "snapsave.app" },
+      };
+    }
+  } catch { /* fallback */ }
 
-  const tokenMatch = pageHtml.match(/name="_token"\s+value="([^"]+)"/);
-  if (!tokenMatch) throw new Error("Gagal mendapatkan token dari server.");
-  const token = tokenMatch[1];
+  // --- Provider 2: fdown.net ---
+  try {
+    const fdownResp = await fetch("https://fdown.net/download.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": FB_UA,
+        "Referer": "https://fdown.net/",
+        "Origin": "https://fdown.net",
+      },
+      body: new URLSearchParams({ URLz: url }).toString(),
+      signal: AbortSignal.timeout(15_000),
+    });
+    const fdownHtml = await fdownResp.text();
+    const hdM = fdownHtml.match(/id="hdlink"[^>]*href="([^"]+)"/i) || fdownHtml.match(/href="([^"]+)"[^>]*id="hdlink"/i);
+    const sdM = fdownHtml.match(/id="sdlink"[^>]*href="([^"]+)"/i) || fdownHtml.match(/href="([^"]+)"[^>]*id="sdlink"/i);
+    const hd  = hdM ? hdM[1] : null;
+    const sd  = sdM ? sdM[1] : null;
+    if (hd || sd) {
+      return {
+        creator: "@SanzXD", status: true, code: 200,
+        message: "Berhasil mengambil data video Facebook.",
+        result: { source_url: url, video: { hd, sd, cover: null }, provider: "fdown.net" },
+      };
+    }
+  } catch { /* fallback */ }
 
-  const cookies = (pageResp.headers.get("set-cookie") || "").split(",").map(c => c.split(";")[0].trim()).join("; ");
-
-  const formData = new URLSearchParams({ _token: token, url });
-  const submitResp = await fetch("https://getfvid.com/downloader", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": FB_UA, "Referer": "https://getfvid.com/", "Origin": "https://getfvid.com", "Cookie": cookies },
-    body: formData.toString(),
-    signal: AbortSignal.timeout(15_000),
-  });
-
-  const html = await submitResp.text();
-  const hdMatch    = html.match(/href="(https:\/\/[^"]+)"[^>]*>\s*HD/i);
-  const sdMatch    = html.match(/href="(https:\/\/[^"]+)"[^>]*>\s*SD/i);
-  const thumbMatch = html.match(/<img[^>]+src="(https:\/\/[^"]+)"[^>]*class="[^"]*thumb/i) || html.match(/og:image.*?content="([^"]+)"/i);
-
-  const hdUrl = hdMatch ? decodeURIComponent(hdMatch[1]) : null;
-  const sdUrl = sdMatch ? decodeURIComponent(sdMatch[1]) : null;
-  if (!hdUrl && !sdUrl) throw new Error("Video tidak ditemukan. Pastikan video bersifat publik.");
-
-  return {
-    creator: "@SanzXD", status: true, code: 200,
-    message: "Berhasil mengambil data video Facebook.",
-    result: { source_url: url, video: { hd: hdUrl, sd: sdUrl, cover: thumbMatch ? thumbMatch[1] : null }, provider: "getfvid.com" },
-  };
+  throw new Error("Video tidak ditemukan. Pastikan video bersifat publik dan link valid.");
 }
 
 // ─── Pinterest ────────────────────────────────────────────────────────────────
