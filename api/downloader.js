@@ -793,9 +793,9 @@ async function fetchThreads(url) {
  * GET /api/downloader?platform=terabox&url=https://1024terabox.com/s/xxxxx
  *
  * Flow:
- *  1. GET share page  → dapat jsToken + cookies + surl
+ *  1. GET share page  → dapat cookies + surl (jsToken diambil dari cookie)
  *  2. GET /api/shorturlinfo → dapat uk, shareid, sign, timestamp, list file
- *  3. POST /api/download   → dapat dlink (direct download URL)
+ *  3. GET /api/download    → dapat dlink (direct download URL)
  */
 
 const TERABOX_DOMAINS = [
@@ -804,9 +804,29 @@ const TERABOX_DOMAINS = [
   "nephobox.com", "freeterabox.com", "mirrorbox.cc", "gibibox.com",
 ];
 
-const TERABOX_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
-// Selalu gunakan endpoint 1024terabox.com agar cookie cross-domain tidak jadi masalah
+const TERABOX_UA   = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 const TERABOX_HOST = "https://www.1024terabox.com";
+
+/** Parse semua Set-Cookie header → object { name: value } */
+function parseCookies(headers) {
+  const out = {};
+  // Node 18+ fetch: headers.getSetCookie() returns array
+  const raw = typeof headers.getSetCookie === "function"
+    ? headers.getSetCookie()
+    : (headers.get("set-cookie") || "").split(/,(?=[^ ])/).filter(Boolean);
+
+  for (const line of raw) {
+    const pair = line.split(";")[0].trim();
+    const eq   = pair.indexOf("=");
+    if (eq < 1) continue;
+    out[pair.slice(0, eq).trim()] = pair.slice(eq + 1).trim();
+  }
+  return out;
+}
+
+function cookieObjToStr(obj) {
+  return Object.entries(obj).map(([k, v]) => `${k}=${v}`).join("; ");
+}
 
 async function fetchTerabox(inputUrl) {
   // ── Validasi domain ───────────────────────────────────────────────────────
@@ -824,15 +844,22 @@ async function fetchTerabox(inputUrl) {
     );
   }
 
-  // ── Step 1: GET share page → jsToken + cookies + surl ────────────────────
-  // Redirect semua domain ke 1024terabox agar cookie konsisten
-  const shareUrl = inputUrl.replace(parsedUrl.origin, TERABOX_HOST);
+  // Extract surl dari path /s/xxxxx atau query ?surl=xxxxx
+  const surlMatch = parsedUrl.pathname.match(/\/s\/([a-zA-Z0-9_-]+)/);
+  const surl = surlMatch ? surlMatch[1] : parsedUrl.searchParams.get("surl");
+  if (!surl) throw new Error("Tidak dapat mengambil surl dari URL. Pastikan format URL benar (contoh: /s/xxxxx).");
 
+  // Selalu hit ke 1024terabox.com agar cookie konsisten
+  const shareUrl = `${TERABOX_HOST}/s/${surl}`;
+
+  // ── Step 1: GET share page → kumpulkan cookies ───────────────────────────
+  // jsToken di Terabox tersimpan sebagai cookie "csrfToken" atau "TSID" atau ada di JS inline
   const pageResp = await fetch(shareUrl, {
     headers: {
       "User-Agent"     : TERABOX_UA,
       "Accept"         : "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       "Accept-Language": "en-US,en;q=0.9",
+      "Accept-Encoding": "gzip, deflate, br",
     },
     redirect: "follow",
     signal  : AbortSignal.timeout(20_000),
@@ -841,33 +868,49 @@ async function fetchTerabox(inputUrl) {
   if (!pageResp.ok) throw new Error(`Gagal membuka halaman share (${pageResp.status}).`);
 
   const pageHtml = await pageResp.text();
+  const cookies  = parseCookies(pageResp.headers);
 
-  // Kumpulkan semua Set-Cookie
-  const rawCookies = pageResp.headers.getSetCookie?.() || [];
-  const cookieStr  = rawCookies.map(c => c.split(";")[0]).join("; ");
+  // ── Extract jsToken ───────────────────────────────────────────────────────
+  // Terabox menyimpan jsToken di:
+  //   1. Cookie "csrfToken"
+  //   2. HTML: locals.jsToken = "xxx"  atau  window.locals = {...,"jsToken":"xxx",...}
+  //   3. HTML: "jsToken":"xxx"
+  //   4. HTML: jsToken%22%3A%22xxx  (URL-encoded di JSON embed)
+  let jsToken = cookies["csrfToken"] || cookies["CSRFTOKEN"] || "";
 
-  // Extract jsToken dari HTML
-  const jsTokenMatch = pageHtml.match(/\bjsToken\s*=\s*["']?([^"'&;\s]{10,})["']?/i)
-                    || pageHtml.match(/window\.jsToken\s*=\s*["']([^"']+)["']/i);
-  if (!jsTokenMatch) throw new Error("Tidak dapat mengambil jsToken. Link mungkin sudah tidak valid atau dibutuhkan login.");
+  if (!jsToken) {
+    const patterns = [
+      /locals\.jsToken\s*=\s*["']([^"']{10,})["']/i,
+      /"jsToken"\s*:\s*"([^"]{10,})"/i,
+      /jsToken%22%3A%22([^%"]{10,})%22/i,
+      /\bjsToken\s*=\s*["']([^"']{10,})["']/i,
+      /[?&]jsToken=([^&"'\s]{10,})/i,
+    ];
+    for (const pat of patterns) {
+      const m = pageHtml.match(pat);
+      if (m) { jsToken = decodeURIComponent(m[1]); break; }
+    }
+  }
 
-  const jsToken = jsTokenMatch[1];
+  if (!jsToken) {
+    // Debug: tampilkan potongan HTML yang relevan (jangan expose ke production log besar)
+    const snippet = pageHtml.slice(0, 3000);
+    const hasRedirect = /location\.href|window\.location/i.test(snippet);
+    if (hasRedirect) throw new Error("Terabox redirect ke login. Link ini memerlukan akun untuk mengaksesnya.");
+    throw new Error("Tidak dapat mengambil jsToken dari halaman. Terabox mungkin mengubah struktur HTML-nya.");
+  }
 
-  // Extract surl (short url key) dari path  →  /s/AbCdEfG  atau ?surl=AbCdEfG
-  const surlMatch = parsedUrl.pathname.match(/\/s\/([a-zA-Z0-9_-]+)/)
-                 || parsedUrl.searchParams.get("surl");
-  const surl = Array.isArray(surlMatch) ? surlMatch[1] : surlMatch;
-  if (!surl) throw new Error("Tidak dapat mengambil surl dari URL. Pastikan format URL benar (contoh: /s/xxxxx).");
+  const cookieStr = cookieObjToStr({ ...cookies });
 
-  // ── Step 2: GET /api/shorturlinfo → uk, shareid, sign, timestamp, list ───
+  // ── Step 2: GET /api/shorturlinfo ─────────────────────────────────────────
   const infoParams = new URLSearchParams({
-    app_id  : "250528",
-    web     : "1",
-    channel : "dubox",
+    app_id    : "250528",
+    web       : "1",
+    channel   : "dubox",
     clienttype: "0",
     jsToken,
-    shorturl: surl,
-    root    : "1",
+    shorturl  : surl,
+    root      : "1",
   });
 
   const infoResp = await fetch(`${TERABOX_HOST}/api/shorturlinfo?${infoParams}`, {
@@ -875,6 +918,7 @@ async function fetchTerabox(inputUrl) {
       "User-Agent": TERABOX_UA,
       "Cookie"    : cookieStr,
       "Referer"   : shareUrl,
+      "Accept"    : "application/json, text/plain, */*",
     },
     signal: AbortSignal.timeout(20_000),
   });
@@ -885,18 +929,18 @@ async function fetchTerabox(inputUrl) {
 
   if (info.errno !== 0) {
     const errMap = {
-      "-9": "File tidak ditemukan atau link telah dihapus.",
-      "-6": "Sesi tidak valid. Coba lagi.",
-      "4" : "File hanya bisa diakses setelah login.",
+      "-9" : "File tidak ditemukan atau link telah dihapus.",
+      "-6" : "Sesi tidak valid. Coba lagi.",
+      "4"  : "File hanya bisa diakses setelah login.",
+      "110": "Link sudah kadaluarsa.",
     };
-    throw new Error(errMap[String(info.errno)] || `API Terabox error ${info.errno}: ${info.errmsg || "Unknown error"}.`);
+    throw new Error(errMap[String(info.errno)] || `Terabox error ${info.errno}: ${info.errmsg || "Unknown error"}.`);
   }
 
   const { uk, shareid, sign, timestamp, list: fileList = [] } = info;
-
   if (!fileList.length) throw new Error("Tidak ada file yang ditemukan di folder ini.");
 
-  // ── Step 3: POST /api/download → dlink per file ──────────────────────────
+  // ── Step 3: GET /api/download → dlink per file ───────────────────────────
   const files = [];
 
   for (const file of fileList) {
@@ -923,17 +967,15 @@ async function fetchTerabox(inputUrl) {
           "User-Agent": TERABOX_UA,
           "Cookie"    : cookieStr,
           "Referer"   : shareUrl,
+          "Accept"    : "application/json, text/plain, */*",
         },
         signal: AbortSignal.timeout(20_000),
       });
-
       if (dlResp.ok) {
         const dlData = await dlResp.json();
         dlink = dlData?.dlink || dlData?.list?.[0]?.dlink || null;
       }
-    } catch (_) {
-      // tetap lanjut meski 1 file gagal ambil dlink
-    }
+    } catch (_) { /* tetap lanjut */ }
 
     files.push({
       filename : file.server_filename || file.filename || "unknown",
@@ -946,14 +988,15 @@ async function fetchTerabox(inputUrl) {
       thumbnail: file.thumbs?.url3 || file.thumbs?.url2 || file.thumbs?.url1 || null,
       fs_id    : file.fs_id,
       download : {
-        url  : dlink,
-        // dlink Terabox memerlukan header User-Agent yang sama saat di-request
-        note : dlink ? "Gunakan header 'User-Agent' saat fetch URL ini." : "dlink tidak tersedia.",
+        url : dlink,
+        note: dlink
+          ? "Sertakan header 'User-Agent' yang sama saat mengunduh URL ini."
+          : "dlink tidak tersedia untuk file ini.",
       },
     });
   }
 
-  if (!files.length) throw new Error("Tidak ada file (bukan folder) di link ini.");
+  if (!files.length) throw new Error("Tidak ada file (non-folder) yang ditemukan di link ini.");
 
   const isSingle = files.length === 1;
 
@@ -963,12 +1006,7 @@ async function fetchTerabox(inputUrl) {
     code   : 200,
     message: `Berhasil mengambil ${files.length} file dari Terabox.`,
     result : isSingle ? files[0] : files,
-    meta   : {
-      source_url : inputUrl,
-      file_count : files.length,
-      shareid,
-      uk,
-    },
+    meta   : { source_url: inputUrl, file_count: files.length, shareid, uk },
   };
 }
 
