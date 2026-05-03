@@ -1,5 +1,5 @@
 /**
- * Downloader API — YouTube, TikTok, Instagram, Facebook, Pinterest
+ * Downloader API — YouTube, TikTok, Instagram, Facebook, Pinterest, Twitter/X, Threads
  */
 
 const CORS_HEADERS = {
@@ -28,7 +28,7 @@ export default async function handler(req, res) {
     return res.status(400).json({
       status: false, code: 400,
       message: "Parameter 'platform' wajib diisi.",
-      available: ["youtube", "tiktok", "instagram", "facebook", "pinterest"],
+      available: ["youtube", "tiktok", "instagram", "facebook", "pinterest", "twitter", "threads"],
       example: "/api/downloader?platform=tiktok&url=https://vt.tiktok.com/...",
     });
   }
@@ -48,11 +48,14 @@ export default async function handler(req, res) {
       case "instagram": return res.status(200).json(await fetchInstagram(url));
       case "facebook":  return res.status(200).json(await fetchFacebook(url));
       case "pinterest": return res.status(200).json(await fetchPinterest(url));
+      case "twitter":
+      case "x":         return res.status(200).json(await fetchTwitter(url));
+      case "threads":   return res.status(200).json(await fetchThreads(url));
       default:
         return res.status(400).json({
           status: false, code: 400,
           message: `Platform '${platform}' tidak didukung.`,
-          available: ["youtube", "tiktok", "instagram", "facebook", "pinterest"],
+          available: ["youtube", "tiktok", "instagram", "facebook", "pinterest", "twitter", "threads"],
         });
     }
   } catch (err) {
@@ -562,6 +565,126 @@ async function fetchPinterest(url) {
       thumbnail: imageUrl || null,
       medias,
     },
+  };
+}
+
+
+// ─── Twitter/X ────────────────────────────────────────────────────────────────
+
+async function fetchTwitter(url) {
+  const twitterRegex = /^https?:\/\/(www\.)?(twitter\.com|x\.com)\/\w+\/status\/\d+/i;
+  if (!twitterRegex.test(url)) throw new Error("URL tidak valid. Masukkan link tweet yang benar.");
+
+  // Pakai twitsave API (tidak butuh auth)
+  const apiUrl = `https://twitsave.com/info?url=${encodeURIComponent(url)}`;
+  const resp = await fetch(apiUrl, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "Accept": "text/html,application/xhtml+xml,*/*",
+      "Referer": "https://twitsave.com/",
+    },
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!resp.ok) throw new Error(`twitsave merespons ${resp.status}.`);
+  const html = await resp.text();
+
+  // Ambil judul
+  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  const title = titleMatch ? titleMatch[1].replace(" - TwitSave", "").trim() : null;
+
+  // Ambil thumbnail
+  const thumbMatch = html.match(/property="og:image"[^>]+content="([^"]+)"/i)
+    || html.match(/content="([^"]+)"[^>]+property="og:image"/i);
+  const thumbnail = thumbMatch ? thumbMatch[1] : null;
+
+  // Ambil semua download link (video qualities)
+  const medias = [];
+  const linkRegex = /href="(https:\/\/video\.twimg\.com[^"]+)"|href="(https:\/\/pbs\.twimg\.com[^"]+)"/gi;
+  let match;
+  const seen = new Set();
+  while ((match = linkRegex.exec(html)) !== null) {
+    const mediaUrl = match[1] || match[2];
+    if (!mediaUrl || seen.has(mediaUrl)) continue;
+    seen.add(mediaUrl);
+
+    const isVideo = mediaUrl.includes("video.twimg.com");
+    const qualMatch = mediaUrl.match(/(\d{3,4})x(\d{3,4})/);
+    const quality = qualMatch ? `${qualMatch[1]}x${qualMatch[2]}` : "HD";
+
+    medias.push({
+      type: isVideo ? "video" : "image",
+      extension: isVideo ? "mp4" : "jpg",
+      quality: isVideo ? quality : "HD Image",
+      url: mediaUrl,
+    });
+  }
+
+  // Fallback: cari dari data-url attribute
+  if (medias.length === 0) {
+    const dataUrlRegex = /data-url="(https:\/\/[^"]+\.mp4[^"]*)"/gi;
+    while ((match = dataUrlRegex.exec(html)) !== null) {
+      if (!seen.has(match[1])) {
+        medias.push({ type: "video", extension: "mp4", quality: "HD", url: match[1] });
+        seen.add(match[1]);
+      }
+    }
+  }
+
+  if (medias.length === 0) throw new Error("Media tidak ditemukan di tweet ini. Pastikan tweet mengandung video atau gambar.");
+
+  return {
+    creator: "@SanzXD", status: true, code: 200,
+    message: "Berhasil mengambil media Twitter/X.",
+    result: { title, thumbnail, medias },
+  };
+}
+
+// ─── Threads ──────────────────────────────────────────────────────────────────
+
+async function fetchThreads(url) {
+  const threadsRegex = /^https?:\/\/(www\.)?threads\.net\/@?[\w.]+\/post\/[a-zA-Z0-9_-]+/i;
+  if (!threadsRegex.test(url)) throw new Error("URL tidak valid. Masukkan link post Threads yang benar.");
+
+  // Fetch halaman Threads dengan user-agent mobile
+  const resp = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+      "Accept": "text/html,application/xhtml+xml,*/*",
+      "Accept-Language": "en-US,en;q=0.9",
+    },
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!resp.ok) throw new Error(`Threads merespons ${resp.status}.`);
+  const html = await resp.text();
+
+  const getMeta = (prop) => {
+    const m = html.match(new RegExp(`<meta[^>]+(?:property|name)="${prop}"[^>]+content="([^"]+)"`, "i"))
+      || html.match(new RegExp(`<meta[^>]+content="([^"]+)"[^>]+(?:property|name)="${prop}"`, "i"));
+    return m ? m[1].replace(/&amp;/g, "&").replace(/&quot;/g, '"') : null;
+  };
+
+  const videoUrl   = getMeta("og:video") || getMeta("og:video:secure_url") || getMeta("og:video:url");
+  const imageUrl   = getMeta("og:image");
+  const title      = getMeta("og:title") || getMeta("og:description");
+  const thumbnail  = imageUrl;
+
+  // Coba juga ambil dari JSON LD atau script tag
+  let extraVideo = null;
+  const scriptMatch = html.match(/"video_url":"([^"]+)"/);
+  if (scriptMatch) extraVideo = scriptMatch[1].replace(/\\u0026/g, "&").replace(/\\/g, "");
+
+  const finalVideo = videoUrl || extraVideo;
+
+  if (!finalVideo && !imageUrl) throw new Error("Media tidak ditemukan. Post mungkin privat atau tidak mengandung media.");
+
+  const medias = [];
+  if (finalVideo) medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: finalVideo });
+  if (imageUrl)   medias.push({ type: "image", extension: "jpg", quality: "HD Image", url: imageUrl });
+
+  return {
+    creator: "@SanzXD", status: true, code: 200,
+    message: "Berhasil mengambil media Threads.",
+    result: { title, thumbnail, medias },
   };
 }
 
