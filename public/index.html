@@ -962,16 +962,6 @@ const EP = {
 // ── Per-platform drama endpoint definitions ────────────────────────────────
 const DRAMA_PLATFORMS = [
   {
-    id: 'goodshort', name: 'GoodShort', emoji: 'GS',
-    endpoints: [
-      { epId: 'gs-foryou',   path: '/api/drama?action=foryou&source=goodshort',   desc: 'For You / Rekomendasi' },
-      { epId: 'gs-trending', path: '/api/drama?action=trending&source=goodshort', desc: 'Trending drama' },
-      { epId: 'gs-search',   path: '/api/drama?action=search&source=goodshort',   desc: 'Search drama' },
-      { epId: 'gs-detail',   path: '/api/drama?action=detail&source=goodshort',   desc: 'Detail drama' },
-      { epId: 'gs-episode',  path: '/api/drama?action=episode&source=goodshort',  desc: 'Get video episode' },
-    ]
-  },
-  {
     id: 'dramabox', name: 'DramaBox', emoji: 'DB',
     endpoints: [
       { epId: 'db-foryou',   path: '/api/drama?action=foryou&source=dramabox',   desc: 'For You / Rekomendasi' },
@@ -979,56 +969,6 @@ const DRAMA_PLATFORMS = [
       { epId: 'db-search',   path: '/api/drama?action=search&source=dramabox',   desc: 'Search drama' },
       { epId: 'db-detail',   path: '/api/drama?action=detail&source=dramabox',   desc: 'Detail drama' },
       { epId: 'db-episode',  path: '/api/drama?action=episode&source=dramabox',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'reelshort', name: 'ReelShort', emoji: 'RS',
-    endpoints: [
-      { epId: 'rs-foryou',   path: '/api/drama?action=foryou&source=reelshort',   desc: 'For You / Rekomendasi' },
-      { epId: 'rs-trending', path: '/api/drama?action=trending&source=reelshort', desc: 'Trending drama' },
-      { epId: 'rs-search',   path: '/api/drama?action=search&source=reelshort',   desc: 'Search drama' },
-      { epId: 'rs-detail',   path: '/api/drama?action=detail&source=reelshort',   desc: 'Detail drama' },
-      { epId: 'rs-episode',  path: '/api/drama?action=episode&source=reelshort',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'shortmax', name: 'ShortMax', emoji: 'SM',
-    endpoints: [
-      { epId: 'sm-foryou',   path: '/api/drama?action=foryou&source=shortmax',   desc: 'For You / Rekomendasi' },
-      { epId: 'sm-trending', path: '/api/drama?action=trending&source=shortmax', desc: 'Trending drama' },
-      { epId: 'sm-search',   path: '/api/drama?action=search&source=shortmax',   desc: 'Search drama' },
-      { epId: 'sm-detail',   path: '/api/drama?action=detail&source=shortmax',   desc: 'Detail drama' },
-      { epId: 'sm-episode',  path: '/api/drama?action=episode&source=shortmax',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'netshort', name: 'NetShort', emoji: 'NS',
-    endpoints: [
-      { epId: 'ns-foryou',   path: '/api/drama?action=foryou&source=netshort',   desc: 'For You / Rekomendasi' },
-      { epId: 'ns-trending', path: '/api/drama?action=trending&source=netshort', desc: 'Trending drama' },
-      { epId: 'ns-search',   path: '/api/drama?action=search&source=netshort',   desc: 'Search drama' },
-      { epId: 'ns-detail',   path: '/api/drama?action=detail&source=netshort',   desc: 'Detail drama' },
-      { epId: 'ns-episode',  path: '/api/drama?action=episode&source=netshort',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'dramawave', name: 'DramaWave', emoji: 'DW',
-    endpoints: [
-      { epId: 'dw-foryou',   path: '/api/drama?action=foryou&source=dramawave',   desc: 'For You / Rekomendasi' },
-      { epId: 'dw-trending', path: '/api/drama?action=trending&source=dramawave', desc: 'Trending drama' },
-      { epId: 'dw-search',   path: '/api/drama?action=search&source=dramawave',   desc: 'Search drama' },
-      { epId: 'dw-detail',   path: '/api/drama?action=detail&source=dramawave',   desc: 'Detail drama' },
-      { epId: 'dw-episode',  path: '/api/drama?action=episode&source=dramawave',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'flickreels', name: 'FlickReels', emoji: 'FR',
-    endpoints: [
-      { epId: 'fr-foryou',   path: '/api/drama?action=foryou&source=flickreels',   desc: 'For You / Rekomendasi' },
-      { epId: 'fr-trending', path: '/api/drama?action=trending&source=flickreels', desc: 'Trending drama' },
-      { epId: 'fr-search',   path: '/api/drama?action=search&source=flickreels',   desc: 'Search drama' },
-      { epId: 'fr-detail',   path: '/api/drama?action=detail&source=flickreels',   desc: 'Detail drama' },
-      { epId: 'fr-episode',  path: '/api/drama?action=episode&source=flickreels',  desc: 'Get video episode' },
     ]
   },
   {
@@ -1042,56 +982,6 @@ const DRAMA_PLATFORMS = [
     ]
   },
   {
-    id: 'stardusttv', name: 'StardustTV', emoji: 'ST',
-    endpoints: [
-      { epId: 'st-foryou',   path: '/api/drama?action=foryou&source=stardusttv',   desc: 'For You / Rekomendasi' },
-      { epId: 'st-trending', path: '/api/drama?action=trending&source=stardusttv', desc: 'Trending drama' },
-      { epId: 'st-search',   path: '/api/drama?action=search&source=stardusttv',   desc: 'Search drama' },
-      { epId: 'st-detail',   path: '/api/drama?action=detail&source=stardusttv',   desc: 'Detail drama' },
-      { epId: 'st-episode',  path: '/api/drama?action=episode&source=stardusttv',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'idrama', name: 'iDrama', emoji: 'ID',
-    endpoints: [
-      { epId: 'id-foryou',   path: '/api/drama?action=foryou&source=idrama',   desc: 'For You / Rekomendasi' },
-      { epId: 'id-trending', path: '/api/drama?action=trending&source=idrama', desc: 'Trending drama' },
-      { epId: 'id-search',   path: '/api/drama?action=search&source=idrama',   desc: 'Search drama' },
-      { epId: 'id-detail',   path: '/api/drama?action=detail&source=idrama',   desc: 'Detail drama' },
-      { epId: 'id-episode',  path: '/api/drama?action=episode&source=idrama',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'dramanova', name: 'DramaNova', emoji: 'DN',
-    endpoints: [
-      { epId: 'dn-foryou',   path: '/api/drama?action=foryou&source=dramanova',   desc: 'For You / Rekomendasi' },
-      { epId: 'dn-trending', path: '/api/drama?action=trending&source=dramanova', desc: 'Trending drama' },
-      { epId: 'dn-search',   path: '/api/drama?action=search&source=dramanova',   desc: 'Search drama' },
-      { epId: 'dn-detail',   path: '/api/drama?action=detail&source=dramanova',   desc: 'Detail drama' },
-      { epId: 'dn-episode',  path: '/api/drama?action=episode&source=dramanova',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'starshort', name: 'StarShort', emoji: 'SS',
-    endpoints: [
-      { epId: 'ss-foryou',   path: '/api/drama?action=foryou&source=starshort',   desc: 'For You / Rekomendasi' },
-      { epId: 'ss-trending', path: '/api/drama?action=trending&source=starshort', desc: 'Trending drama' },
-      { epId: 'ss-search',   path: '/api/drama?action=search&source=starshort',   desc: 'Search drama' },
-      { epId: 'ss-detail',   path: '/api/drama?action=detail&source=starshort',   desc: 'Detail drama' },
-      { epId: 'ss-episode',  path: '/api/drama?action=episode&source=starshort',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'dramabite', name: 'DramaBite', emoji: 'DT',
-    endpoints: [
-      { epId: 'dt-foryou',   path: '/api/drama?action=foryou&source=dramabite',   desc: 'For You / Rekomendasi' },
-      { epId: 'dt-trending', path: '/api/drama?action=trending&source=dramabite', desc: 'Trending drama' },
-      { epId: 'dt-search',   path: '/api/drama?action=search&source=dramabite',   desc: 'Search drama' },
-      { epId: 'dt-detail',   path: '/api/drama?action=detail&source=dramabite',   desc: 'Detail drama' },
-      { epId: 'dt-episode',  path: '/api/drama?action=episode&source=dramabite',  desc: 'Get video episode' },
-    ]
-  },
-  {
     id: 'melolo', name: 'Melolo', emoji: 'ML',
     endpoints: [
       { epId: 'ml-foryou',   path: '/api/drama?action=foryou&source=melolo',   desc: 'For You / Rekomendasi' },
@@ -1099,16 +989,6 @@ const DRAMA_PLATFORMS = [
       { epId: 'ml-search',   path: '/api/drama?action=search&source=melolo',   desc: 'Search drama' },
       { epId: 'ml-detail',   path: '/api/drama?action=detail&source=melolo',   desc: 'Detail drama' },
       { epId: 'ml-episode',  path: '/api/drama?action=episode&source=melolo',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'moboreels', name: 'MoboReels', emoji: 'MR',
-    endpoints: [
-      { epId: 'mr-foryou',   path: '/api/drama?action=foryou&source=moboreels',   desc: 'For You / Rekomendasi' },
-      { epId: 'mr-trending', path: '/api/drama?action=trending&source=moboreels', desc: 'Trending drama' },
-      { epId: 'mr-search',   path: '/api/drama?action=search&source=moboreels',   desc: 'Search drama' },
-      { epId: 'mr-detail',   path: '/api/drama?action=detail&source=moboreels',   desc: 'Detail drama' },
-      { epId: 'mr-episode',  path: '/api/drama?action=episode&source=moboreels',  desc: 'Get video episode' },
     ]
   },
 ];
