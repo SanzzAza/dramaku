@@ -936,7 +936,7 @@ async function fetchTerabox(inputUrl) {
     }
   } catch (_) {}
 
-  throw new Error("Semua metode gagal. Terabox membatasi akses file ini dari server eksternal.");
+  throw new Error(`Semua metode gagal. [debug: ndus=${ndus ? ndus.slice(0,8)+"..." : "KOSONG"}, cookie_env=${TERABOX_ACCOUNT_COOKIE ? "ADA" : "KOSONG"}]`);
 }
 
 function formatBytes(bytes) {
