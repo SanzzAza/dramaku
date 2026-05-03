@@ -836,58 +836,107 @@ function cookieObjToStr(obj) {
 async function fetchTerabox(inputUrl) {
   // ── Validasi domain ───────────────────────────────────────────────────────
   let parsedUrl;
-  try {
-    parsedUrl = new URL(inputUrl);
-  } catch (_) {
-    throw new Error("URL tidak valid. Masukkan link Terabox yang benar.");
-  }
+  try { parsedUrl = new URL(inputUrl); }
+  catch (_) { throw new Error("URL tidak valid. Masukkan link Terabox yang benar."); }
 
   const hostname = parsedUrl.hostname.replace(/^www\./, "");
   if (!TERABOX_DOMAINS.some(d => hostname === d || hostname.endsWith("." + d))) {
     throw new Error(`Domain '${hostname}' tidak didukung.`);
   }
 
-  // ── Coba API eksternal ────────────────────────────────────────────────────
-  const externalApis = [
-    `https://teraboxapp.xyz/api?url=${encodeURIComponent(inputUrl)}`,
-    `https://terabox.hnn.workers.dev/?url=${encodeURIComponent(inputUrl)}`,
-  ];
+  // Ambil ndus dari TERABOX_ACCOUNT_COOKIE
+  const ndusMatch = (TERABOX_ACCOUNT_COOKIE || "").match(/(?:^|;)\s*ndus=([^;]+)/i);
+  const ndus = ndusMatch ? ndusMatch[1].trim() : "";
 
-  for (const apiUrl of externalApis) {
+  // ── Strategi 1: terasnap.netlify.app (butuh ndus cookie) ─────────────────
+  if (ndus) {
     try {
-      const resp = await fetch(apiUrl, {
-        headers: { "User-Agent": TERABOX_UA, "Accept": "application/json" },
-        signal: AbortSignal.timeout(15_000),
+      const resp = await fetch("https://terasnap.netlify.app/api/download", {
+        method : "POST",
+        headers: { "Content-Type": "application/json", "User-Agent": TERABOX_UA },
+        body   : JSON.stringify({ link: inputUrl, cookies: `ndus=${ndus}` }),
+        signal : AbortSignal.timeout(20_000),
       });
-      if (!resp.ok) continue;
-      const data = await resp.json();
-
-      const dlink = data?.dlink || data?.download?.url || data?.url || data?.direct_link || null;
-      const filename = data?.filename || data?.file_name || data?.name || "unknown";
-      const size = Number(data?.size || 0);
-
-      if (dlink) {
-        return {
-          creator: "@SanzXD",
-          status : true,
-          code   : 200,
-          message: "Berhasil mengambil 1 file dari Terabox.",
-          result : {
-            filename,
-            size,
-            size_text: formatBytes(size),
-            type    : "video",
-            thumbnail: data?.thumbnail || data?.thumb || null,
-            fs_id   : data?.fs_id || null,
-            download: { url: dlink, note: "Sertakan header \'User-Agent\' saat mengunduh." },
-          },
-          meta: { source_url: inputUrl },
-        };
+      if (resp.ok) {
+        const data = await resp.json();
+        const dlink = data?.download_link || data?.dlink || null;
+        if (dlink) {
+          return {
+            creator: "@SanzXD", status: true, code: 200,
+            message: "Berhasil mengambil 1 file dari Terabox.",
+            result: {
+              filename : data?.file_name || "unknown",
+              size     : data?.size_bytes || 0,
+              size_text: data?.file_size  || null,
+              type     : "video",
+              thumbnail: data?.thumbnail  || null,
+              fs_id    : null,
+              download : { url: dlink, note: "Sertakan header 'User-Agent' saat mengunduh." },
+            },
+            meta: { source_url: inputUrl },
+          };
+        }
       }
     } catch (_) {}
   }
 
-  throw new Error("Tidak dapat mengambil dlink. Terabox membatasi akses file ini dari server.");
+  // ── Strategi 2: teraboxapp.xyz ────────────────────────────────────────────
+  try {
+    const resp = await fetch(`https://teraboxapp.xyz/api?url=${encodeURIComponent(inputUrl)}`, {
+      headers: { "User-Agent": TERABOX_UA, "Accept": "application/json" },
+      signal : AbortSignal.timeout(15_000),
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      const dlink = data?.dlink || data?.download?.url || data?.url || null;
+      if (dlink) {
+        return {
+          creator: "@SanzXD", status: true, code: 200,
+          message: "Berhasil mengambil 1 file dari Terabox.",
+          result: {
+            filename : data?.filename || data?.file_name || "unknown",
+            size     : Number(data?.size || 0),
+            size_text: formatBytes(Number(data?.size || 0)),
+            type     : "video",
+            thumbnail: data?.thumbnail || data?.thumb || null,
+            fs_id    : data?.fs_id || null,
+            download : { url: dlink, note: "Sertakan header 'User-Agent' saat mengunduh." },
+          },
+          meta: { source_url: inputUrl },
+        };
+      }
+    }
+  } catch (_) {}
+
+  // ── Strategi 3: wetransfer worker ─────────────────────────────────────────
+  try {
+    const resp = await fetch(`https://terabox.hnn.workers.dev/?url=${encodeURIComponent(inputUrl)}`, {
+      headers: { "User-Agent": TERABOX_UA, "Accept": "application/json" },
+      signal : AbortSignal.timeout(15_000),
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      const dlink = data?.dlink || data?.url || data?.download_link || null;
+      if (dlink) {
+        return {
+          creator: "@SanzXD", status: true, code: 200,
+          message: "Berhasil mengambil 1 file dari Terabox.",
+          result: {
+            filename : data?.filename || "unknown",
+            size     : Number(data?.size || 0),
+            size_text: formatBytes(Number(data?.size || 0)),
+            type     : "video",
+            thumbnail: data?.thumbnail || null,
+            fs_id    : null,
+            download : { url: dlink, note: "Sertakan header 'User-Agent' saat mengunduh." },
+          },
+          meta: { source_url: inputUrl },
+        };
+      }
+    }
+  } catch (_) {}
+
+  throw new Error("Semua metode gagal. Terabox membatasi akses file ini dari server eksternal.");
 }
 
 function formatBytes(bytes) {
