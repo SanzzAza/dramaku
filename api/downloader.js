@@ -645,102 +645,104 @@ async function fetchThreads(url) {
   const cleanUrl = url.split("?")[0];
   if (!threadsRegex.test(cleanUrl)) throw new Error("URL tidak valid. Masukkan link post Threads yang benar.");
 
-  // Ekstrak shortcode dari URL
-  const shortcodeMatch = cleanUrl.match(/\/post\/([a-zA-Z0-9_-]+)/);
-  if (!shortcodeMatch) throw new Error("Tidak bisa ekstrak post ID dari URL.");
-  const shortcode = shortcodeMatch[1];
+  // Normalize ke threads.net (yang threadster.app support)
+  const netUrl = cleanUrl
+    .replace("www.threads.com", "www.threads.net")
+    .replace(/^(https?:\/\/)threads\.com/, "$1www.threads.net");
 
-  // Hit Threads oEmbed / internal API
-  const apiUrl = `https://www.threads.net/api/graphql`;
-  const resp = await fetch(apiUrl, {
-    method: "POST",
-    headers: {
-      "User-Agent": "Barcelona 289.0.0.77.109 Android",
-      "Content-Type": "application/x-www-form-urlencoded",
-      "X-IG-App-ID": "238260118697367",
-      "Accept-Language": "en-US",
-      "Accept": "*/*",
-      "Sec-Fetch-Site": "same-origin",
-    },
-    body: `lsd=AVqbxe3J_YA&variables={"postID":"${shortcode}"}&server_timestamps=true&doc_id=7428053580716445`,
-    signal: AbortSignal.timeout(15_000),
-  });
-
-  // Fallback: scrape HTML jika API gagal
-  let videoUrl = null;
-  let imageUrl = null;
-  let title    = null;
-
-  if (resp.ok) {
+  // Helper: decode JWT payload
+  function decodeJwt(token) {
     try {
-      const json = await resp.json();
-      const post = json?.data?.data?.edges?.[0]?.node?.thread_items?.[0]?.post;
-      title    = post?.user?.username ? `@${post.user.username}` : null;
-      imageUrl = post?.image_versions2?.candidates?.[0]?.url || null;
-
-      const videoVersions = post?.video_versions;
-      if (videoVersions?.length > 0) {
-        // Pilih kualitas tertinggi (index 0 biasanya HD)
-        videoUrl = videoVersions[0].url;
-      }
-
-      // Carousel / multiple media
-      const carouselMedia = post?.carousel_media;
-      if (carouselMedia?.length > 0 && !videoUrl) {
-        for (const item of carouselMedia) {
-          if (item?.video_versions?.length > 0) {
-            videoUrl = item.video_versions[0].url;
-            break;
-          }
-        }
-        if (!imageUrl) imageUrl = carouselMedia[0]?.image_versions2?.candidates?.[0]?.url || null;
-      }
-    } catch (_) {}
+      const payload = token.split(".")[1];
+      const padded = payload + "=".repeat((4 - payload.length % 4) % 4);
+      return JSON.parse(Buffer.from(padded, "base64").toString("utf8"));
+    } catch { return {}; }
   }
 
-  // Fallback HTML scraping jika API tidak return media
-  if (!videoUrl && !imageUrl) {
-    const htmlResp = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
-        "Accept": "text/html,*/*",
-        "Accept-Language": "en-US,en;q=0.9",
-      },
-      signal: AbortSignal.timeout(15_000),
-    });
-    if (htmlResp.ok) {
-      const html = await htmlResp.text();
-      const getMeta = (prop) => {
-        const m = html.match(new RegExp(`<meta[^>]+(?:property|name)="${prop}"[^>]+content="([^"]+)"`, "i"))
-          || html.match(new RegExp(`<meta[^>]+content="([^"]+)"[^>]+(?:property|name)="${prop}"`, "i"));
-        return m ? m[1].replace(/&amp;/g, "&").replace(/&quot;/g, '"') : null;
-      };
-      imageUrl = imageUrl || getMeta("og:image");
-      title    = title    || getMeta("og:title") || getMeta("og:description");
+  // Helper: extract CDN info dari HTML threadster
+  function extractCdnInfo(html) {
+    const raw = html.replace(/&amp;/g, "&");
+    const cdnPattern = /https:\/\/downloads\.acxcdn\.com\/(?:vdfr|threadster)\/(?:video|image)\?token=[A-Za-z0-9_\-.]+/g;
+    const cdnUrls = [...new Set(raw.match(cdnPattern) || [])];
 
-      const patterns = [
-        /"video_url":"([^"]+)"/,
-        /"playable_url":"([^"]+)"/,
-        /"playable_url_quality_hd":"([^"]+)"/,
-      ];
-      for (const p of patterns) {
-        const m = html.match(p);
-        if (m) { videoUrl = m[1].replace(/\u0026/g, "&").replace(/\\/g, ""); break; }
+    const result = { videoCdn: [], imageCdn: [], realVideoUrls: [], realImageUrls: [] };
+    for (const cdnUrl of cdnUrls) {
+      const isVideo = cdnUrl.includes("/video?");
+      const tokenMatch = cdnUrl.match(/token=([\w\-.]+)/);
+      if (tokenMatch) {
+        const payload = decodeJwt(tokenMatch[1]);
+        const realUrl = payload?.url || "";
+        if (isVideo) { result.videoCdn.push(cdnUrl); if (realUrl) result.realVideoUrls.push(realUrl); }
+        else         { result.imageCdn.push(cdnUrl); if (realUrl) result.realImageUrls.push(realUrl); }
       }
     }
+
+    // Fallback: direct mp4
+    if (result.videoCdn.length === 0) {
+      const mp4s = [...new Set((raw.match(/https?:\/\/[^\s"'<>&]+\.mp4[^\s"'<>&]*/g) || []))];
+      result.directMp4 = mp4s;
+    }
+    return result;
   }
 
-  if (!videoUrl && !imageUrl) throw new Error("Media tidak ditemukan. Post mungkin privat atau tidak mengandung media.");
+  // POST ke threadster.app
+  async function fetchFromThreadster(tryUrl) {
+    const resp = await fetch("https://threadster.app/download", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": "Mozilla/5.0 (Linux; Android 12; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
+        "Referer": "https://threadster.app/download",
+        "Origin": "https://threadster.app",
+        "Accept": "text/html,application/xhtml+xml,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+      body: `url=${encodeURIComponent(tryUrl)}`,
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!resp.ok) throw new Error(`threadster merespons ${resp.status}`);
+    return extractCdnInfo(await resp.text());
+  }
 
-  const thumbnail = imageUrl;
+  // Coba beberapa variant URL
+  const variants = [...new Set([cleanUrl, netUrl, url.split("?")[0]])];
+  let info = null;
+  for (const tryUrl of variants) {
+    try {
+      const result = await fetchFromThreadster(tryUrl);
+      const hasMedia = result.videoCdn.length > 0 || result.imageCdn.length > 0 ||
+                       result.realVideoUrls.length > 0 || (result.directMp4?.length > 0);
+      if (hasMedia) { info = result; break; }
+    } catch (_) {}
+    await new Promise(r => setTimeout(r, 1000));
+  }
+
+  if (!info) throw new Error("Media tidak ditemukan. Post mungkin privat atau tidak mengandung media.");
+
   const medias = [];
-  if (videoUrl) medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: videoUrl });
-  if (imageUrl) medias.push({ type: "image", extension: "jpg", quality: "HD Image", url: imageUrl });
+  // Prioritas: real URL dari JWT > CDN URL > direct mp4
+  if (info.realVideoUrls.length > 0) {
+    for (const u of info.realVideoUrls) medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: u });
+  } else if (info.videoCdn.length > 0) {
+    for (const u of info.videoCdn) medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: u });
+  } else if (info.directMp4?.length > 0) {
+    for (const u of info.directMp4.slice(0, 2)) medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: u });
+  }
+
+  if (info.realImageUrls.length > 0) {
+    for (const u of info.realImageUrls) medias.push({ type: "image", extension: "jpg", quality: "HD Image", url: u });
+  } else if (info.imageCdn.length > 0) {
+    for (const u of info.imageCdn) medias.push({ type: "image", extension: "jpg", quality: "HD Image", url: u });
+  }
+
+  if (medias.length === 0) throw new Error("Tidak ada media yang bisa diekstrak.");
+
+  const thumbnail = info.realImageUrls[0] || info.imageCdn[0] || null;
 
   return {
     creator: "@SanzXD", status: true, code: 200,
     message: "Berhasil mengambil media Threads.",
-    result: { title, thumbnail, medias },
+    result: { title: null, thumbnail, medias },
   };
 }
 
