@@ -1,7 +1,10 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/", "destination": "/public/index.html" }
+    { "source": "/api/downloader", "destination": "/api/downloader.js" },
+    { "source": "/api/tools",      "destination": "/api/tools.js" },
+    { "source": "/api/proxy",      "destination": "/api/proxy.js" },
+    { "source": "/",               "destination": "/public/index.html" }
   ],
   "headers": [
     {
