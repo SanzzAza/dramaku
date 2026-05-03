@@ -844,56 +844,6 @@ async function fetchTerabox(inputUrl) {
     throw new Error(`Domain '${hostname}' tidak didukung.`);
   }
 
-  // ── Strategi 1: Cloudflare Worker (no cookie needed) ─────────────────────
-  try {
-    const resp = await fetch(
-      `https://terabox-worker.robinkumarshakya103.workers.dev/api?url=${encodeURIComponent(inputUrl)}`,
-      {
-        headers: { "User-Agent": TERABOX_UA, "Accept": "application/json" },
-        signal: AbortSignal.timeout(20_000),
-      }
-    );
-    if (resp.ok) {
-      const data = await resp.json();
-      if (data?.success && data?.files?.length) {
-        const files = data.files.map(f => {
-          // Worker membungkus dlink dalam proxy URL, ekstrak dlink aslinya
-          let rawUrl = f.download_url || f.dlink || f.direct_link || f.original_download_url || null;
-          if (rawUrl && rawUrl.includes("workers.dev/download?dlink=")) {
-            try {
-              const u = new URL(rawUrl);
-              rawUrl = decodeURIComponent(u.searchParams.get("dlink") || rawUrl);
-            } catch (_) {}
-          }
-          const filename = f.file_name || f.filename || "unknown";
-          const proxyUrl = rawUrl
-            ? `${BASE_URL}/api/proxy?url=${encodeURIComponent(rawUrl)}&filename=${encodeURIComponent(filename)}&mode=attachment`
-            : null;
-          return {
-            filename : filename,
-            size     : Number(f.size || 0),
-            size_text: formatBytes(Number(f.size || 0)),
-            type     : "video",
-            thumbnail: f.thumbnail || f.thumb || null,
-            fs_id    : f.fs_id || null,
-            download : {
-              url      : proxyUrl,
-              direct   : rawUrl,
-              type     : "proxy",
-              note     : "Gunakan 'url' untuk download langsung lewat server (recommended). 'direct' membutuhkan header User-Agent.",
-            },
-          };
-        });
-        const isSingle = files.length === 1;
-        return {
-          creator: "@SanzXD", status: true, code: 200,
-          message: `Berhasil mengambil ${files.length} file dari Terabox.`,
-          result: isSingle ? files[0] : files,
-          meta: { source_url: inputUrl, file_count: files.length },
-        };
-      }
-    }
-  } catch (_) {}
 
   // ── Strategi 2: Scrape langsung + cookie (ikut logic script GitHub) ──────────
   const surlMatch = parsedUrl.pathname.match(/\/s\/([a-zA-Z0-9_-]+)/);
