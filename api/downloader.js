@@ -287,103 +287,84 @@ async function fetchFacebook(url) {
   const fbRegex = /^https?:\/\/(www\.|m\.|web\.)?(facebook\.com|fb\.watch)\/.+/i;
   if (!fbRegex.test(url)) throw new Error("URL tidak valid. Masukkan link Facebook yang benar.");
 
-  // --- Provider 1: cobalt.tools API (JSON, tidak butuh scraping) ---
-  try {
-    const cobaltResp = await fetch("https://api.cobalt.tools/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "User-Agent": FB_UA,
-      },
-      body: JSON.stringify({ url, videoQuality: "max", filenameStyle: "pretty" }),
-      signal: AbortSignal.timeout(20_000),
-    });
-    if (cobaltResp.ok) {
-      const cobalt = await cobaltResp.json();
-      // status: "stream" = langsung download, "picker" = multiple files
-      if (cobalt.status === "stream" && cobalt.url) {
-        return {
-          creator: "@SanzXD", status: true, code: 200,
-          message: "Berhasil mengambil data video Facebook.",
-          result: { source_url: url, video: { hd: cobalt.url, sd: cobalt.url, cover: null }, filename: cobalt.filename || null, provider: "cobalt.tools" },
-        };
-      }
-      if (cobalt.status === "picker" && cobalt.picker?.length > 0) {
-        const videos = cobalt.picker.filter(p => p.type === "video" || p.url);
-        if (videos.length > 0) {
-          return {
-            creator: "@SanzXD", status: true, code: 200,
-            message: "Berhasil mengambil data video Facebook.",
-            result: { source_url: url, video: { hd: videos[0].url, sd: videos[videos.length - 1].url, cover: cobalt.photo || null }, provider: "cobalt.tools" },
-          };
-        }
-      }
-    }
-  } catch { /* fallback */ }
+  // Resolve fb.watch / short URL dulu
+  let finalUrl = url;
+  if (url.includes("fb.watch") || url.includes("/share/")) {
+    try {
+      const headResp = await fetch(url, {
+        method: "GET",
+        headers: { "User-Agent": FB_UA },
+        redirect: "follow",
+        signal: AbortSignal.timeout(10_000),
+      });
+      finalUrl = headResp.url || url;
+    } catch { finalUrl = url; }
+  }
 
-  // --- Provider 2: SaveFrom API ---
-  try {
-    const sfUrl = `https://worker.ssvid.net/api?url=${encodeURIComponent(url)}`;
-    const sfResp = await fetch(sfUrl, {
-      headers: { "User-Agent": FB_UA },
-      signal: AbortSignal.timeout(15_000),
-    });
-    if (sfResp.ok) {
-      const sfData = await sfResp.json();
-      const links  = sfData?.links || sfData?.url || [];
-      const hd     = Array.isArray(links) ? links.find(l => l.quality?.includes("HD") || l.quality?.includes("720") || l.quality?.includes("1080"))?.url : null;
-      const sd     = Array.isArray(links) ? links.find(l => l.url)?.url : null;
-      if (hd || sd) {
-        return {
-          creator: "@SanzXD", status: true, code: 200,
-          message: "Berhasil mengambil data video Facebook.",
-          result: { source_url: url, video: { hd: hd || sd, sd: sd || hd, cover: sfData?.thumbnail || null }, provider: "ssvid.net" },
-        };
-      }
-    }
-  } catch { /* fallback */ }
+  // Fetch halaman Facebook langsung (pakai mobile UA supaya HTML lebih simpel)
+  const mobileUA = "Mozilla/5.0 (Linux; Android 12; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36";
+  const mUrl = finalUrl.replace("www.facebook.com", "m.facebook.com");
 
-  // --- Provider 3: y2mate-style API ---
-  try {
-    const y2Resp = await fetch("https://www.y2mate.com/mates/analyzeV2/ajax", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "User-Agent": FB_UA,
-        "Referer": "https://www.y2mate.com/",
-      },
-      body: new URLSearchParams({ k_query: url, k_page: "Facebook", hl: "id", q_auto: "1" }).toString(),
-      signal: AbortSignal.timeout(15_000),
-    });
-    if (y2Resp.ok) {
-      const y2Data = await y2Resp.json();
-      if (y2Data?.status === "Ok" && y2Data?.links) {
-        const vidLinks = y2Data.links?.mp4 || {};
-        const entries  = Object.values(vidLinks);
-        const best     = entries.find(e => e.q?.includes("720") || e.q?.includes("HD")) || entries[0];
-        if (best?.k) {
-          // convert key ke URL download
-          const dlResp = await fetch("https://www.y2mate.com/mates/convertV2/index", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": FB_UA },
-            body: new URLSearchParams({ vid: y2Data.vid, k: best.k }).toString(),
-            signal: AbortSignal.timeout(15_000),
-          });
-          const dlData = await dlResp.json();
-          if (dlData?.dlink) {
-            return {
-              creator: "@SanzXD", status: true, code: 200,
-              message: "Berhasil mengambil data video Facebook.",
-              result: { source_url: url, video: { hd: dlData.dlink, sd: dlData.dlink, cover: y2Data?.thumbnail || null }, provider: "y2mate.com" },
-            };
-          }
-        }
-      }
-    }
-  } catch { /* fallback */ }
+  const pageResp = await fetch(mUrl, {
+    headers: {
+      "User-Agent": mobileUA,
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
+      "sec-fetch-mode": "navigate",
+    },
+    signal: AbortSignal.timeout(15_000),
+  });
 
-  throw new Error("Video tidak ditemukan. Pastikan video bersifat publik dan coba dengan link yang berbeda.");
+  if (!pageResp.ok) throw new Error(`Facebook merespons ${pageResp.status}.`);
+  const html = await pageResp.text();
+
+  // Extract title
+  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  const title = titleMatch ? titleMatch[1].replace(" | Facebook", "").trim() : "No video title";
+
+  // Cari semua URL video fbcdn.net dari HTML
+  const hdUrl = extractFbVideo(html, ["hd_src", "playable_url_quality_hd", "browser_native_hd_url"]);
+  const sdUrl = extractFbVideo(html, ["sd_src", "playable_url", "browser_native_sd_url"]);
+
+  if (!hdUrl && !sdUrl) {
+    // Fallback: cari pattern fbcdn langsung
+    const fbcdnMatch = html.match(/https:\\\/\\\/video[-\w.]+\.fbcdn\.net\\\/[^"'\s]+\.mp4[^"'\s]*/g);
+    if (fbcdnMatch && fbcdnMatch.length > 0) {
+      const cleanUrl = fbcdnMatch[0].replace(/\\\//g, "/");
+      return {
+        creator: "@SanzXD", status: true, code: 200,
+        message: "Berhasil mengambil data video Facebook.",
+        data: { title, description: null, sd: cleanUrl, hd: fbcdnMatch[1] ? fbcdnMatch[1].replace(/\\\//g, "/") : cleanUrl },
+      };
+    }
+    throw new Error("Video tidak ditemukan. Pastikan video bersifat publik.");
+  }
+
+  return {
+    creator: "@SanzXD", status: true, code: 200,
+    message: "Berhasil mengambil data video Facebook.",
+    data: {
+      title,
+      description: null,
+      sd: sdUrl || hdUrl,
+      hd: hdUrl || sdUrl,
+    },
+  };
+}
+
+function extractFbVideo(html, keys) {
+  for (const key of keys) {
+    // Pattern: "key":"url" atau "key": "url"
+    const re1 = new RegExp(`"${key}"\\s*:\\s*"(https:[^"]+\\.mp4[^"]*)"`, "i");
+    const m1  = html.match(re1);
+    if (m1) return m1[1].replace(/\\u0026/g, "&").replace(/\\\//g, "/");
+
+    // Pattern: key:"url" (tanpa quote di key)
+    const re2 = new RegExp(`${key}:"(https:[^"]+\\.mp4[^"]*)"`, "i");
+    const m2  = html.match(re2);
+    if (m2) return m2[1].replace(/\\u0026/g, "&").replace(/\\\//g, "/");
+  }
+  return null;
 }
 
 // ─── Pinterest ────────────────────────────────────────────────────────────────
