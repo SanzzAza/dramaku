@@ -287,61 +287,103 @@ async function fetchFacebook(url) {
   const fbRegex = /^https?:\/\/(www\.|m\.|web\.)?(facebook\.com|fb\.watch)\/.+/i;
   if (!fbRegex.test(url)) throw new Error("URL tidak valid. Masukkan link Facebook yang benar.");
 
-  // --- Provider 1: SnapSave ---
+  // --- Provider 1: cobalt.tools API (JSON, tidak butuh scraping) ---
   try {
-    const snapResp = await fetch("https://snapsave.app/action.php", {
+    const cobaltResp = await fetch("https://api.cobalt.tools/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": FB_UA,
+      },
+      body: JSON.stringify({ url, videoQuality: "max", filenameStyle: "pretty" }),
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (cobaltResp.ok) {
+      const cobalt = await cobaltResp.json();
+      // status: "stream" = langsung download, "picker" = multiple files
+      if (cobalt.status === "stream" && cobalt.url) {
+        return {
+          creator: "@SanzXD", status: true, code: 200,
+          message: "Berhasil mengambil data video Facebook.",
+          result: { source_url: url, video: { hd: cobalt.url, sd: cobalt.url, cover: null }, filename: cobalt.filename || null, provider: "cobalt.tools" },
+        };
+      }
+      if (cobalt.status === "picker" && cobalt.picker?.length > 0) {
+        const videos = cobalt.picker.filter(p => p.type === "video" || p.url);
+        if (videos.length > 0) {
+          return {
+            creator: "@SanzXD", status: true, code: 200,
+            message: "Berhasil mengambil data video Facebook.",
+            result: { source_url: url, video: { hd: videos[0].url, sd: videos[videos.length - 1].url, cover: cobalt.photo || null }, provider: "cobalt.tools" },
+          };
+        }
+      }
+    }
+  } catch { /* fallback */ }
+
+  // --- Provider 2: SaveFrom API ---
+  try {
+    const sfUrl = `https://worker.ssvid.net/api?url=${encodeURIComponent(url)}`;
+    const sfResp = await fetch(sfUrl, {
+      headers: { "User-Agent": FB_UA },
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (sfResp.ok) {
+      const sfData = await sfResp.json();
+      const links  = sfData?.links || sfData?.url || [];
+      const hd     = Array.isArray(links) ? links.find(l => l.quality?.includes("HD") || l.quality?.includes("720") || l.quality?.includes("1080"))?.url : null;
+      const sd     = Array.isArray(links) ? links.find(l => l.url)?.url : null;
+      if (hd || sd) {
+        return {
+          creator: "@SanzXD", status: true, code: 200,
+          message: "Berhasil mengambil data video Facebook.",
+          result: { source_url: url, video: { hd: hd || sd, sd: sd || hd, cover: sfData?.thumbnail || null }, provider: "ssvid.net" },
+        };
+      }
+    }
+  } catch { /* fallback */ }
+
+  // --- Provider 3: y2mate-style API ---
+  try {
+    const y2Resp = await fetch("https://www.y2mate.com/mates/analyzeV2/ajax", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
         "User-Agent": FB_UA,
-        "Referer": "https://snapsave.app/",
-        "Origin": "https://snapsave.app",
+        "Referer": "https://www.y2mate.com/",
       },
-      body: new URLSearchParams({ url }).toString(),
+      body: new URLSearchParams({ k_query: url, k_page: "Facebook", hl: "id", q_auto: "1" }).toString(),
       signal: AbortSignal.timeout(15_000),
     });
-    const snapHtml = await snapResp.text();
-    const hdMatch = snapHtml.match(/href="(https?:\/\/[^"]+)"[^>]*>\s*(?:HD|Download HD)/i);
-    const sdMatch = snapHtml.match(/href="(https?:\/\/[^"]+)"[^>]*>\s*(?:SD|Download SD|Normal)/i);
-    const hdUrl   = hdMatch ? hdMatch[1] : null;
-    const sdUrl   = sdMatch ? sdMatch[1] : null;
-    if (hdUrl || sdUrl) {
-      return {
-        creator: "@SanzXD", status: true, code: 200,
-        message: "Berhasil mengambil data video Facebook.",
-        result: { source_url: url, video: { hd: hdUrl, sd: sdUrl, cover: null }, provider: "snapsave.app" },
-      };
+    if (y2Resp.ok) {
+      const y2Data = await y2Resp.json();
+      if (y2Data?.status === "Ok" && y2Data?.links) {
+        const vidLinks = y2Data.links?.mp4 || {};
+        const entries  = Object.values(vidLinks);
+        const best     = entries.find(e => e.q?.includes("720") || e.q?.includes("HD")) || entries[0];
+        if (best?.k) {
+          // convert key ke URL download
+          const dlResp = await fetch("https://www.y2mate.com/mates/convertV2/index", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": FB_UA },
+            body: new URLSearchParams({ vid: y2Data.vid, k: best.k }).toString(),
+            signal: AbortSignal.timeout(15_000),
+          });
+          const dlData = await dlResp.json();
+          if (dlData?.dlink) {
+            return {
+              creator: "@SanzXD", status: true, code: 200,
+              message: "Berhasil mengambil data video Facebook.",
+              result: { source_url: url, video: { hd: dlData.dlink, sd: dlData.dlink, cover: y2Data?.thumbnail || null }, provider: "y2mate.com" },
+            };
+          }
+        }
+      }
     }
   } catch { /* fallback */ }
 
-  // --- Provider 2: fdown.net ---
-  try {
-    const fdownResp = await fetch("https://fdown.net/download.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "User-Agent": FB_UA,
-        "Referer": "https://fdown.net/",
-        "Origin": "https://fdown.net",
-      },
-      body: new URLSearchParams({ URLz: url }).toString(),
-      signal: AbortSignal.timeout(15_000),
-    });
-    const fdownHtml = await fdownResp.text();
-    const hdM = fdownHtml.match(/id="hdlink"[^>]*href="([^"]+)"/i) || fdownHtml.match(/href="([^"]+)"[^>]*id="hdlink"/i);
-    const sdM = fdownHtml.match(/id="sdlink"[^>]*href="([^"]+)"/i) || fdownHtml.match(/href="([^"]+)"[^>]*id="sdlink"/i);
-    const hd  = hdM ? hdM[1] : null;
-    const sd  = sdM ? sdM[1] : null;
-    if (hd || sd) {
-      return {
-        creator: "@SanzXD", status: true, code: 200,
-        message: "Berhasil mengambil data video Facebook.",
-        result: { source_url: url, video: { hd, sd, cover: null }, provider: "fdown.net" },
-      };
-    }
-  } catch { /* fallback */ }
-
-  throw new Error("Video tidak ditemukan. Pastikan video bersifat publik dan link valid.");
+  throw new Error("Video tidak ditemukan. Pastikan video bersifat publik dan coba dengan link yang berbeda.");
 }
 
 // ─── Pinterest ────────────────────────────────────────────────────────────────
