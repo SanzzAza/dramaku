@@ -864,17 +864,22 @@ async function fetchTerabox(inputUrl) {
               rawUrl = decodeURIComponent(u.searchParams.get("dlink") || rawUrl);
             } catch (_) {}
           }
+          const filename = f.file_name || f.filename || "unknown";
+          const proxyUrl = rawUrl
+            ? `/api/proxy?url=${encodeURIComponent(rawUrl)}&filename=${encodeURIComponent(filename)}&mode=attachment`
+            : null;
           return {
-            filename : f.file_name || f.filename || "unknown",
+            filename : filename,
             size     : Number(f.size || 0),
             size_text: formatBytes(Number(f.size || 0)),
             type     : "video",
             thumbnail: f.thumbnail || f.thumb || null,
             fs_id    : f.fs_id || null,
             download : {
-              url : rawUrl,
-              type: "direct",
-              note: "Sertakan header 'User-Agent' saat mengunduh.",
+              url      : proxyUrl,
+              direct   : rawUrl,
+              type     : "proxy",
+              note     : "Gunakan 'url' untuk download langsung lewat server (recommended). 'direct' membutuhkan header User-Agent.",
             },
           };
         });
@@ -969,17 +974,25 @@ async function fetchTerabox(inputUrl) {
   }
 
   const files = onlyFiles.map(file => {
-    const dlink = dlinkMap[String(file.fs_id)] || null;
+    const dlink    = dlinkMap[String(file.fs_id)] || null;
+    const filename = file.server_filename || "unknown";
+    const proxyUrl = dlink
+      ? `/api/proxy?url=${encodeURIComponent(dlink)}&filename=${encodeURIComponent(filename)}&mode=attachment`
+      : null;
     return {
-      filename : file.server_filename || "unknown",
+      filename : filename,
       size     : Number(file.size) || null,
       size_text: file.size ? formatBytes(Number(file.size)) : null,
       type     : file.category === "1" ? "video" : file.category === "3" ? "image" : "file",
       thumbnail: file.thumbs?.url3 || file.thumbs?.url1 || null,
       fs_id    : file.fs_id,
       download : {
-        url : dlink,
-        note: dlink ? "Sertakan header 'User-Agent' saat mengunduh." : "dlink tidak tersedia.",
+        url   : proxyUrl,
+        direct: dlink,
+        type  : proxyUrl ? "proxy" : "unavailable",
+        note  : proxyUrl
+          ? "Gunakan 'url' untuk download langsung lewat server (recommended). 'direct' membutuhkan header User-Agent."
+          : "dlink tidak tersedia.",
       },
     };
   });
