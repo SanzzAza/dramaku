@@ -575,58 +575,57 @@ async function fetchTwitter(url) {
   const twitterRegex = /^https?:\/\/(www\.)?(twitter\.com|x\.com)\/\w+\/status\/\d+/i;
   if (!twitterRegex.test(url)) throw new Error("URL tidak valid. Masukkan link tweet yang benar.");
 
-  // Pakai twitsave API (tidak butuh auth)
-  const apiUrl = `https://twitsave.com/info?url=${encodeURIComponent(url)}`;
+  // Pakai fxtwitter API — JSON langsung, tidak butuh scraping
+  const tweetId = url.match(/status\/(\d+)/)?.[1];
+  if (!tweetId) throw new Error("Tidak bisa ekstrak tweet ID.");
+
+  const apiUrl = `https://api.fxtwitter.com/status/${tweetId}`;
   const resp = await fetch(apiUrl, {
     headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "Accept": "text/html,application/xhtml+xml,*/*",
-      "Referer": "https://twitsave.com/",
+      "User-Agent": "Mozilla/5.0 (compatible; SanzXD/1.0)",
+      "Accept": "application/json",
     },
     signal: AbortSignal.timeout(15_000),
   });
-  if (!resp.ok) throw new Error(`twitsave merespons ${resp.status}.`);
-  const html = await resp.text();
+  if (!resp.ok) throw new Error(`fxtwitter merespons ${resp.status}.`);
+  const data = await resp.json();
 
-  // Ambil judul
-  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-  const title = titleMatch ? titleMatch[1].replace(" - TwitSave", "").trim() : null;
+  if (data?.code !== 200) throw new Error(data?.message || "Gagal mengambil data tweet.");
 
-  // Ambil thumbnail
-  const thumbMatch = html.match(/property="og:image"[^>]+content="([^"]+)"/i)
-    || html.match(/content="([^"]+)"[^>]+property="og:image"/i);
-  const thumbnail = thumbMatch ? thumbMatch[1] : null;
+  const tweet = data?.tweet;
+  const title = tweet?.author?.name ? `@${tweet.author.screen_name}: ${tweet.text?.slice(0, 100)}` : null;
+  const thumbnail = tweet?.thumbnail?.url || null;
 
-  // Ambil semua download link (video qualities)
   const medias = [];
-  const linkRegex = /href="(https:\/\/video\.twimg\.com[^"]+)"|href="(https:\/\/pbs\.twimg\.com[^"]+)"/gi;
-  let match;
-  const seen = new Set();
-  while ((match = linkRegex.exec(html)) !== null) {
-    const mediaUrl = match[1] || match[2];
-    if (!mediaUrl || seen.has(mediaUrl)) continue;
-    seen.add(mediaUrl);
+  const media = tweet?.media;
 
-    const isVideo = mediaUrl.includes("video.twimg.com");
-    const qualMatch = mediaUrl.match(/(\d{3,4})x(\d{3,4})/);
-    const quality = qualMatch ? `${qualMatch[1]}x${qualMatch[2]}` : "HD";
-
-    medias.push({
-      type: isVideo ? "video" : "image",
-      extension: isVideo ? "mp4" : "jpg",
-      quality: isVideo ? quality : "HD Image",
-      url: mediaUrl,
-    });
+  if (media?.videos?.length > 0) {
+    for (const vid of media.videos) {
+      // Ambil semua variants/kualitas
+      if (vid.variants?.length > 0) {
+        for (const v of vid.variants) {
+          medias.push({
+            type: "video",
+            extension: "mp4",
+            quality: v.content_type === "video/mp4" ? (v.bitrate ? `${Math.round(v.bitrate/1000)}kbps` : "HD") : "m3u8",
+            url: v.url,
+          });
+        }
+      } else {
+        medias.push({ type: "video", extension: "mp4", quality: "HD", url: vid.url });
+      }
+    }
   }
 
-  // Fallback: cari dari data-url attribute
-  if (medias.length === 0) {
-    const dataUrlRegex = /data-url="(https:\/\/[^"]+\.mp4[^"]*)"/gi;
-    while ((match = dataUrlRegex.exec(html)) !== null) {
-      if (!seen.has(match[1])) {
-        medias.push({ type: "video", extension: "mp4", quality: "HD", url: match[1] });
-        seen.add(match[1]);
-      }
+  if (media?.photos?.length > 0) {
+    for (const photo of media.photos) {
+      medias.push({ type: "image", extension: "jpg", quality: "HD Image", url: photo.url });
+    }
+  }
+
+  if (media?.gifs?.length > 0) {
+    for (const gif of media.gifs) {
+      medias.push({ type: "gif", extension: "mp4", quality: "GIF", url: gif.url });
     }
   }
 
@@ -642,8 +641,10 @@ async function fetchTwitter(url) {
 // ─── Threads ──────────────────────────────────────────────────────────────────
 
 async function fetchThreads(url) {
+  // Support URL dengan query params seperti ?xmt=...
   const threadsRegex = /^https?:\/\/(www\.)?threads\.net\/@?[\w.]+\/post\/[a-zA-Z0-9_-]+/i;
-  if (!threadsRegex.test(url)) throw new Error("URL tidak valid. Masukkan link post Threads yang benar.");
+  const cleanUrl = url.split("?")[0]; // hapus query params untuk validasi
+  if (!threadsRegex.test(cleanUrl)) throw new Error("URL tidak valid. Masukkan link post Threads yang benar.");
 
   // Fetch halaman Threads dengan user-agent mobile
   const resp = await fetch(url, {
