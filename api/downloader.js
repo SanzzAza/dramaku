@@ -895,87 +895,126 @@ async function fetchTerabox(inputUrl) {
     }
   } catch (_) {}
 
-  // ── Strategi 2: Scrape langsung + cookie ─────────────────────────────────
+  // ── Strategi 2: Scrape langsung + cookie (ikut logic script GitHub) ──────────
   const surlMatch = parsedUrl.pathname.match(/\/s\/([a-zA-Z0-9_-]+)/);
   const surl = surlMatch ? surlMatch[1] : parsedUrl.searchParams.get("surl");
   if (!surl) throw new Error("Tidak dapat mengambil surl dari URL.");
 
-  const shareUrl = `${TERABOX_HOST}/s/${surl}`;
-
-  const pageResp = await fetch(shareUrl, {
-    headers: { "User-Agent": TERABOX_UA, "Accept": "text/html,*/*" },
-    redirect: "follow", signal: AbortSignal.timeout(20_000),
-  });
-  if (!pageResp.ok) throw new Error(`Gagal membuka halaman (${pageResp.status}).`);
-
-  const pageHtml = await pageResp.text();
-  const cookies = parseCookies(pageResp.headers);
+  // Gabungkan cookie akun dengan cookie dari response
   const accountCookies = TERABOX_ACCOUNT_COOKIE
     ? Object.fromEntries(TERABOX_ACCOUNT_COOKIE.split(";").map(c => {
         const [k, ...v] = c.trim().split("=");
         return [k.trim(), v.join("=").trim()];
       })) : {};
-  const cookieStr = cookieObjToStr({ ...cookies, ...accountCookies });
 
-  let jsToken = { ...cookies, ...accountCookies }["csrfToken"] || "";
+  // GET share page dengan cookie akun — penting agar dapat session valid
+  const shareUrl = `${TERABOX_HOST}/s/${surl}`;
+  const pageResp = await fetch(shareUrl, {
+    headers: {
+      "User-Agent": TERABOX_UA,
+      "Accept"    : "text/html,*/*",
+      "Cookie"    : cookieObjToStr(accountCookies),
+    },
+    redirect: "follow",
+    signal  : AbortSignal.timeout(20_000),
+  });
+  if (!pageResp.ok) throw new Error(`Gagal membuka halaman (${pageResp.status}).`);
+
+  const pageHtml   = await pageResp.text();
+  const pageCookies = parseCookies(pageResp.headers);
+  const cookieStr  = cookieObjToStr({ ...accountCookies, ...pageCookies });
+
+  // Extract jsToken & logId dari HTML — format: fn%28%22TOKEN%22%29
+  // Ini cara yang dipakai script GitHub, lebih reliable dari regex biasa
+  const findBetween = (str, start, end) => {
+    const si = str.indexOf(start);
+    if (si === -1) return "";
+    const ei = str.indexOf(end, si + start.length);
+    if (ei === -1) return "";
+    return str.substring(si + start.length, ei);
+  };
+
+  let jsToken = findBetween(pageHtml, "fn%28%22", "%22%29");
+  let logId   = findBetween(pageHtml, "dp-logid=", "&");
+
+  // Fallback ke regex kalau format berbeda
   if (!jsToken) {
     for (const pat of [
       /locals\.jsToken\s*=\s*["']([^"']{10,})["']/i,
       /"jsToken"\s*:\s*"([^"]{10,})"/i,
-      /\bjsToken\s*=\s*["']([^"']{10,})["']/i,
+      /fn\("([^"]{20,})"\)/i,
     ]) {
       const m = pageHtml.match(pat);
-      if (m) { jsToken = decodeURIComponent(m[1]); break; }
+      if (m) { jsToken = m[1]; break; }
     }
   }
-  if (!jsToken) throw new Error("Tidak dapat mengambil jsToken.");
+  if (!jsToken) throw new Error("Tidak dapat mengambil jsToken dari halaman.");
 
-  const infoResp = await fetch(
-    `${TERABOX_HOST}/api/shorturlinfo?${new URLSearchParams({
-      app_id: "250528", web: "1", channel: "dubox", clienttype: "0",
-      jsToken, shorturl: surl, root: "1",
-    })}`,
-    { headers: { "User-Agent": TERABOX_UA, "Cookie": cookieStr, "Referer": shareUrl }, signal: AbortSignal.timeout(20_000) }
-  );
-  const info = await infoResp.json();
-  if (info.errno !== 0) {
-    const errMap = { "-9": "File tidak ditemukan.", "-6": "Sesi tidak valid.", "4": "File butuh login.", "110": "Link kadaluarsa." };
-    throw new Error(errMap[String(info.errno)] || `Terabox error ${info.errno}.`);
+  // Ambil final URL setelah redirect (responseUrl) untuk extract surl yang benar
+  const finalUrl = pageResp.url || shareUrl;
+  const finalSurl = finalUrl.includes("surl=")
+    ? finalUrl.split("surl=")[1].split("&")[0]
+    : surl;
+
+  // GET /share/list — sama persis seperti script GitHub
+  const params = new URLSearchParams({
+    app_id      : "250528",
+    web         : "1",
+    channel     : "dubox",
+    clienttype  : "0",
+    jsToken     : jsToken,
+    dplogid     : logId,
+    page        : "1",
+    num         : "20",
+    order       : "time",
+    desc        : "1",
+    site_referer: finalUrl,
+    shorturl    : finalSurl,
+    root        : "1",
+  });
+
+  const listResp = await fetch(`https://www.1024tera.com/share/list?${params}`, {
+    headers: {
+      "User-Agent": TERABOX_UA,
+      "Cookie"    : cookieStr,
+      "Referer"   : finalUrl,
+    },
+    signal: AbortSignal.timeout(20_000),
+  });
+  let listData = await listResp.json();
+  if (!listData.list) throw new Error(`Terabox share/list error: ${listData.errno || "unknown"}`);
+
+  // Kalau isinya folder, fetch lagi dengan dir
+  if (listData.list[0]?.isdir === "1") {
+    const folderParams = new URLSearchParams({
+      app_id      : "250528",
+      web         : "1",
+      channel     : "dubox",
+      clienttype  : "0",
+      jsToken     : jsToken,
+      dplogid     : logId,
+      page        : "1",
+      num         : "20",
+      order       : "asc",
+      by          : "name",
+      site_referer: finalUrl,
+      shorturl    : finalSurl,
+      dir         : listData.list[0].path,
+    });
+    const folderResp = await fetch(`https://www.1024tera.com/share/list?${folderParams}`, {
+      headers: { "User-Agent": TERABOX_UA, "Cookie": cookieStr, "Referer": finalUrl },
+      signal : AbortSignal.timeout(20_000),
+    });
+    const folderData = await folderResp.json();
+    if (!folderData.list) throw new Error("Tidak ada file dalam folder.");
+    listData = folderData;
   }
 
-  const { uk, shareid, sign, timestamp, list: fileList = [] } = info;
-  const onlyFiles = fileList.filter(f => f.isdir !== "1");
+  const onlyFiles = listData.list.filter(f => f.isdir !== "1");
   if (!onlyFiles.length) throw new Error("Tidak ada file yang ditemukan.");
 
-  const allFsIds = onlyFiles.map(f => f.fs_id);
-  let dlinkMap = {};
-
-  for (const f of onlyFiles) {
-    if (f.dlink) dlinkMap[String(f.fs_id)] = f.dlink;
-  }
-
-  if (!Object.keys(dlinkMap).length) {
-    try {
-      const fmResp = await fetch(
-        `${TERABOX_HOST}/api/filemetas?${new URLSearchParams({
-          app_id: "250528", web: "1", channel: "dubox", clienttype: "0",
-          jsToken, sign, timestamp: String(timestamp),
-          shareid: String(shareid), uk: String(uk),
-          dlink: "1", thumb: "1", fsids: JSON.stringify(allFsIds),
-        })}`,
-        { headers: { "User-Agent": TERABOX_UA, "Cookie": cookieStr, "Referer": shareUrl }, signal: AbortSignal.timeout(20_000) }
-      );
-      const fmData = await fmResp.json();
-      if (fmData?.info?.length) {
-        for (const item of fmData.info) {
-          if (item.dlink) dlinkMap[String(item.fs_id)] = item.dlink;
-        }
-      }
-    } catch (_) {}
-  }
-
   const files = onlyFiles.map(file => {
-    const dlink    = dlinkMap[String(file.fs_id)] || null;
+    const dlink    = file.dlink || null;
     const filename = file.server_filename || "unknown";
     const proxyUrl = dlink
       ? `${BASE_URL}/api/proxy?url=${encodeURIComponent(dlink)}&filename=${encodeURIComponent(filename)}&mode=attachment`
@@ -992,7 +1031,7 @@ async function fetchTerabox(inputUrl) {
         direct: dlink,
         type  : proxyUrl ? "proxy" : "unavailable",
         note  : proxyUrl
-          ? "Gunakan 'url' untuk download langsung lewat server (recommended). 'direct' membutuhkan header User-Agent."
+          ? "Gunakan 'url' untuk download lewat proxy server. 'direct' membutuhkan header User-Agent + Cookie."
           : "dlink tidak tersedia.",
       },
     };
@@ -1002,8 +1041,8 @@ async function fetchTerabox(inputUrl) {
   return {
     creator: "@SanzXD", status: true, code: 200,
     message: `Berhasil mengambil ${files.length} file dari Terabox.`,
-    result: isSingle ? files[0] : files,
-    meta: { source_url: inputUrl, file_count: files.length, shareid, uk },
+    result : isSingle ? files[0] : files,
+    meta   : { source_url: inputUrl, file_count: files.length },
   };
 }
 
