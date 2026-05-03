@@ -94,18 +94,36 @@ async function toolAiImage(req) {
 
 // ─── Anime ────────────────────────────────────────────────────────────────────
 
-const SFW_TYPES = ["waifu","neko","shinobu","megumin","bully","cuddle","cry","hug","awoo","kiss","lick","pat","smug","bonk","yeet","blush","smile","wave","highfive","handhold","nom","bite","glomp","slap","kick","happy","wink","poke","dance","cringe"];
+const NEKOS_TYPES = ["neko","kitsune","husbando","waifu"];
+const WAIFU_TYPES = ["waifu","neko","shinobu","megumin","bully","cuddle","cry","hug","awoo","kiss","lick","pat","smug","bonk","yeet","blush","smile","wave","highfive","handhold","nom","bite","glomp","slap","kick","happy","wink","poke","dance","cringe"];
+const ALL_TYPES = [...new Set([...NEKOS_TYPES, ...WAIFU_TYPES])];
 
 async function toolAnime(req) {
-  const type = (req.query.type || req.body?.type || "waifu").toLowerCase();
-  if (!SFW_TYPES.includes(type)) throw new Error(`Type '${type}' tidak valid. Available: ${SFW_TYPES.join(", ")}`);
+  const type = (req.query.type || req.body?.type || "neko").toLowerCase();
+  if (!ALL_TYPES.includes(type)) throw new Error(`Type '${type}' tidak valid. Available: ${ALL_TYPES.join(", ")}`);
 
-  const resp = await fetch(`https://api.waifu.pics/sfw/${type}`, { signal: AbortSignal.timeout(10_000) });
-  if (!resp.ok) throw new Error(`waifu.pics merespons ${resp.status}.`);
-  const data = await resp.json();
-  if (!data.url) throw new Error("Gagal mendapatkan URL gambar.");
+  // Coba nekos.best dulu (lebih reliable di Vercel)
+  if (NEKOS_TYPES.includes(type)) {
+    try {
+      const resp = await fetch(`https://nekos.best/api/v2/${type}`, { signal: AbortSignal.timeout(10_000) });
+      if (resp.ok) {
+        const data = await resp.json();
+        const item = data?.results?.[0];
+        if (item?.url) {
+          return { creator: "@SanzXD", status: true, code: 200, message: "Berhasil mengambil gambar anime.", result: { url: item.url, type, artist_name: item.artist_name || null, anime_name: item.anime_name || null, category: "sfw", provider: "nekos.best" } };
+        }
+      }
+    } catch { /* fallback */ }
+  }
 
-  return { creator: "@SanzXD", status: true, code: 200, message: "Berhasil mengambil gambar anime.", result: { url: data.url, type, category: "sfw", provider: "waifu.pics" } };
+  // Fallback ke waifu.pics
+  const waifuType = WAIFU_TYPES.includes(type) ? type : "waifu";
+  const resp2 = await fetch(`https://api.waifu.pics/sfw/${waifuType}`, { signal: AbortSignal.timeout(10_000) });
+  if (!resp2.ok) throw new Error(`Gagal mengambil gambar anime (${resp2.status}). Coba type lain.`);
+  const data2 = await resp2.json();
+  if (!data2.url) throw new Error("Gagal mendapatkan URL gambar.");
+
+  return { creator: "@SanzXD", status: true, code: 200, message: "Berhasil mengambil gambar anime.", result: { url: data2.url, type: waifuType, category: "sfw", provider: "waifu.pics" } };
 }
 
 // ─── Cek Nomor ────────────────────────────────────────────────────────────────
@@ -230,27 +248,59 @@ async function toolQuote(req) {
   const tag  = req.query.tag  || req.body?.tag  || "";
   const lang = (req.query.lang || req.body?.lang || "en").toLowerCase();
 
-  let url = "https://api.quotable.kurokeita.dev/api/quotes/random";
-  if (tag) url += `?tags=${encodeURIComponent(tag)}`;
+  // Coba quotable.kurokeita.dev
+  let content = null, author = null, quoteId = null, tags = [];
+  try {
+    let url = "https://api.quotable.kurokeita.dev/api/quotes/random";
+    if (tag) url += `?tags=${encodeURIComponent(tag)}`;
+    const resp = await fetch(url, { signal: AbortSignal.timeout(10_000) });
+    if (resp.ok) {
+      const data = await resp.json();
+      // Handle berbagai kemungkinan struktur response
+      const quote = Array.isArray(data?.data) ? data.data[0] : (data?.data || data);
+      content = quote?.content || quote?.body || quote?.quote || null;
+      author  = quote?.author?.name || quote?.author || quote?.authorName || null;
+      quoteId = quote?._id || quote?.id || null;
+      tags    = quote?.tags || [];
+    }
+  } catch { /* fallback */ }
 
-  const resp = await fetch(url, { signal: AbortSignal.timeout(10_000) });
-  if (!resp.ok) throw new Error("Gagal mengambil quote.");
-  const data = await resp.json();
+  // Fallback ke quotable.io jika gagal
+  if (!content) {
+    try {
+      let url2 = "https://api.quotable.io/random";
+      if (tag) url2 += `?tags=${encodeURIComponent(tag)}`;
+      const resp2 = await fetch(url2, { signal: AbortSignal.timeout(10_000) });
+      if (resp2.ok) {
+        const data2 = await resp2.json();
+        content = data2?.content || null;
+        author  = data2?.author  || null;
+        quoteId = data2?._id     || null;
+        tags    = data2?.tags    || [];
+      }
+    } catch { /* fallback 2 */ }
+  }
 
-  const quote   = data?.data?.[0] || data;
-  const content = quote.content || quote.body;
-  const author  = quote.author?.name || quote.author || "Unknown";
+  // Fallback ke zenquotes.io
+  if (!content) {
+    const resp3 = await fetch("https://zenquotes.io/api/random", { signal: AbortSignal.timeout(10_000) });
+    if (!resp3.ok) throw new Error("Semua sumber quote tidak tersedia.");
+    const data3 = await resp3.json();
+    content = data3?.[0]?.q || null;
+    author  = data3?.[0]?.a || null;
+    if (!content) throw new Error("Gagal mengambil quote dari semua sumber.");
+  }
 
   let translated = null;
-  if (lang === "id") {
+  if (lang === "id" && content) {
     try {
       const tr = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(content)}&langpair=en|id`, { signal: AbortSignal.timeout(8_000) });
       const trData = await tr.json();
       translated = trData?.responseData?.translatedText || null;
-    } catch { /* translate gagal, lanjut */ }
+    } catch { /* translate gagal */ }
   }
 
-  return { creator: "@SanzXD", status: true, code: 200, message: "Berhasil mengambil quote.", result: { quote: content, quote_id: quote._id || quote.id || null, author, tags: quote.tags || [], ...(lang === "id" && translated ? { quote_translated: translated } : {}), provider: "quotable.kurokeita.dev" } };
+  return { creator: "@SanzXD", status: true, code: 200, message: "Berhasil mengambil quote.", result: { quote: content, quote_id: quoteId, author: author || "Unknown", tags, ...(lang === "id" && translated ? { quote_translated: translated } : {}), provider: "quotable.kurokeita.dev" } };
 }
 
 // ─── Screenshot ───────────────────────────────────────────────────────────────
@@ -299,17 +349,54 @@ async function toolShortUrl(req) {
 
 // ─── TTS ─────────────────────────────────────────────────────────────────────
 
-const VALID_VOICES = ["id-ID-Wavenet-A","id-ID-Wavenet-B","id-ID-Wavenet-C","id-ID-Wavenet-D","Brian","Amy","Emma","Geraint","Russell","Nicole","Joey","Justin","Matthew","Ivy","Kendra","Kimberly","Salli","Joanna","Filiz","Tatyana","Maxim","Conchita","Enrique","Celine","Mathieu","Marlene","Hans","Dora","Karl","Carla","Giorgio","Mizuki","Liv","Lotte","Ruben","Ewa","Jacek","Jan","Maja","Ricardo","Vitoria","Cristiano","Ines","Carmen","Astrid","Vicki","Chantal","Penelope","Miguel","Mia"];
+const TTS_VOICES_ID = ["id-ID-Standard-A","id-ID-Standard-B","id-ID-Standard-C","id-ID-Standard-D","id-ID-Wavenet-A","id-ID-Wavenet-B","id-ID-Wavenet-C","id-ID-Wavenet-D"];
+const TTS_VOICES_EN = ["Brian","Amy","Emma","Joey","Justin","Matthew","Ivy","Kendra","Kimberly","Salli","Joanna"];
+const VALID_VOICES  = [...TTS_VOICES_ID, ...TTS_VOICES_EN, "Linda", "Filiz", "Tatyana", "Maxim", "Marlene", "Hans", "Mizuki", "Liv"];
 
 async function toolTTS(req) {
   const text  = req.query.text  || req.body?.text;
-  const voice = req.query.voice || req.body?.voice || "id-ID-Wavenet-A";
+  const voice = req.query.voice || req.body?.voice || "Brian";
   if (!text) throw new Error("Parameter 'text' wajib diisi. Contoh: /api/tools?tool=tts&text=Halo+selamat+datang");
   if (text.length > 500) throw new Error("Teks maksimal 500 karakter.");
 
-  const audioUrl = `https://api.streamelements.com/kappa/v2/speech?voice=${encodeURIComponent(voice)}&text=${encodeURIComponent(text)}`;
-  const check = await fetch(audioUrl, { method: "HEAD", signal: AbortSignal.timeout(10_000) });
-  if (!check.ok) throw new Error(`TTS service merespons ${check.status}.`);
+  // Coba TikTok TTS (tidak butuh auth)
+  try {
+    const tiktokVoice = voice.startsWith("id-") ? "id_001" : "en_us_006";
+    const tiktokResp = await fetch("https://tiktok-tts.weilbyte.dev/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, voice: tiktokVoice }),
+      signal: AbortSignal.timeout(12_000),
+    });
+    if (tiktokResp.ok) {
+      const tiktokData = await tiktokResp.json();
+      if (tiktokData?.data) {
+        const audioUrl = `data:audio/mpeg;base64,${tiktokData.data}`;
+        return { creator: "@SanzXD", status: true, code: 200, message: "Berhasil membuat audio TTS.", result: { text, voice: tiktokVoice, audio_url: audioUrl, audio_base64: tiktokData.data, content_type: "audio/mpeg", chars: text.length, provider: "tiktok-tts.weilbyte.dev" } };
+      }
+    }
+  } catch { /* fallback */ }
 
-  return { creator: "@SanzXD", status: true, code: 200, message: "Berhasil membuat audio TTS.", result: { text, voice, audio_url: audioUrl, content_type: check.headers.get("content-type") || "audio/mpeg", chars: text.length, voices_indonesia: ["id-ID-Wavenet-A (Female)","id-ID-Wavenet-B (Male)","id-ID-Wavenet-C (Female)","id-ID-Wavenet-D (Male)"], provider: "streamelements.com" } };
+  // Fallback: Google Translate TTS (tidak butuh auth, max 200 char)
+  const shortText = text.slice(0, 200);
+  const lang = voice.startsWith("id-") ? "id" : "en";
+  const googleTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encodeURIComponent(shortText)}`;
+  const check = await fetch(googleTtsUrl, {
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" },
+    method: "HEAD",
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!check.ok) throw new Error("TTS service tidak tersedia saat ini. Coba lagi nanti.");
+
+  return {
+    creator: "@SanzXD", status: true, code: 200,
+    message: "Berhasil membuat audio TTS.",
+    result: {
+      text: shortText, voice: `${lang}-Google-TTS`, audio_url: googleTtsUrl,
+      content_type: "audio/mpeg", chars: shortText.length,
+      note: text.length > 200 ? `Teks dipotong ke 200 karakter karena keterbatasan provider.` : undefined,
+      voices_indonesia: ["id-ID-Wavenet-A (Female)", "id-ID-Wavenet-B (Male)", "id-ID-Wavenet-C (Female)", "id-ID-Wavenet-D (Male)"],
+      provider: "translate.google.com",
+    },
+  };
 }
