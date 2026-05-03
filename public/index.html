@@ -203,6 +203,50 @@ body::before{
 .cat-label::after{content:'';flex:1;height:1px;background:var(--border)}
 
 .api-list{display:flex;flex-direction:column;gap:8px}
+
+/* ── Drama platform group ── */
+.drama-platform-group{margin-bottom:16px}
+.drama-platform-header{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;cursor:pointer;
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:12px;margin-bottom:6px;
+  transition:all 0.15s;user-select:none;
+}
+.drama-platform-header:hover{background:rgba(124,58,237,0.12)}
+.drama-platform-icon{
+  width:32px;height:32px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(135deg,#7c3aed,#a855f7);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;color:#fff;
+}
+.drama-platform-name{flex:1;font-size:14px;font-weight:700;color:var(--text)}
+.drama-platform-count{font-size:11px;color:var(--muted);margin-right:4px}
+.drama-platform-arrow{color:var(--muted);font-size:16px;transition:transform 0.2s}
+.drama-platform-arrow.open{transform:rotate(90deg)}
+.drama-endpoint-list{
+  display:flex;flex-direction:column;gap:4px;
+  padding-left:8px;
+  overflow:hidden;
+  max-height:0;transition:max-height 0.3s ease;
+}
+.drama-endpoint-list.open{max-height:600px}
+.drama-ep-item{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:10px 14px;
+  cursor:pointer;transition:all 0.15s;
+}
+.drama-ep-item:hover{border-color:var(--border2);background:var(--surface2)}
+.drama-ep-method{
+  font-size:10px;font-weight:800;padding:3px 8px;border-radius:5px;
+  background:rgba(34,197,94,0.15);color:#4ade80;
+  border:1px solid rgba(34,197,94,0.25);letter-spacing:0.04em;flex-shrink:0;
+}
+.drama-ep-path{font-size:12px;font-weight:600;color:var(--text);font-family:monospace;flex:1}
+.drama-ep-desc{font-size:11px;color:var(--muted);white-space:nowrap}
+
+
 .api-item{
   display:flex;align-items:center;gap:14px;
   background:var(--surface);border:1px solid var(--border);
@@ -681,40 +725,7 @@ body::before{
   </div>
 
   <div class="cat-label">DRAMA</div>
-  <div class="api-list">
-    <div class="api-item" data-name="Drama Search" data-desc="Cari drama dari GoodShort, DramaBox, Melolo, dll." data-cat="drama" onclick="openEndpoint('drama-search')">
-      <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
-      <div class="api-info">
-        <div class="api-name-row"><span class="api-name">Drama Search</span><span class="api-badge">DRAMA</span></div>
-        <div class="api-desc">Cari drama dari GoodShort, DramaBox, Melolo, dan 12 platform lainnya.</div>
-      </div>
-      <span class="api-chevron">›</span>
-    </div>
-    <div class="api-item" data-name="Drama Trending" data-desc="Drama trending dari berbagai platform." data-cat="drama" onclick="openEndpoint('drama-trending')">
-      <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
-      <div class="api-info">
-        <div class="api-name-row"><span class="api-name">Drama Trending</span><span class="api-badge">DRAMA</span></div>
-        <div class="api-desc">Drama yang sedang trending di platform pilihan.</div>
-      </div>
-      <span class="api-chevron">›</span>
-    </div>
-    <div class="api-item" data-name="Drama Detail" data-desc="Info lengkap drama beserta daftar episode." data-cat="drama" onclick="openEndpoint('drama-detail')">
-      <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
-      <div class="api-info">
-        <div class="api-name-row"><span class="api-name">Drama Detail</span><span class="api-badge">DRAMA</span></div>
-        <div class="api-desc">Sinopsis, poster, genre, dan list episode dari drama.</div>
-      </div>
-      <span class="api-chevron">›</span>
-    </div>
-    <div class="api-item" data-name="Drama Episode" data-desc="Link video episode langsung bisa diputar." data-cat="drama" onclick="openEndpoint('drama-episode')">
-      <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
-      <div class="api-info">
-        <div class="api-name-row"><span class="api-name">Drama Episode</span><span class="api-badge">DRAMA</span></div>
-        <div class="api-desc">Dapatkan URL video episode (.mp4) yang bisa langsung diputar.</div>
-      </div>
-      <span class="api-chevron">›</span>
-    </div>
-  </div>
+  <div id="drama-platforms-list"></div>
 </div>
 
 <!-- ═══════════ DETAIL ═══════════ -->
@@ -947,6 +958,276 @@ const EP = {
     ]
   }
 };
+
+// ── Per-platform drama endpoint definitions ────────────────────────────────
+const DRAMA_PLATFORMS = [
+  {
+    id: 'goodshort', name: 'GoodShort', emoji: 'GS',
+    endpoints: [
+      { epId: 'gs-foryou',   path: '/api/drama?action=foryou&source=goodshort',   desc: 'For You / Rekomendasi' },
+      { epId: 'gs-trending', path: '/api/drama?action=trending&source=goodshort', desc: 'Trending drama' },
+      { epId: 'gs-search',   path: '/api/drama?action=search&source=goodshort',   desc: 'Search drama' },
+      { epId: 'gs-detail',   path: '/api/drama?action=detail&source=goodshort',   desc: 'Detail drama' },
+      { epId: 'gs-episode',  path: '/api/drama?action=episode&source=goodshort',  desc: 'Get video episode' },
+    ]
+  },
+  {
+    id: 'dramabox', name: 'DramaBox', emoji: 'DB',
+    endpoints: [
+      { epId: 'db-foryou',   path: '/api/drama?action=foryou&source=dramabox',   desc: 'For You / Rekomendasi' },
+      { epId: 'db-trending', path: '/api/drama?action=trending&source=dramabox', desc: 'Trending drama' },
+      { epId: 'db-search',   path: '/api/drama?action=search&source=dramabox',   desc: 'Search drama' },
+      { epId: 'db-detail',   path: '/api/drama?action=detail&source=dramabox',   desc: 'Detail drama' },
+      { epId: 'db-episode',  path: '/api/drama?action=episode&source=dramabox',  desc: 'Get video episode' },
+    ]
+  },
+  {
+    id: 'reelshort', name: 'ReelShort', emoji: 'RS',
+    endpoints: [
+      { epId: 'rs-foryou',   path: '/api/drama?action=foryou&source=reelshort',   desc: 'For You / Rekomendasi' },
+      { epId: 'rs-trending', path: '/api/drama?action=trending&source=reelshort', desc: 'Trending drama' },
+      { epId: 'rs-search',   path: '/api/drama?action=search&source=reelshort',   desc: 'Search drama' },
+      { epId: 'rs-detail',   path: '/api/drama?action=detail&source=reelshort',   desc: 'Detail drama' },
+      { epId: 'rs-episode',  path: '/api/drama?action=episode&source=reelshort',  desc: 'Get video episode' },
+    ]
+  },
+  {
+    id: 'shortmax', name: 'ShortMax', emoji: 'SM',
+    endpoints: [
+      { epId: 'sm-foryou',   path: '/api/drama?action=foryou&source=shortmax',   desc: 'For You / Rekomendasi' },
+      { epId: 'sm-trending', path: '/api/drama?action=trending&source=shortmax', desc: 'Trending drama' },
+      { epId: 'sm-search',   path: '/api/drama?action=search&source=shortmax',   desc: 'Search drama' },
+      { epId: 'sm-detail',   path: '/api/drama?action=detail&source=shortmax',   desc: 'Detail drama' },
+      { epId: 'sm-episode',  path: '/api/drama?action=episode&source=shortmax',  desc: 'Get video episode' },
+    ]
+  },
+  {
+    id: 'netshort', name: 'NetShort', emoji: 'NS',
+    endpoints: [
+      { epId: 'ns-foryou',   path: '/api/drama?action=foryou&source=netshort',   desc: 'For You / Rekomendasi' },
+      { epId: 'ns-trending', path: '/api/drama?action=trending&source=netshort', desc: 'Trending drama' },
+      { epId: 'ns-search',   path: '/api/drama?action=search&source=netshort',   desc: 'Search drama' },
+      { epId: 'ns-detail',   path: '/api/drama?action=detail&source=netshort',   desc: 'Detail drama' },
+      { epId: 'ns-episode',  path: '/api/drama?action=episode&source=netshort',  desc: 'Get video episode' },
+    ]
+  },
+  {
+    id: 'dramawave', name: 'DramaWave', emoji: 'DW',
+    endpoints: [
+      { epId: 'dw-foryou',   path: '/api/drama?action=foryou&source=dramawave',   desc: 'For You / Rekomendasi' },
+      { epId: 'dw-trending', path: '/api/drama?action=trending&source=dramawave', desc: 'Trending drama' },
+      { epId: 'dw-search',   path: '/api/drama?action=search&source=dramawave',   desc: 'Search drama' },
+      { epId: 'dw-detail',   path: '/api/drama?action=detail&source=dramawave',   desc: 'Detail drama' },
+      { epId: 'dw-episode',  path: '/api/drama?action=episode&source=dramawave',  desc: 'Get video episode' },
+    ]
+  },
+  {
+    id: 'flickreels', name: 'FlickReels', emoji: 'FR',
+    endpoints: [
+      { epId: 'fr-foryou',   path: '/api/drama?action=foryou&source=flickreels',   desc: 'For You / Rekomendasi' },
+      { epId: 'fr-trending', path: '/api/drama?action=trending&source=flickreels', desc: 'Trending drama' },
+      { epId: 'fr-search',   path: '/api/drama?action=search&source=flickreels',   desc: 'Search drama' },
+      { epId: 'fr-detail',   path: '/api/drama?action=detail&source=flickreels',   desc: 'Detail drama' },
+      { epId: 'fr-episode',  path: '/api/drama?action=episode&source=flickreels',  desc: 'Get video episode' },
+    ]
+  },
+  {
+    id: 'freereels', name: 'FreeReels', emoji: 'FE',
+    endpoints: [
+      { epId: 'fe-foryou',   path: '/api/drama?action=foryou&source=freereels',   desc: 'For You / Rekomendasi' },
+      { epId: 'fe-trending', path: '/api/drama?action=trending&source=freereels', desc: 'Trending drama' },
+      { epId: 'fe-search',   path: '/api/drama?action=search&source=freereels',   desc: 'Search drama' },
+      { epId: 'fe-detail',   path: '/api/drama?action=detail&source=freereels',   desc: 'Detail drama' },
+      { epId: 'fe-episode',  path: '/api/drama?action=episode&source=freereels',  desc: 'Get video episode' },
+    ]
+  },
+  {
+    id: 'stardusttv', name: 'StardustTV', emoji: 'ST',
+    endpoints: [
+      { epId: 'st-foryou',   path: '/api/drama?action=foryou&source=stardusttv',   desc: 'For You / Rekomendasi' },
+      { epId: 'st-trending', path: '/api/drama?action=trending&source=stardusttv', desc: 'Trending drama' },
+      { epId: 'st-search',   path: '/api/drama?action=search&source=stardusttv',   desc: 'Search drama' },
+      { epId: 'st-detail',   path: '/api/drama?action=detail&source=stardusttv',   desc: 'Detail drama' },
+      { epId: 'st-episode',  path: '/api/drama?action=episode&source=stardusttv',  desc: 'Get video episode' },
+    ]
+  },
+  {
+    id: 'idrama', name: 'iDrama', emoji: 'ID',
+    endpoints: [
+      { epId: 'id-foryou',   path: '/api/drama?action=foryou&source=idrama',   desc: 'For You / Rekomendasi' },
+      { epId: 'id-trending', path: '/api/drama?action=trending&source=idrama', desc: 'Trending drama' },
+      { epId: 'id-search',   path: '/api/drama?action=search&source=idrama',   desc: 'Search drama' },
+      { epId: 'id-detail',   path: '/api/drama?action=detail&source=idrama',   desc: 'Detail drama' },
+      { epId: 'id-episode',  path: '/api/drama?action=episode&source=idrama',  desc: 'Get video episode' },
+    ]
+  },
+  {
+    id: 'dramanova', name: 'DramaNova', emoji: 'DN',
+    endpoints: [
+      { epId: 'dn-foryou',   path: '/api/drama?action=foryou&source=dramanova',   desc: 'For You / Rekomendasi' },
+      { epId: 'dn-trending', path: '/api/drama?action=trending&source=dramanova', desc: 'Trending drama' },
+      { epId: 'dn-search',   path: '/api/drama?action=search&source=dramanova',   desc: 'Search drama' },
+      { epId: 'dn-detail',   path: '/api/drama?action=detail&source=dramanova',   desc: 'Detail drama' },
+      { epId: 'dn-episode',  path: '/api/drama?action=episode&source=dramanova',  desc: 'Get video episode' },
+    ]
+  },
+  {
+    id: 'starshort', name: 'StarShort', emoji: 'SS',
+    endpoints: [
+      { epId: 'ss-foryou',   path: '/api/drama?action=foryou&source=starshort',   desc: 'For You / Rekomendasi' },
+      { epId: 'ss-trending', path: '/api/drama?action=trending&source=starshort', desc: 'Trending drama' },
+      { epId: 'ss-search',   path: '/api/drama?action=search&source=starshort',   desc: 'Search drama' },
+      { epId: 'ss-detail',   path: '/api/drama?action=detail&source=starshort',   desc: 'Detail drama' },
+      { epId: 'ss-episode',  path: '/api/drama?action=episode&source=starshort',  desc: 'Get video episode' },
+    ]
+  },
+  {
+    id: 'dramabite', name: 'DramaBite', emoji: 'DT',
+    endpoints: [
+      { epId: 'dt-foryou',   path: '/api/drama?action=foryou&source=dramabite',   desc: 'For You / Rekomendasi' },
+      { epId: 'dt-trending', path: '/api/drama?action=trending&source=dramabite', desc: 'Trending drama' },
+      { epId: 'dt-search',   path: '/api/drama?action=search&source=dramabite',   desc: 'Search drama' },
+      { epId: 'dt-detail',   path: '/api/drama?action=detail&source=dramabite',   desc: 'Detail drama' },
+      { epId: 'dt-episode',  path: '/api/drama?action=episode&source=dramabite',  desc: 'Get video episode' },
+    ]
+  },
+  {
+    id: 'melolo', name: 'Melolo', emoji: 'ML',
+    endpoints: [
+      { epId: 'ml-foryou',   path: '/api/drama?action=foryou&source=melolo',   desc: 'For You / Rekomendasi' },
+      { epId: 'ml-trending', path: '/api/drama?action=trending&source=melolo', desc: 'Trending drama' },
+      { epId: 'ml-search',   path: '/api/drama?action=search&source=melolo',   desc: 'Search drama' },
+      { epId: 'ml-detail',   path: '/api/drama?action=detail&source=melolo',   desc: 'Detail drama' },
+      { epId: 'ml-episode',  path: '/api/drama?action=episode&source=melolo',  desc: 'Get video episode' },
+    ]
+  },
+  {
+    id: 'moboreels', name: 'MoboReels', emoji: 'MR',
+    endpoints: [
+      { epId: 'mr-foryou',   path: '/api/drama?action=foryou&source=moboreels',   desc: 'For You / Rekomendasi' },
+      { epId: 'mr-trending', path: '/api/drama?action=trending&source=moboreels', desc: 'Trending drama' },
+      { epId: 'mr-search',   path: '/api/drama?action=search&source=moboreels',   desc: 'Search drama' },
+      { epId: 'mr-detail',   path: '/api/drama?action=detail&source=moboreels',   desc: 'Detail drama' },
+      { epId: 'mr-episode',  path: '/api/drama?action=episode&source=moboreels',  desc: 'Get video episode' },
+    ]
+  },
+];
+
+// Map epId → action + source untuk openEndpoint
+const DRAMA_EP_MAP = {};
+DRAMA_PLATFORMS.forEach(plat => {
+  plat.endpoints.forEach(ep => {
+    const match = ep.path.match(/action=(\w+).*source=(\w+)/);
+    if (match) DRAMA_EP_MAP[ep.epId] = { action: match[1], source: match[2], platform: plat };
+  });
+});
+
+function openDramaEndpoint(epId) {
+  const meta = DRAMA_EP_MAP[epId];
+  if (!meta) return;
+  const { action, source, platform } = meta;
+
+  // Map action ke EP key yang sudah ada
+  const epKeyMap = { foryou:'dt', trending:'dt', search:'ds', detail:'dd', episode:'de' };
+  // Buat EP sementara berdasarkan action
+  const baseEp = {
+    foryou: {
+      icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+      name:`${platform.name} — For You`, badge:'DRAMA', method:'GET', path:'/api/drama',
+      key: epId.replace('-','_'),
+      desc:`Konten rekomendasi / For You dari ${platform.name}.`,
+      params:[
+        {name:'action', value:'foryou', type:'hidden'},
+        {name:'source', value:source, type:'hidden'},
+        {name:'page', label:'Halaman', placeholder:'1', type:'text'},
+      ],
+    },
+    trending: {
+      icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
+      name:`${platform.name} — Trending`, badge:'DRAMA', method:'GET', path:'/api/drama',
+      key: epId.replace('-','_'),
+      desc:`Drama trending di ${platform.name}.`,
+      params:[
+        {name:'action', value:'trending', type:'hidden'},
+        {name:'source', value:source, type:'hidden'},
+      ],
+    },
+    search: {
+      icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>',
+      name:`${platform.name} — Search`, badge:'DRAMA', method:'GET', path:'/api/drama',
+      key: epId.replace('-','_'),
+      desc:`Cari drama di ${platform.name}.`,
+      params:[
+        {name:'action', value:'search', type:'hidden'},
+        {name:'source', value:source, type:'hidden'},
+        {name:'query', label:'Kata Kunci', placeholder:'Contoh: cinta, CEO...', type:'text'},
+      ],
+    },
+    detail: {
+      icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+      name:`${platform.name} — Detail`, badge:'DRAMA', method:'GET', path:'/api/drama',
+      key: epId.replace('-','_'),
+      desc:`Info lengkap drama dari ${platform.name}: sinopsis, poster, genre, episode.`,
+      params:[
+        {name:'action', value:'detail', type:'hidden'},
+        {name:'source', value:source, type:'hidden'},
+        {name:'id', label:'ID Drama', placeholder:'Contoh: 31001345248', type:'drama_id'},
+      ],
+    },
+    episode: {
+      icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
+      name:`${platform.name} — Episode`, badge:'DRAMA', method:'GET', path:'/api/drama',
+      key: epId.replace('-','_'),
+      desc:`URL video episode dari ${platform.name}.`,
+      params:[
+        {name:'action', value:'episode', type:'hidden'},
+        {name:'source', value:source, type:'hidden'},
+        {name:'id', label:'ID Drama', placeholder:'Contoh: 31001345248', type:'drama_id'},
+        {name:'ep', label:'Nomor Episode', placeholder:'Contoh: 1', type:'text'},
+      ],
+    },
+  }[action];
+
+  if (!baseEp) return;
+  // Daftarkan ke EP agar openEndpoint bisa nemuin
+  EP[epId] = baseEp;
+  openEndpoint(epId);
+}
+
+function renderDramaPlatforms() {
+  const container = document.getElementById('drama-platforms-list');
+  if (!container) return;
+  container.innerHTML = DRAMA_PLATFORMS.map(plat => `
+    <div class="drama-platform-group" data-platform="${plat.id}">
+      <div class="drama-platform-header" onclick="toggleDramaGroup('${plat.id}')">
+        <div class="drama-platform-icon">${plat.emoji}</div>
+        <span class="drama-platform-name">${plat.name}</span>
+        <span class="drama-platform-count">${plat.endpoints.length} endpoints</span>
+        <span class="drama-platform-arrow" id="arrow-${plat.id}">›</span>
+      </div>
+      <div class="drama-endpoint-list" id="eplist-${plat.id}">
+        ${plat.endpoints.map(ep => `
+          <div class="drama-ep-item" onclick="openDramaEndpoint('${ep.epId}')">
+            <span class="drama-ep-method">GET</span>
+            <span class="drama-ep-path">${ep.path.replace('?', '\u200B?')}</span>
+            <span class="drama-ep-desc">${ep.desc}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleDramaGroup(platId) {
+  const list  = document.getElementById('eplist-' + platId);
+  const arrow = document.getElementById('arrow-' + platId);
+  if (!list) return;
+  list.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+// Auto-render setelah DOM siap
+document.addEventListener('DOMContentLoaded', renderDramaPlatforms);
 
 function buildCurl(ep, val, vals) {
   let s = `curl "${base}${ep.path}?`;
