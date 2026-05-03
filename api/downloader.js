@@ -103,100 +103,124 @@ async function fetchYoutube(req, url) {
   return await fetchYoutubeAudio({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality });
 }
 
+// ================================================
+// yt2mp3.gs helpers (converted from Python)
+// ================================================
+function yt2Authorization() {
+  const arr0 = [103,70,105,57,109,74,124,112,71,105,98,62,121,84,65,125,55,110,98,89];
+  const arr2 = [6,13,1,4,11,15,4,6,12,1,3,15,15,8,4,0,6,5,13,6];
+  let result = "";
+  for (let t = 0; t < arr0.length; t++) {
+    result += String.fromCharCode(arr0[t] - arr2[arr2.length - (t + 1)]);
+  }
+  if (result.length > 32) result = result.slice(0, 32);
+  return result;
+}
+
+async function yt2GetCookies() {
+  const r = await fetch("https://yt2mp3.gs/", {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "Accept": "text/html,*/*",
+    },
+    signal: AbortSignal.timeout(15_000),
+  });
+  const raw = r.headers.get("set-cookie") || "";
+  return raw.split(",").map(c => c.split(";")[0].trim()).filter(Boolean).join("; ");
+}
+
+async function yt2Initialize(cookies) {
+  const token = yt2Authorization();
+  const param = String.fromCharCode(110); // 'n'
+  const ts = Math.floor(Date.now() / 1000);
+  const url = `https://yt2mp3.gs/~i/?${param}=${encodeURIComponent(token)}&t=${ts}`;
+  const r = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "Referer": "https://yt2mp3.gs/",
+      "Accept": "application/json, */*",
+      "Cookie": cookies,
+    },
+    signal: AbortSignal.timeout(20_000),
+  });
+  if (!r.ok) throw new Error(`yt2 init gagal (${r.status})`);
+  return r.json();
+}
+
+async function yt2Convert(convertUrl, videoId, fmt, cookies, attempt = 0) {
+  const ts = Math.floor(Date.now() / 1000);
+  const base = convertUrl.includes("&v=") ? convertUrl.split("&v=")[0] : convertUrl;
+  const url = `${base}&v=${videoId}&f=${fmt}&t=${ts}`;
+  const r = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "Referer": "https://yt2mp3.gs/",
+      "Accept": "application/json, */*",
+      "Cookie": cookies,
+    },
+    signal: AbortSignal.timeout(30_000),
+  });
+  if (!r.ok) throw new Error(`yt2 convert gagal (${r.status})`);
+  const data = await r.json();
+  if (data?.redirect === 1 && attempt === 0) {
+    return yt2Convert(data.redirectURL, videoId, fmt, cookies, 1);
+  }
+  return data;
+}
+
+async function yt2Progress(progressUrl, downloadUrl, cookies) {
+  for (let i = 0; i < 20; i++) {
+    const ts = Math.floor(Date.now() / 1000);
+    const r = await fetch(`${progressUrl}&t=${ts}`, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Referer": "https://yt2mp3.gs/",
+        "Accept": "application/json, */*",
+        "Cookie": cookies,
+      },
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (r.status === 429) { await new Promise(res => setTimeout(res, 15_000)); continue; }
+    if (!r.ok) break;
+    const data = await r.json();
+    if (String(data?.error ?? "0") !== "0") throw new Error(`yt2 progress error: ${data.error}`);
+    if (parseInt(data?.progress ?? 0) >= 3) return data?.url || data?.downloadURL || downloadUrl;
+    await new Promise(res => setTimeout(res, 5_000));
+  }
+  return downloadUrl;
+}
+
 async function fetchYoutubeMP4({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, quality }) {
-  const targetQ = parseInt(quality) || 360;
+  const fmt = "mp4";
 
-  // Map quality ke format key y2mate
-  const qualityMap = { 1080: "137", 720: "22", 480: "135", 360: "18", 144: "160" };
-  const ftype = qualityMap[targetQ] || "18"; // default 360p
+  const cookies = await yt2GetCookies();
 
-  // Step 1: Analyze video
-  const analyzeResp = await fetch("https://www.y2mate.com/mates/analyzeV2/ajax", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      "Accept": "*/*",
-      "Accept-Language": "en-US,en;q=0.9",
-      "Origin": "https://www.y2mate.com",
-      "Referer": "https://www.y2mate.com/",
-      "X-Requested-With": "XMLHttpRequest",
-    },
-    body: `k_query=${encodeURIComponent(sourceUrl)}&k_page=home&hl=en&q_auto=0`,
-    signal: AbortSignal.timeout(20_000),
-  });
+  const initData = await yt2Initialize(cookies);
+  if (String(initData?.error ?? "1") !== "0") throw new Error("yt2 init gagal.");
+  const convertUrl = initData?.convertURL;
+  if (!convertUrl) throw new Error("yt2 convertURL tidak ditemukan.");
 
-  if (!analyzeResp.ok) throw new Error(`y2mate analyze gagal (${analyzeResp.status}).`);
-  const analyzeData = await analyzeResp.json();
+  const convData = await yt2Convert(convertUrl, videoId, fmt, cookies);
+  if (String(convData?.error ?? "1") !== "0") throw new Error("yt2 convert gagal.");
 
-  if (analyzeData?.status !== "ok") throw new Error("y2mate tidak dapat memproses video ini.");
+  const downloadUrl = convData?.downloadURL;
+  const progressUrl = convData?.progressURL;
+  const title       = convData?.title || null;
 
-  const title    = analyzeData?.title || null;
-  const duration = analyzeData?.t || null;
-  const vid      = analyzeData?.vid || videoId;
+  let finalUrl = downloadUrl;
+  if (progressUrl) finalUrl = await yt2Progress(progressUrl, downloadUrl, cookies);
+  if (!finalUrl) throw new Error("URL download tidak ditemukan dari yt2mp3.gs.");
 
-  // Ambil key dari links mp4
-  const mp4Links = analyzeData?.links?.mp4 || {};
-  let chosenKey  = null;
-  let chosenQ    = null;
-
-  // Cari quality yang paling cocok
-  const preferred = [ftype, "18", "22", "135", "137"];
-  for (const k of preferred) {
-    if (mp4Links[k]?.k) {
-      chosenKey = mp4Links[k].k;
-      chosenQ   = mp4Links[k].q || `${targetQ}p`;
-      break;
-    }
-  }
-
-  // Kalau tidak ada, ambil yang pertama tersedia
-  if (!chosenKey) {
-    const firstKey = Object.keys(mp4Links)[0];
-    if (firstKey && mp4Links[firstKey]?.k) {
-      chosenKey = mp4Links[firstKey].k;
-      chosenQ   = mp4Links[firstKey].q || `${targetQ}p`;
-    }
-  }
-
-  if (!chosenKey) throw new Error("Format MP4 tidak tersedia untuk video ini.");
-
-  // Step 2: Convert / get download link
-  const convertResp = await fetch("https://www.y2mate.com/mates/convertV2/index", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      "Accept": "*/*",
-      "Accept-Language": "en-US,en;q=0.9",
-      "Origin": "https://www.y2mate.com",
-      "Referer": "https://www.y2mate.com/",
-      "X-Requested-With": "XMLHttpRequest",
-    },
-    body: `vid=${encodeURIComponent(vid)}&k=${encodeURIComponent(chosenKey)}`,
-    signal: AbortSignal.timeout(20_000),
-  });
-
-  if (!convertResp.ok) throw new Error(`y2mate convert gagal (${convertResp.status}).`);
-  const convertData = await convertResp.json();
-
-  if (convertData?.status !== "ok") throw new Error("y2mate gagal mengkonversi video. Coba beberapa saat lagi.");
-
-  // Ekstrak download URL dari response HTML
-  const dlMatch = convertData?.result?.match(/href="([^"]+\.mp4[^"]*)"/i)
-    || convertData?.result?.match(/href="(https:\/\/[^"]+)"/i);
-  const downloadUrl = dlMatch ? dlMatch[1] : null;
-
-  if (!downloadUrl) throw new Error("URL download tidak ditemukan dari y2mate.");
+  const dlUrl = `${finalUrl}&s=2&v=${videoId}&f=${fmt}`;
 
   return {
     creator: "@SanzXD", status: true, code: 200,
     message: "Berhasil mengambil data video YouTube.",
     result: {
-      title, duration,
+      title, duration: null,
       type: isShorts ? "shorts" : "video",
-      quality: chosenQ,
-      video_url: downloadUrl,
+      quality: quality ? `${quality}p` : "360p",
+      video_url: dlUrl,
       audio_url: null,
       combined: true,
       note: null,
@@ -204,10 +228,9 @@ async function fetchYoutubeMP4({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl,
       filename: `${(title || videoId).slice(0, 80).replace(/[\\/:*?"<>|]/g, "_")}.mp4`,
       format: "mp4",
     },
-    meta: { video_id: videoId, source_url: sourceUrl, is_shorts: isShorts, provider: "y2mate" },
+    meta: { video_id: videoId, source_url: sourceUrl, is_shorts: isShorts, provider: "yt2mp3.gs" },
   };
 }
-
 async function fetchYoutubeAudio({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality }) {
   const payload = {
     url: sourceUrl,
