@@ -1,11 +1,5 @@
 /**
  * Downloader API — YouTube, TikTok, Instagram, Facebook, Pinterest
- *
- * GET /api/downloader?platform=youtube&url=...&format=mp3&quality=128
- * GET /api/downloader?platform=tiktok&url=...
- * GET /api/downloader?platform=instagram&url=...
- * GET /api/downloader?platform=facebook&url=...
- * GET /api/downloader?platform=pinterest&url=...
  */
 
 const CORS_HEADERS = {
@@ -14,8 +8,6 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type",
   "Content-Type": "application/json",
 };
-
-// ─── Main Handler ─────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
@@ -80,18 +72,19 @@ const YT_HEADERS = {
   "Accept": "application/json",
 };
 
-// YouTube Internal API pakai client ANDROID_VR — langsung dapat googlevideo URL
-const YT_INNERTUBE_KEY = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8";
-const YT_INNERTUBE_CLIENT = {
-  clientName: "ANDROID_VR",
-  clientVersion: "1.60.19",
-  androidSdkVersion: 30,
-  userAgent: "com.google.android.apps.youtube.vr.oculus/1.60.19 (Linux; U; Android 10; GB) gzip",
+// Client IOS — URL stream tidak diencrypt, paling reliable
+const YT_IOS_CLIENT = {
+  clientName: "IOS",
+  clientVersion: "19.29.1",
+  deviceModel: "iPhone16,2",
+  userAgent: "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)",
+  hl: "en",
+  gl: "US",
 };
 
 async function fetchYoutube(req, url) {
   const format  = (req.query.format  || req.body?.format  || "mp3").toLowerCase();
-  const quality = req.query.quality || req.body?.quality || (format === "mp4" ? "360" : "128");
+  const quality = req.query.quality  || req.body?.quality || (format === "mp4" ? "360" : "128");
 
   const ytRegex = /^https?:\/\/(www\.)?(youtube\.com\/(watch|shorts|embed)|youtu\.be)\/.+/i;
   if (!ytRegex.test(url)) throw new Error("URL tidak valid. Masukkan link YouTube, YouTube Shorts, atau youtu.be.");
@@ -104,12 +97,9 @@ async function fetchYoutube(req, url) {
   const thumbMQ   = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
   const sourceUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
-  // ── MP4: pakai YouTube InnerTube API langsung ──
   if (format === "mp4") {
     return await fetchYoutubeMP4({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, quality });
   }
-
-  // ── MP3 / audio: pakai ytconvert.org ──
   return await fetchYoutubeAudio({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality });
 }
 
@@ -117,69 +107,81 @@ async function fetchYoutubeMP4({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl,
   const payload = {
     videoId,
     context: {
-      client: YT_INNERTUBE_CLIENT,
-      thirdParty: { embedUrl: "https://www.youtube.com/" },
+      client: {
+        clientName: YT_IOS_CLIENT.clientName,
+        clientVersion: YT_IOS_CLIENT.clientVersion,
+        deviceModel: YT_IOS_CLIENT.deviceModel,
+        hl: "en",
+        gl: "US",
+        utcOffsetMinutes: 0,
+      },
     },
     playbackContext: {
-      contentPlaybackContext: { html5Preference: "HTML5_PREF_WANTS" },
+      contentPlaybackContext: {
+        html5Preference: "HTML5_PREF_WANTS",
+        signatureTimestamp: 20000,
+      },
     },
     racyCheckOk: true,
     contentCheckOk: true,
   };
 
-  const resp = await fetch(`https://www.youtube.com/youtubei/v1/player?key=${YT_INNERTUBE_KEY}&prettyPrint=false`, {
+  const resp = await fetch("https://www.youtube.com/youtubei/v1/player?prettyPrint=false", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "User-Agent": YT_INNERTUBE_CLIENT.userAgent,
-      "X-YouTube-Client-Name": "28",
-      "X-YouTube-Client-Version": YT_INNERTUBE_CLIENT.clientVersion,
+      "User-Agent": YT_IOS_CLIENT.userAgent,
+      "X-YouTube-Client-Name": "5",
+      "X-YouTube-Client-Version": YT_IOS_CLIENT.clientVersion,
       "Origin": "https://www.youtube.com",
+      "Referer": "https://www.youtube.com/",
     },
     body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(15_000),
+    signal: AbortSignal.timeout(20_000),
   });
 
   if (!resp.ok) throw new Error(`YouTube API merespons ${resp.status}.`);
   const data = await resp.json();
 
-  const videoDetails = data?.videoDetails || {};
-  const title        = videoDetails?.title || null;
-  const duration     = videoDetails?.lengthSeconds ? parseInt(videoDetails.lengthSeconds) : null;
-  const formats      = data?.streamingData?.formats || [];
+  const playability = data?.playabilityStatus?.status;
+  if (playability === "LOGIN_REQUIRED") throw new Error("Video memerlukan login (privat atau age-restricted).");
+  if (playability === "UNPLAYABLE") throw new Error("Video tidak dapat diputar (mungkin dibatasi wilayah).");
+
+  const videoDetails    = data?.videoDetails || {};
+  const title           = videoDetails?.title || null;
+  const duration        = videoDetails?.lengthSeconds ? parseInt(videoDetails.lengthSeconds) : null;
+  const formats         = data?.streamingData?.formats || [];
   const adaptiveFormats = data?.streamingData?.adaptiveFormats || [];
-  const allFormats   = [...formats, ...adaptiveFormats];
 
-  if (!allFormats.length) throw new Error("Tidak ada format video yang tersedia. Video mungkin dibatasi atau privat.");
-
-  // Filter yang ada URL langsung (bukan encrypted)
-  const videoFormats = allFormats
-    .filter(f => f.url && f.mimeType?.includes("video/mp4") && f.width)
-    .sort((a, b) => (b.width || 0) - (a.width || 0));
-
-  const audioFormats = allFormats
-    .filter(f => f.url && f.mimeType?.includes("audio/mp4"))
-    .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
-
-  // Pilih resolusi sesuai quality param
-  const targetQ = parseInt(quality) || 360;
-  const QUALITY_MAP = { 2160: "2160p", 1440: "1440p", 1080: "1080p", 720: "720p", 480: "480p", 360: "360p", 240: "240p", 144: "144p" };
-  let chosen = videoFormats.find(f => f.height === targetQ)
-    || videoFormats.find(f => f.height <= targetQ)
-    || videoFormats[videoFormats.length - 1];
-
-  // Fallback ke format combined (video+audio dalam 1 file, biasanya <=360p)
-  const combinedFormats = formats
+  // Combined formats (video+audio dalam 1 file)
+  const combined = formats
     .filter(f => f.url && f.mimeType?.includes("video/mp4"))
     .sort((a, b) => (b.height || 0) - (a.height || 0));
 
-  const bestCombined = combinedFormats.find(f => f.height <= targetQ) || combinedFormats[0];
-  const bestAudio    = audioFormats[0];
+  // Adaptive video only
+  const videoOnly = adaptiveFormats
+    .filter(f => f.url && f.mimeType?.includes("video/mp4") && f.width)
+    .sort((a, b) => (b.height || 0) - (a.height || 0));
 
-  // Prioritas: combined (sudah ada audio) > adaptive video (butuh merge, kasih URL keduanya)
-  const useCombined = bestCombined && (!chosen || bestCombined.height >= (chosen.height || 0));
-  const finalVideo  = useCombined ? bestCombined : chosen;
+  // Adaptive audio only
+  const audioOnly = adaptiveFormats
+    .filter(f => f.url && f.mimeType?.includes("audio/"))
+    .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
+
+  const targetQ = parseInt(quality) || 360;
+
+  const bestCombined = combined.find(f => f.height <= targetQ) || combined[combined.length - 1];
+  const bestVideo    = videoOnly.find(f => f.height === targetQ)
+    || videoOnly.find(f => f.height <= targetQ)
+    || videoOnly[videoOnly.length - 1];
+  const bestAudio    = audioOnly[0];
+
+  // Pilih combined kalau resolusinya >= yang diminta
+  const useCombined = bestCombined && (bestCombined.height >= Math.min(targetQ, bestVideo?.height || 0));
+  const finalVideo  = useCombined ? bestCombined : bestVideo;
   const finalQ      = finalVideo?.height ? `${finalVideo.height}p` : `${targetQ}p`;
+
+  if (!finalVideo?.url) throw new Error("URL video tidak tersedia. Coba quality lain atau format mp3.");
 
   return {
     creator: "@SanzXD", status: true, code: 200,
@@ -188,21 +190,19 @@ async function fetchYoutubeMP4({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl,
       title, duration,
       type: isShorts ? "shorts" : "video",
       quality: finalQ,
-      video_url: finalVideo?.url || null,
+      video_url: finalVideo.url,
       audio_url: useCombined ? null : (bestAudio?.url || null),
-      note: !useCombined && bestAudio ? "Video dan audio terpisah, gabungkan dengan FFmpeg untuk kualitas penuh." : null,
-      cover: thumbHQ,
-      thumbnail_mq: thumbMQ,
+      combined: useCombined,
+      note: !useCombined && bestAudio ? "Video dan audio terpisah. Gabungkan dengan FFmpeg untuk hasil terbaik." : null,
+      cover: thumbHQ, thumbnail_mq: thumbMQ,
       filename: `${(title || videoId).slice(0, 80).replace(/[\\/:*?"<>|]/g, "_")}.mp4`,
       format: "mp4",
     },
-    stats: { view_count: videoDetails.viewCount || null, like_count: null },
-    meta: { video_id: videoId, source_url: sourceUrl, is_shorts: isShorts, provider: "youtube-innertube" },
+    meta: { video_id: videoId, source_url: sourceUrl, is_shorts: isShorts, provider: "youtube-innertube-ios" },
   };
 }
 
 async function fetchYoutubeAudio({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality }) {
-  const audioOnly = true;
   const payload = {
     url: sourceUrl,
     output: { type: "audio", format, quality },
@@ -229,7 +229,7 @@ async function fetchYoutubeAudio({ videoId, isShorts, thumbHQ, thumbMQ, sourceUr
       }
       if (data?.statusUrl) { submitData = data; break; }
       if (data?.downloadUrl || data?.status === "completed") {
-        return buildYTResponse({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality, audioOnly, data });
+        return buildYTResponse({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality, audioOnly: true, data });
       }
       lastError = "Response tidak valid.";
       if (attempt < MAX_SUBMIT_RETRIES) await sleep(800);
@@ -252,7 +252,7 @@ async function fetchYoutubeAudio({ videoId, isShorts, thumbHQ, thumbMQ, sourceUr
       const statusData = await statusResp.json();
       const status = statusData?.status;
       if (status === "completed" && statusData?.downloadUrl) {
-        return buildYTResponse({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality, audioOnly, data: { ...submitData, ...statusData } });
+        return buildYTResponse({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, format, quality, audioOnly: true, data: { ...submitData, ...statusData } });
       }
       if (status === "failed" || status === "error") throw new Error(statusData?.message || "Konversi gagal di server.");
     } catch (err) {
@@ -394,28 +394,19 @@ async function fetchFacebook(url) {
   const fbRegex = /^https?:\/\/(www\.|m\.|web\.)?(facebook\.com|fb\.watch)\/.+/i;
   if (!fbRegex.test(url)) throw new Error("URL tidak valid. Masukkan link Facebook yang benar.");
 
-  // Step 1: Ambil cookie dari facebook.com dulu (supaya tidak 400)
+  // Step 1: Ambil cookie dari facebook.com dulu
   let cookieJar = "locale=en_US; wd=1920x1080";
   try {
     const initResp = await fetch("https://www.facebook.com/", {
-      headers: {
-        "User-Agent": FB_UA,
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
-      },
+      headers: { "User-Agent": FB_UA, "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "Accept-Language": "en-US,en;q=0.9" },
       signal: AbortSignal.timeout(10_000),
     });
     const rawCookies = initResp.headers.get("set-cookie") || "";
-    // Ambil semua nama=nilai dari set-cookie header
-    const parsed = rawCookies
-      .split(/,(?=[^ ][^=]+=)/)
-      .map(c => c.split(";")[0].trim())
-      .filter(c => c.includes("="))
-      .join("; ");
+    const parsed = rawCookies.split(/,(?=[^ ][^=]+=)/).map(c => c.split(";")[0].trim()).filter(c => c.includes("=")).join("; ");
     if (parsed) cookieJar = parsed + "; locale=en_US; wd=1920x1080";
-  } catch { /* pakai default cookie */ }
+  } catch { /* pakai default */ }
 
-  // Step 2: Resolve short URL / share URL
+  // Step 2: Resolve short URL
   let finalUrl = url;
   try {
     const resolveResp = await fetch(url, {
@@ -451,49 +442,32 @@ async function fetchFacebook(url) {
   if (!pageResp.ok) throw new Error(`Gagal mengakses halaman Facebook (${pageResp.status}). Pastikan video bersifat publik.`);
   const html = await pageResp.text();
 
-  // Step 4: Extract title
   const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
   const title = titleMatch ? titleMatch[1].replace(/\s*[\|\-]\s*Facebook.*$/i, "").trim() : "No video title";
 
-  // Step 5: Extract URL video dari embedded JSON di HTML
   const hdUrl = extractFbVideo(html, ["hd_src", "playable_url_quality_hd", "browser_native_hd_url"]);
   const sdUrl = extractFbVideo(html, ["sd_src", "playable_url", "browser_native_sd_url"]);
 
   if (!hdUrl && !sdUrl) {
-    // Fallback: cari pola fbcdn.net langsung di HTML
     const allMp4 = [...html.matchAll(/https:\\\/\\\/video[-\w.]+\.fbcdn\.net\\\/[^"' \\]+/g)]
       .map(m => m[0].replace(/\\\//g, "/").replace(/\\u0026/g, "&"));
     if (allMp4.length > 0) {
-      return {
-        creator: "@SanzXD", status: true, code: 200,
-        message: "Berhasil mengambil data video Facebook.",
-        data: { title, description: null, sd: allMp4[0], hd: allMp4[1] || allMp4[0] },
-      };
+      return { creator: "@SanzXD", status: true, code: 200, message: "Berhasil mengambil data video Facebook.", data: { title, description: null, sd: allMp4[0], hd: allMp4[1] || allMp4[0] } };
     }
     throw new Error("Video tidak ditemukan. Pastikan video bersifat publik dan tidak dibatasi.");
   }
 
-  return {
-    creator: "@SanzXD", status: true, code: 200,
-    message: "Berhasil mengambil data video Facebook.",
-    data: { title, description: null, sd: sdUrl || hdUrl, hd: hdUrl || sdUrl },
-  };
+  return { creator: "@SanzXD", status: true, code: 200, message: "Berhasil mengambil data video Facebook.", data: { title, description: null, sd: sdUrl || hdUrl, hd: hdUrl || sdUrl } };
 }
 
 function extractFbVideo(html, keys) {
   for (const key of keys) {
     const re1 = new RegExp(`"${key}"\\s*:\\s*"(https:[^"]+)"`, "i");
     const m1  = html.match(re1);
-    if (m1) {
-      const u = m1[1].replace(/\\u0026/g, "&").replace(/\\\//g, "/");
-      if (u.includes("fbcdn.net") || u.includes(".mp4")) return u;
-    }
+    if (m1) { const u = m1[1].replace(/\\u0026/g, "&").replace(/\\\//g, "/"); if (u.includes("fbcdn.net") || u.includes(".mp4")) return u; }
     const re2 = new RegExp(`${key}:"(https:[^"]+)"`, "i");
     const m2  = html.match(re2);
-    if (m2) {
-      const u = m2[1].replace(/\\u0026/g, "&").replace(/\\\//g, "/");
-      if (u.includes("fbcdn.net") || u.includes(".mp4")) return u;
-    }
+    if (m2) { const u = m2[1].replace(/\\u0026/g, "&").replace(/\\\//g, "/"); if (u.includes("fbcdn.net") || u.includes(".mp4")) return u; }
   }
   return null;
 }
