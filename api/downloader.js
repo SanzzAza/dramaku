@@ -104,84 +104,90 @@ async function fetchYoutube(req, url) {
 }
 
 async function fetchYoutubeMP4({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl, quality }) {
-  const payload = {
-    videoId,
-    context: {
-      client: {
-        clientName: YT_IOS_CLIENT.clientName,
-        clientVersion: YT_IOS_CLIENT.clientVersion,
-        deviceModel: YT_IOS_CLIENT.deviceModel,
-        hl: "en",
-        gl: "US",
-        utcOffsetMinutes: 0,
-      },
-    },
-    playbackContext: {
-      contentPlaybackContext: {
-        html5Preference: "HTML5_PREF_WANTS",
-        signatureTimestamp: 20000,
-      },
-    },
-    racyCheckOk: true,
-    contentCheckOk: true,
-  };
+  const targetQ = parseInt(quality) || 360;
 
-  const resp = await fetch("https://www.youtube.com/youtubei/v1/player?prettyPrint=false", {
+  // Map quality ke format key y2mate
+  const qualityMap = { 1080: "137", 720: "22", 480: "135", 360: "18", 144: "160" };
+  const ftype = qualityMap[targetQ] || "18"; // default 360p
+
+  // Step 1: Analyze video
+  const analyzeResp = await fetch("https://www.y2mate.com/mates/analyzeV2/ajax", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      "User-Agent": YT_IOS_CLIENT.userAgent,
-      "X-YouTube-Client-Name": "5",
-      "X-YouTube-Client-Version": YT_IOS_CLIENT.clientVersion,
-      "Origin": "https://www.youtube.com",
-      "Referer": "https://www.youtube.com/",
+      "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "Accept": "*/*",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Origin": "https://www.y2mate.com",
+      "Referer": "https://www.y2mate.com/",
+      "X-Requested-With": "XMLHttpRequest",
     },
-    body: JSON.stringify(payload),
+    body: `k_query=${encodeURIComponent(sourceUrl)}&k_page=home&hl=en&q_auto=0`,
     signal: AbortSignal.timeout(20_000),
   });
 
-  if (!resp.ok) throw new Error(`YouTube API merespons ${resp.status}.`);
-  const data = await resp.json();
+  if (!analyzeResp.ok) throw new Error(`y2mate analyze gagal (${analyzeResp.status}).`);
+  const analyzeData = await analyzeResp.json();
 
-  const playability = data?.playabilityStatus?.status;
-  if (playability === "LOGIN_REQUIRED") throw new Error("Video memerlukan login (privat atau age-restricted).");
-  if (playability === "UNPLAYABLE") throw new Error("Video tidak dapat diputar (mungkin dibatasi wilayah).");
+  if (analyzeData?.status !== "ok") throw new Error("y2mate tidak dapat memproses video ini.");
 
-  const videoDetails    = data?.videoDetails || {};
-  const title           = videoDetails?.title || null;
-  const duration        = videoDetails?.lengthSeconds ? parseInt(videoDetails.lengthSeconds) : null;
-  const formats         = data?.streamingData?.formats || [];
-  const adaptiveFormats = data?.streamingData?.adaptiveFormats || [];
+  const title    = analyzeData?.title || null;
+  const duration = analyzeData?.t || null;
+  const vid      = analyzeData?.vid || videoId;
 
-  // Combined formats (video+audio dalam 1 file)
-  const combined = formats
-    .filter(f => f.url && f.mimeType?.includes("video/mp4"))
-    .sort((a, b) => (b.height || 0) - (a.height || 0));
+  // Ambil key dari links mp4
+  const mp4Links = analyzeData?.links?.mp4 || {};
+  let chosenKey  = null;
+  let chosenQ    = null;
 
-  // Adaptive video only
-  const videoOnly = adaptiveFormats
-    .filter(f => f.url && f.mimeType?.includes("video/mp4") && f.width)
-    .sort((a, b) => (b.height || 0) - (a.height || 0));
+  // Cari quality yang paling cocok
+  const preferred = [ftype, "18", "22", "135", "137"];
+  for (const k of preferred) {
+    if (mp4Links[k]?.k) {
+      chosenKey = mp4Links[k].k;
+      chosenQ   = mp4Links[k].q || `${targetQ}p`;
+      break;
+    }
+  }
 
-  // Adaptive audio only
-  const audioOnly = adaptiveFormats
-    .filter(f => f.url && f.mimeType?.includes("audio/"))
-    .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
+  // Kalau tidak ada, ambil yang pertama tersedia
+  if (!chosenKey) {
+    const firstKey = Object.keys(mp4Links)[0];
+    if (firstKey && mp4Links[firstKey]?.k) {
+      chosenKey = mp4Links[firstKey].k;
+      chosenQ   = mp4Links[firstKey].q || `${targetQ}p`;
+    }
+  }
 
-  const targetQ = parseInt(quality) || 360;
+  if (!chosenKey) throw new Error("Format MP4 tidak tersedia untuk video ini.");
 
-  const bestCombined = combined.find(f => f.height <= targetQ) || combined[combined.length - 1];
-  const bestVideo    = videoOnly.find(f => f.height === targetQ)
-    || videoOnly.find(f => f.height <= targetQ)
-    || videoOnly[videoOnly.length - 1];
-  const bestAudio    = audioOnly[0];
+  // Step 2: Convert / get download link
+  const convertResp = await fetch("https://www.y2mate.com/mates/convertV2/index", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "Accept": "*/*",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Origin": "https://www.y2mate.com",
+      "Referer": "https://www.y2mate.com/",
+      "X-Requested-With": "XMLHttpRequest",
+    },
+    body: `vid=${encodeURIComponent(vid)}&k=${encodeURIComponent(chosenKey)}`,
+    signal: AbortSignal.timeout(20_000),
+  });
 
-  // Pilih combined kalau resolusinya >= yang diminta
-  const useCombined = bestCombined && (bestCombined.height >= Math.min(targetQ, bestVideo?.height || 0));
-  const finalVideo  = useCombined ? bestCombined : bestVideo;
-  const finalQ      = finalVideo?.height ? `${finalVideo.height}p` : `${targetQ}p`;
+  if (!convertResp.ok) throw new Error(`y2mate convert gagal (${convertResp.status}).`);
+  const convertData = await convertResp.json();
 
-  if (!finalVideo?.url) throw new Error("URL video tidak tersedia. Coba quality lain atau format mp3.");
+  if (convertData?.status !== "ok") throw new Error("y2mate gagal mengkonversi video. Coba beberapa saat lagi.");
+
+  // Ekstrak download URL dari response HTML
+  const dlMatch = convertData?.result?.match(/href="([^"]+\.mp4[^"]*)"/i)
+    || convertData?.result?.match(/href="(https:\/\/[^"]+)"/i);
+  const downloadUrl = dlMatch ? dlMatch[1] : null;
+
+  if (!downloadUrl) throw new Error("URL download tidak ditemukan dari y2mate.");
 
   return {
     creator: "@SanzXD", status: true, code: 200,
@@ -189,16 +195,16 @@ async function fetchYoutubeMP4({ videoId, isShorts, thumbHQ, thumbMQ, sourceUrl,
     result: {
       title, duration,
       type: isShorts ? "shorts" : "video",
-      quality: finalQ,
-      video_url: finalVideo.url,
-      audio_url: useCombined ? null : (bestAudio?.url || null),
-      combined: useCombined,
-      note: !useCombined && bestAudio ? "Video dan audio terpisah. Gabungkan dengan FFmpeg untuk hasil terbaik." : null,
+      quality: chosenQ,
+      video_url: downloadUrl,
+      audio_url: null,
+      combined: true,
+      note: null,
       cover: thumbHQ, thumbnail_mq: thumbMQ,
       filename: `${(title || videoId).slice(0, 80).replace(/[\\/:*?"<>|]/g, "_")}.mp4`,
       format: "mp4",
     },
-    meta: { video_id: videoId, source_url: sourceUrl, is_shorts: isShorts, provider: "youtube-innertube-ios" },
+    meta: { video_id: videoId, source_url: sourceUrl, is_shorts: isShorts, provider: "y2mate" },
   };
 }
 
