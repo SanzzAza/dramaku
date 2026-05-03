@@ -844,334 +844,50 @@ async function fetchTerabox(inputUrl) {
 
   const hostname = parsedUrl.hostname.replace(/^www\./, "");
   if (!TERABOX_DOMAINS.some(d => hostname === d || hostname.endsWith("." + d))) {
-    throw new Error(
-      `Domain '${hostname}' tidak didukung. Domain yang valid: ${TERABOX_DOMAINS.join(", ")}.`
-    );
+    throw new Error(`Domain '${hostname}' tidak didukung.`);
   }
 
-  // Extract surl dari path /s/xxxxx atau query ?surl=xxxxx
-  const surlMatch = parsedUrl.pathname.match(/\/s\/([a-zA-Z0-9_-]+)/);
-  const surl = surlMatch ? surlMatch[1] : parsedUrl.searchParams.get("surl");
-  if (!surl) throw new Error("Tidak dapat mengambil surl dari URL. Pastikan format URL benar (contoh: /s/xxxxx).");
+  // ── Coba API eksternal ────────────────────────────────────────────────────
+  const externalApis = [
+    `https://teraboxapp.xyz/api?url=${encodeURIComponent(inputUrl)}`,
+    `https://terabox.hnn.workers.dev/?url=${encodeURIComponent(inputUrl)}`,
+  ];
 
-  // Selalu hit ke 1024terabox.com agar cookie konsisten
-  const shareUrl = `${TERABOX_HOST}/s/${surl}`;
-
-  // ── Step 1: GET share page → kumpulkan cookies ───────────────────────────
-  // jsToken di Terabox tersimpan sebagai cookie "csrfToken" atau "TSID" atau ada di JS inline
-  const pageResp = await fetch(shareUrl, {
-    headers: {
-      "User-Agent"     : TERABOX_UA,
-      "Accept"         : "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Accept-Language": "en-US,en;q=0.9",
-      "Accept-Encoding": "gzip, deflate, br",
-    },
-    redirect: "follow",
-    signal  : AbortSignal.timeout(20_000),
-  });
-
-  if (!pageResp.ok) throw new Error(`Gagal membuka halaman share (${pageResp.status}).`);
-
-  const pageHtml = await pageResp.text();
-  const cookies  = parseCookies(pageResp.headers);
-
-  // ── Extract jsToken ───────────────────────────────────────────────────────
-  // Terabox menyimpan jsToken di:
-  //   1. Cookie "csrfToken"
-  //   2. HTML: locals.jsToken = "xxx"  atau  window.locals = {...,"jsToken":"xxx",...}
-  //   3. HTML: "jsToken":"xxx"
-  //   4. HTML: jsToken%22%3A%22xxx  (URL-encoded di JSON embed)
-  let jsToken = cookies["csrfToken"] || cookies["CSRFTOKEN"] || "";
-
-  if (!jsToken) {
-    const patterns = [
-      /locals\.jsToken\s*=\s*["']([^"']{10,})["']/i,
-      /"jsToken"\s*:\s*"([^"]{10,})"/i,
-      /jsToken%22%3A%22([^%"]{10,})%22/i,
-      /\bjsToken\s*=\s*["']([^"']{10,})["']/i,
-      /[?&]jsToken=([^&"'\s]{10,})/i,
-    ];
-    for (const pat of patterns) {
-      const m = pageHtml.match(pat);
-      if (m) { jsToken = decodeURIComponent(m[1]); break; }
-    }
-  }
-
-  if (!jsToken && TERABOX_ACCOUNT_COOKIE) {
-    const m = TERABOX_ACCOUNT_COOKIE.match(/(?:^|;)\s*csrfToken=([^;]+)/i);
-    if (m) jsToken = decodeURIComponent(m[1]);
-  }
-
-  if (!jsToken) {
-    const snippet = pageHtml.slice(0, 3000);
-    const hasRedirect = /location\.href|window\.location/i.test(snippet);
-    if (hasRedirect) throw new Error("Terabox redirect ke login. Link ini memerlukan akun untuk mengaksesnya.");
-    throw new Error("Tidak dapat mengambil jsToken dari halaman. Terabox mungkin mengubah struktur HTML-nya.");
-  }
-
-  // Gabungkan cookie dari scraping + cookie akun (akun override jika ada)
-  const accountCookies = TERABOX_ACCOUNT_COOKIE
-    ? Object.fromEntries(
-        TERABOX_ACCOUNT_COOKIE.split(";").map(c => {
-          const [k, ...v] = c.trim().split("=");
-          return [k.trim(), v.join("=").trim()];
-        })
-      )
-    : {};
-  const cookieStr = cookieObjToStr({ ...cookies, ...accountCookies });
-
-  // ── Step 2: GET /api/shorturlinfo ─────────────────────────────────────────
-  const infoParams = new URLSearchParams({
-    app_id    : "250528",
-    web       : "1",
-    channel   : "dubox",
-    clienttype: "0",
-    jsToken,
-    shorturl  : surl,
-    root      : "1",
-  });
-
-  const infoResp = await fetch(`${TERABOX_HOST}/api/shorturlinfo?${infoParams}`, {
-    headers: {
-      "User-Agent": TERABOX_UA,
-      "Cookie"    : cookieStr,
-      "Referer"   : shareUrl,
-      "Accept"    : "application/json, text/plain, */*",
-    },
-    signal: AbortSignal.timeout(20_000),
-  });
-
-  if (!infoResp.ok) throw new Error(`Gagal mengambil info file (${infoResp.status}).`);
-
-  const info = await infoResp.json();
-
-  if (info.errno !== 0) {
-    const errMap = {
-      "-9" : "File tidak ditemukan atau link telah dihapus.",
-      "-6" : "Sesi tidak valid. Coba lagi.",
-      "4"  : "File hanya bisa diakses setelah login.",
-      "110": "Link sudah kadaluarsa.",
-    };
-    throw new Error(errMap[String(info.errno)] || `Terabox error ${info.errno}: ${info.errmsg || "Unknown error"}.`);
-  }
-
-  const { uk, shareid, sign, timestamp, list: fileList = [] } = info;
-  if (!fileList.length) throw new Error("Tidak ada file yang ditemukan di folder ini.");
-
-  // Filter hanya file (bukan folder)
-  const onlyFiles = fileList.filter(f => f.isdir !== "1");
-  if (!onlyFiles.length) throw new Error("Tidak ada file (non-folder) yang ditemukan di link ini.");
-
-  // ── Step 3: coba ambil dlink ──────────────────────────────────────────────
-  const allFsIds = onlyFiles.map(f => f.fs_id);
-  let dlinkMap = {};
-  let dlDebug  = {};
-
-  // Strategi A: dlink sudah ada di shorturlinfo
-  for (const f of onlyFiles) {
-    if (f.dlink) dlinkMap[String(f.fs_id)] = f.dlink;
-  }
-
-  // Strategi B: /api/filemetas — bisa return dlink tanpa full login
-  if (Object.keys(dlinkMap).length === 0) {
-    const fmParams = new URLSearchParams({
-      app_id    : "250528",
-      web       : "1",
-      channel   : "dubox",
-      clienttype: "0",
-      jsToken,
-      sign,
-      timestamp : String(timestamp),
-      shareid   : String(shareid),
-      uk        : String(uk),
-      dlink     : "1",
-      thumb     : "1",
-      extra     : "1",
-      fsids     : JSON.stringify(allFsIds),
-    });
-
-    const fmResp = await fetch(`${TERABOX_HOST}/api/filemetas?${fmParams}`, {
-      headers: {
-        "User-Agent": TERABOX_UA,
-        "Cookie"    : cookieStr,
-        "Referer"   : shareUrl,
-        "Accept"    : "application/json, text/plain, */*",
-      },
-      signal: AbortSignal.timeout(30_000),
-    });
-
-    const fmText = await fmResp.text();
-    dlDebug.filemetas = { status: fmResp.status, body: fmText.slice(0, 800) };
-
+  for (const apiUrl of externalApis) {
     try {
-      const fmData = JSON.parse(fmText);
-      if (fmData?.info?.length) {
-        for (const item of fmData.info) {
-          if (item.fs_id && item.dlink) dlinkMap[String(item.fs_id)] = item.dlink;
-        }
+      const resp = await fetch(apiUrl, {
+        headers: { "User-Agent": TERABOX_UA, "Accept": "application/json" },
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!resp.ok) continue;
+      const data = await resp.json();
+
+      const dlink = data?.dlink || data?.download?.url || data?.url || data?.direct_link || null;
+      const filename = data?.filename || data?.file_name || data?.name || "unknown";
+      const size = Number(data?.size || 0);
+
+      if (dlink) {
+        return {
+          creator: "@SanzXD",
+          status : true,
+          code   : 200,
+          message: "Berhasil mengambil 1 file dari Terabox.",
+          result : {
+            filename,
+            size,
+            size_text: formatBytes(size),
+            type    : "video",
+            thumbnail: data?.thumbnail || data?.thumb || null,
+            fs_id   : data?.fs_id || null,
+            download: { url: dlink, note: "Sertakan header \'User-Agent\' saat mengunduh." },
+          },
+          meta: { source_url: inputUrl },
+        };
       }
     } catch (_) {}
   }
 
-  // Strategi C: /api/rapiddownload
-  if (Object.keys(dlinkMap).length === 0) {
-    for (const fsId of allFsIds.slice(0, 3)) { // max 3 untuk debug
-      const rdParams = new URLSearchParams({
-        app_id    : "250528",
-        web       : "1",
-        channel   : "dubox",
-        clienttype: "0",
-        jsToken,
-        sign,
-        timestamp : String(timestamp),
-        shareid   : String(shareid),
-        uk        : String(uk),
-        primaryid : fsId,
-        fid_list  : JSON.stringify([fsId]),
-        product   : "share",
-        nozip     : "1",
-      });
-
-      try {
-        const rdResp = await fetch(`${TERABOX_HOST}/api/rapiddownload?${rdParams}`, {
-          headers: {
-            "User-Agent": TERABOX_UA,
-            "Cookie"    : cookieStr,
-            "Referer"   : shareUrl,
-            "Accept"    : "application/json, text/plain, */*",
-          },
-          signal: AbortSignal.timeout(15_000),
-        });
-        const rdText = await rdResp.text();
-        if (!dlDebug.rapiddownload) dlDebug.rapiddownload = { status: rdResp.status, body: rdText.slice(0, 500) };
-        const rdData = JSON.parse(rdText);
-        if (rdData?.dlink) dlinkMap[String(fsId)] = rdData.dlink;
-        if (rdData?.list?.length) {
-          for (const item of rdData.list) {
-            if (item.fs_id && item.dlink) dlinkMap[String(item.fs_id)] = item.dlink;
-          }
-        }
-      } catch (_) {}
-    }
-  }
-
-  // Strategi D: /api/download via share endpoint (method terbaru)
-  if (Object.keys(dlinkMap).length === 0) {
-    for (const file of onlyFiles.slice(0, 5)) {
-      try {
-        const dlParams = new URLSearchParams({
-          app_id    : "250528",
-          web       : "1",
-          channel   : "dubox",
-          clienttype: "0",
-          jsToken,
-          sign,
-          timestamp : String(timestamp),
-          shareid   : String(shareid),
-          uk        : String(uk),
-          primaryid : String(file.fs_id),
-          fid_list  : JSON.stringify([file.fs_id]),
-          product   : "share",
-          nozip     : "0",
-        });
-
-        const dlResp = await fetch(`${TERABOX_HOST}/api/download?${dlParams}`, {
-          headers: {
-            "User-Agent": TERABOX_UA,
-            "Cookie"    : cookieStr,
-            "Referer"   : shareUrl,
-            "Accept"    : "application/json, text/plain, */*",
-          },
-          signal: AbortSignal.timeout(20_000),
-        });
-
-        const dlText = await dlResp.text();
-        if (!dlDebug.download_api) dlDebug.download_api = { status: dlResp.status, body: dlText.slice(0, 500) };
-
-        const dlData = JSON.parse(dlText);
-        if (dlData?.dlink) dlinkMap[String(file.fs_id)] = dlData.dlink;
-        if (dlData?.list?.length) {
-          for (const item of dlData.list) {
-            if (item.fs_id && item.dlink) dlinkMap[String(item.fs_id)] = item.dlink;
-          }
-        }
-        // beberapa response pakai field "downloadlink"
-        if (dlData?.downloadlink) dlinkMap[String(file.fs_id)] = dlData.downloadlink;
-      } catch (_) {}
-    }
-  }
-
-  // Strategi E: /api/sharedownload
-  if (Object.keys(dlinkMap).length === 0) {
-    try {
-      const sdParams = new URLSearchParams({
-        app_id    : "250528",
-        web       : "1",
-        channel   : "dubox",
-        clienttype: "0",
-        jsToken,
-        sign,
-        timestamp : String(timestamp),
-        shareid   : String(shareid),
-        uk        : String(uk),
-        fs_id     : JSON.stringify(allFsIds),
-        product   : "share",
-        nozip     : "1",
-      });
-
-      const sdResp = await fetch(`${TERABOX_HOST}/api/sharedownload?${sdParams}`, {
-        headers: {
-          "User-Agent": TERABOX_UA,
-          "Cookie"    : cookieStr,
-          "Referer"   : shareUrl,
-          "Accept"    : "application/json, text/plain, */*",
-        },
-        signal: AbortSignal.timeout(20_000),
-      });
-
-      const sdText = await sdResp.text();
-      dlDebug.sharedownload = { status: sdResp.status, body: sdText.slice(0, 500) };
-
-      const sdData = JSON.parse(sdText);
-      if (sdData?.list?.length) {
-        for (const item of sdData.list) {
-          if (item.fs_id && item.dlink) dlinkMap[String(item.fs_id)] = item.dlink;
-        }
-      }
-      if (sdData?.dlink) dlinkMap[String(allFsIds[0])] = sdData.dlink;
-    } catch (_) {}
-  }
-
-  dlDebug.shorturlinfo_sample = JSON.stringify(onlyFiles[0]).slice(0, 600);
-
-  const files = onlyFiles.map(file => ({
-    filename : file.server_filename || file.filename || "unknown",
-    size     : Number(file.size) || null,
-    size_text: file.size ? formatBytes(Number(file.size)) : null,
-    type     : file.category === "1" ? "video"
-             : file.category === "3" ? "image"
-             : file.category === "6" ? "audio"
-             : "file",
-    thumbnail: file.thumbs?.url3 || file.thumbs?.url2 || file.thumbs?.url1 || null,
-    fs_id    : file.fs_id,
-    download : {
-      url : dlinkMap[String(file.fs_id)] || null,
-      note: dlinkMap[String(file.fs_id)]
-        ? "Sertakan header 'User-Agent' yang sama saat mengunduh URL ini."
-        : "dlink tidak tersedia untuk file ini.",
-    },
-  }));
-
-  const isSingle = files.length === 1;
-
-  return {
-    creator: "@SanzXD",
-    status : true,
-    code   : 200,
-    message: `Berhasil mengambil ${files.length} file dari Terabox.`,
-    result : isSingle ? files[0] : files,
-    meta   : { source_url: inputUrl, file_count: files.length, shareid, uk, _dl_debug: dlDebug },
-  };
+  throw new Error("Tidak dapat mengambil dlink. Terabox membatasi akses file ini dari server.");
 }
 
 function formatBytes(bytes) {
