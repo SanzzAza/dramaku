@@ -664,23 +664,39 @@ async function fetchThreads(url) {
     return m ? m[1].replace(/&amp;/g, "&").replace(/&quot;/g, '"') : null;
   };
 
-  const videoUrl   = getMeta("og:video") || getMeta("og:video:secure_url") || getMeta("og:video:url");
-  const imageUrl   = getMeta("og:image");
-  const title      = getMeta("og:title") || getMeta("og:description");
-  const thumbnail  = imageUrl;
+  const imageUrl  = getMeta("og:image");
+  const title     = getMeta("og:title") || getMeta("og:description");
+  const thumbnail = imageUrl;
 
-  // Coba juga ambil dari JSON LD atau script tag
-  let extraVideo = null;
-  const scriptMatch = html.match(/"video_url":"([^"]+)"/);
-  if (scriptMatch) extraVideo = scriptMatch[1].replace(/\\u0026/g, "&").replace(/\\/g, "");
+  // Threads tidak expose og:video — cari dari script tag / JSON embedded
+  let videoUrl = null;
 
-  const finalVideo = videoUrl || extraVideo;
+  // Pattern 1: video_url di JSON data
+  const p1 = html.match(/"video_url"\s*:\s*"([^"]+)"/);
+  if (p1) videoUrl = p1[1].replace(/\u0026/g, "&").replace(/\\/g, "");
 
-  if (!finalVideo && !imageUrl) throw new Error("Media tidak ditemukan. Post mungkin privat atau tidak mengandung media.");
+  // Pattern 2: playable_url
+  if (!videoUrl) {
+    const p2 = html.match(/"playable_url"\s*:\s*"([^"]+)"/);
+    if (p2) videoUrl = p2[1].replace(/\u0026/g, "&").replace(/\\/g, "");
+  }
+
+  // Pattern 3: og:video meta (kadang ada)
+  if (!videoUrl) {
+    videoUrl = getMeta("og:video") || getMeta("og:video:secure_url") || getMeta("og:video:url");
+  }
+
+  // Pattern 4: src di video tag
+  if (!videoUrl) {
+    const p4 = html.match(/<source[^>]+src="([^"]+\.mp4[^"]*)"/i);
+    if (p4) videoUrl = p4[1].replace(/&amp;/g, "&");
+  }
+
+  if (!videoUrl && !imageUrl) throw new Error("Media tidak ditemukan. Post mungkin privat atau tidak mengandung media.");
 
   const medias = [];
-  if (finalVideo) medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: finalVideo });
-  if (imageUrl)   medias.push({ type: "image", extension: "jpg", quality: "HD Image", url: imageUrl });
+  if (videoUrl) medias.push({ type: "video", extension: "mp4", quality: "HD Video", url: videoUrl });
+  if (imageUrl) medias.push({ type: "image", extension: "jpg", quality: "HD Image", url: imageUrl });
 
   return {
     creator: "@SanzXD", status: true, code: 200,
