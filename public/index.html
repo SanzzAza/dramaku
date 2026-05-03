@@ -915,7 +915,7 @@ const EP = {
     params:[
       {name:'action', value:'detail', type:'hidden'},
       {name:'source', label:'Source Platform', type:'select', options:['goodshort','dramabox','reelshort','shortmax','netshort','dramawave','melolo','moboreels','idrama','dramanova'], default:'goodshort'},
-      {name:'id', label:'ID Drama', placeholder:'Contoh: 31001345248', type:'drama_id'},
+      {name:'id', label:'ID Drama', placeholder:'Contoh: 42000002888', type:'drama_id'},
     ],
   },
   'drama-episode': {
@@ -925,7 +925,7 @@ const EP = {
     params:[
       {name:'action', value:'episode', type:'hidden'},
       {name:'source', label:'Source Platform', type:'select', options:['goodshort','dramabox','reelshort','shortmax','netshort','dramawave','melolo','moboreels','idrama','dramanova'], default:'goodshort'},
-      {name:'id', label:'ID Drama', placeholder:'Contoh: 31001345248', type:'drama_id'},
+      {name:'id', label:'ID Drama', placeholder:'Contoh: 42000002888', type:'drama_id'},
       {name:'ep', label:'Nomor Episode', placeholder:'Contoh: 1', type:'text'},
     ],
   },
@@ -1051,7 +1051,7 @@ function openDramaEndpoint(epId) {
       params:[
         {name:'action', value:'detail', type:'hidden'},
         {name:'source', value:source, type:'hidden'},
-        {name:'id', label:'ID Drama', placeholder:'Contoh: 31001345248', type:'drama_id'},
+        {name:'id', label:'ID Drama', placeholder:'Contoh: 42000002888', type:'drama_id'},
       ],
     },
     episode: {
@@ -1062,7 +1062,7 @@ function openDramaEndpoint(epId) {
       params:[
         {name:'action', value:'episode', type:'hidden'},
         {name:'source', value:source, type:'hidden'},
-        {name:'id', label:'ID Drama', placeholder:'Contoh: 31001345248', type:'drama_id'},
+        {name:'id', label:'ID Drama', placeholder:'Contoh: 42000002888', type:'drama_id'},
         {name:'ep', label:'Nomor Episode', placeholder:'Contoh: 1', type:'text'},
       ],
     },
@@ -1135,11 +1135,7 @@ const DRAMA_PRESETS = {
     {id:'31001400001', title:'The Broken Ring'},
   ],
   dramabox:   [
-    {id:'10001234567', title:'Marry My Husband'},
-    {id:'10001345678', title:'Queen of Tears'},
-    {id:'10001456789', title:'My Lovely Liar'},
-    {id:'10001567890', title:'A Good Day to be a Dog'},
-    {id:'10001678901', title:'The Kidnapping Day'},
+    {id:'42000002888', title:'Dewa Judi (Sulih Suara)'},
   ],
   reelshort:  [
     {id:'20001111222', title:'Fated to My Forbidden Alpha'},
@@ -1169,19 +1165,11 @@ const DRAMA_PRESETS = {
     {id:'60001040404', title:'Behind Your Touch'},
     {id:'60001050505', title:'See You in My 19th Life'},
   ],
-  melolo:     [
-    {id:'70001111111', title:'Cinta Terlarang'},
-    {id:'70001222222', title:'Mantan Jadi Bos'},
-    {id:'70001333333', title:'CEO Cuek Mau Apa'},
-    {id:'70001444444', title:'Nikah Kontrak'},
-    {id:'70001555555', title:'Suami Rahasia'},
+  freereels:  [
+    {id:'ToWdWLePx4', title:'FreeReels Drama'},
   ],
-  moboreels:  [
-    {id:'80001001001', title:'His Hidden Bride'},
-    {id:'80001002002', title:'Alpha\'s Redemption'},
-    {id:'80001003003', title:'The Unwanted Luna'},
-    {id:'80001004004', title:'Married to the Monster'},
-    {id:'80001005005', title:'Chasing the Dark'},
+  melolo:     [
+    {id:'7614440427814390837', title:'Melolo Drama'},
   ],
   idrama:     [
     {id:'90001010101', title:'Cinta di Ujung Senja'},
