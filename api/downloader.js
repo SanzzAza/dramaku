@@ -855,19 +855,29 @@ async function fetchTerabox(inputUrl) {
     if (resp.ok) {
       const data = await resp.json();
       if (data?.success && data?.files?.length) {
-        const files = data.files.map(f => ({
-          filename : f.file_name || f.filename || "unknown",
-          size     : Number(f.size || 0),
-          size_text: formatBytes(Number(f.size || 0)),
-          type     : "video",
-          thumbnail: f.thumbnail || f.thumb || null,
-          fs_id    : f.fs_id || null,
-          download : {
-            url : f.download_url || f.dlink || f.direct_link || null,
-            type: "direct",
-            note: "Sertakan header 'User-Agent' saat mengunduh.",
-          },
-        }));
+        const files = data.files.map(f => {
+          // Worker membungkus dlink dalam proxy URL, ekstrak dlink aslinya
+          let rawUrl = f.download_url || f.dlink || f.direct_link || f.original_download_url || null;
+          if (rawUrl && rawUrl.includes("workers.dev/download?dlink=")) {
+            try {
+              const u = new URL(rawUrl);
+              rawUrl = decodeURIComponent(u.searchParams.get("dlink") || rawUrl);
+            } catch (_) {}
+          }
+          return {
+            filename : f.file_name || f.filename || "unknown",
+            size     : Number(f.size || 0),
+            size_text: formatBytes(Number(f.size || 0)),
+            type     : "video",
+            thumbnail: f.thumbnail || f.thumb || null,
+            fs_id    : f.fs_id || null,
+            download : {
+              url : rawUrl,
+              type: "direct",
+              note: "Sertakan header 'User-Agent' saat mengunduh.",
+            },
+          };
+        });
         const isSingle = files.length === 1;
         return {
           creator: "@SanzXD", status: true, code: 200,
