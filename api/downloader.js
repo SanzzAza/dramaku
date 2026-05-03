@@ -963,8 +963,56 @@ async function fetchTerabox(inputUrl) {
   const onlyFiles = listData.list.filter(f => f.isdir !== "1");
   if (!onlyFiles.length) throw new Error("Tidak ada file yang ditemukan.");
 
+  // ── Fetch dlink via /api/download pakai fs_id ─────────────────────────────
+  // /share/list tidak return dlink, perlu request terpisah
+  const uk      = listData.uk      || listData.list?.[0]?.uk      || "";
+  const shareid = listData.shareid || listData.list?.[0]?.shareid || "";
+  const sign    = listData.sign    || "";
+  const timestamp = listData.timestamp || "";
+
+  const fsIds = onlyFiles.map(f => f.fs_id).filter(Boolean);
+
+  let dlinkMap = {};
+
+  if (fsIds.length && uk && shareid) {
+    try {
+      const dlParams = new URLSearchParams({
+        app_id    : "250528",
+        web       : "1",
+        channel   : "dubox",
+        clienttype: "0",
+        jsToken   : jsToken,
+        dplogid   : logId,
+        sign      : sign,
+        timestamp : String(timestamp),
+        shareid   : String(shareid),
+        uk        : String(uk),
+        primaryid : fsIds[0],
+        fid_list  : JSON.stringify(fsIds),
+      });
+      const dlResp = await fetch(`https://www.1024tera.com/api/download?${dlParams}`, {
+        headers: { "User-Agent": TERABOX_UA, "Cookie": cookieStr, "Referer": finalUrl },
+        signal : AbortSignal.timeout(20_000),
+      });
+      const dlData = await dlResp.json();
+      if (dlData?.errno === 0 && dlData?.list?.length) {
+        for (const item of dlData.list) {
+          if (item.dlink) dlinkMap[String(item.fs_id)] = item.dlink;
+        }
+      }
+    } catch (_) {}
+  }
+
+  // Fallback: cek dlink langsung dari list item
+  for (const f of onlyFiles) {
+    if (f.dlink && !dlinkMap[String(f.fs_id)]) {
+      dlinkMap[String(f.fs_id)] = f.dlink;
+    }
+  }
+
+
   const files = onlyFiles.map(file => {
-    const dlink    = file.dlink || null;
+    const dlink    = dlinkMap[String(file.fs_id)] || file.dlink || null;
     const filename = file.server_filename || "unknown";
     const proxyUrl = dlink
       ? `${BASE_URL}/api/proxy?url=${encodeURIComponent(dlink)}&filename=${encodeURIComponent(filename)}&mode=attachment`
@@ -974,7 +1022,7 @@ async function fetchTerabox(inputUrl) {
       size     : Number(file.size) || null,
       size_text: file.size ? formatBytes(Number(file.size)) : null,
       type     : file.category === "1" ? "video" : file.category === "3" ? "image" : "file",
-      thumbnail: file.thumbs?.url3 || file.thumbs?.url1 || null,
+      thumbnail: file.thumbs?.url3 || file.thumbs?.url1 || file.thumbnail || null,
       fs_id    : file.fs_id,
       download : {
         url   : proxyUrl,
