@@ -806,6 +806,7 @@ const TERABOX_DOMAINS = [
 
 const TERABOX_UA   = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 const TERABOX_HOST = "https://www.1024terabox.com";
+const BASE_URL     = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : (process.env.BASE_URL || "");
 
 // ⚠️  Isi dengan cookie akun Terabox kamu yang sudah login
 // Cara ambil: buka 1024terabox.com → login → F12 → Network → request apapun → copy header Cookie
@@ -866,7 +867,7 @@ async function fetchTerabox(inputUrl) {
           }
           const filename = f.file_name || f.filename || "unknown";
           const proxyUrl = rawUrl
-            ? `/api/proxy?url=${encodeURIComponent(rawUrl)}&filename=${encodeURIComponent(filename)}&mode=attachment`
+            ? `${BASE_URL}/api/proxy?url=${encodeURIComponent(rawUrl)}&filename=${encodeURIComponent(filename)}&mode=attachment`
             : null;
           return {
             filename : filename,
@@ -977,7 +978,7 @@ async function fetchTerabox(inputUrl) {
     const dlink    = dlinkMap[String(file.fs_id)] || null;
     const filename = file.server_filename || "unknown";
     const proxyUrl = dlink
-      ? `/api/proxy?url=${encodeURIComponent(dlink)}&filename=${encodeURIComponent(filename)}&mode=attachment`
+      ? `${BASE_URL}/api/proxy?url=${encodeURIComponent(dlink)}&filename=${encodeURIComponent(filename)}&mode=attachment`
       : null;
     return {
       filename : filename,
