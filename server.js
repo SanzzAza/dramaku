@@ -124,15 +124,18 @@ server.listen(PORT, () => {
   console.log(`   Bola      → http://localhost:${PORT}/api/tools?tool=bola&action=live`);
   console.log(`   Manga     → http://localhost:${PORT}/api/tools?tool=manga&action=search&query=naruto`);
 
-  console.log(`\n  🎬 DRAMA (via Dracinku API)`);
-  console.log(`   ForYou    → http://localhost:${PORT}/api/drama?action=foryou&source=goodshort&page=1`);
-  console.log(`   Trending  → http://localhost:${PORT}/api/drama?action=trending&source=dramamax`);
-  console.log(`   Search    → http://localhost:${PORT}/api/drama?action=search&source=goodshort&query=cinta`);
-  console.log(`   Detail    → http://localhost:${PORT}/api/drama?action=detail&source=goodshort&id=ID_DRAMA`);
-  console.log(`   Episode   → http://localhost:${PORT}/api/drama?action=episode&source=goodshort&id=ID_DRAMA&ep=1`);
-  console.log(`\n   Sources   : goodshort, netshort, freereels, dramamax, radreels, chill,`);
-  console.log(`               dramarush, animev2, movie, tv, drakor, bjav, microdrama,`);
-  console.log(`               rapidtv, cubetv, dramadash, shortmax`);
+  console.log(`\n  🎬 DRAMA (Vyreels + Dracinku API)`);
+  console.log(`   ForYou    → http://localhost:${PORT}/api/drama?action=foryou&source=shortmax&page=1`);
+  console.log(`   Trending  → http://localhost:${PORT}/api/drama?action=trending&source=shortmax&page=1`);
+  console.log(`   Search    → http://localhost:${PORT}/api/drama?action=search&source=shortmax&query=cinta&page=1`);
+  console.log(`   Detail    → http://localhost:${PORT}/api/drama?action=detail&source=shortmax&slug=xxxxx`);
+  console.log(`   Episode   → http://localhost:${PORT}/api/drama?action=episode&source=shortmax&slug=xxxxx&ep=1`);
+  console.log(`\n   Vyreels Platforms (Primary):`);
+  console.log(`     shortmax, melolo, flickreels, stardusttv, idrama, netshort, freereels,`);
+  console.log(`     rapidtv, flickshort, dramawave, reelshort`);
+  console.log(`\n   Dracinku Platforms (Fallback):`);
+  console.log(`     goodshort, dramamax, radreels, chill, dramarush, animev2, movie, tv,`);
+  console.log(`     drakor, bjav, microdrama, cubetv, dramadash`);
 
   console.log(`\n  📰 NEWS`);
   console.log(`   Latest    → http://localhost:${PORT}/api/news?source=detik`);
