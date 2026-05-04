@@ -1043,6 +1043,54 @@ body::before{
         </div>
         <span class="api-chevron">›</span>
       </div>
+      <div class="api-item" data-name="Lirik Lagu" data-desc="Cari dan ambil lirik lagu dari berbagai artis." data-cat="tools" onclick="openEndpoint('lirik')">
+        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+        <div class="api-info">
+          <div class="api-name-row"><span class="api-name">Lirik Lagu</span><span class="api-badge">TOOLS</span></div>
+          <div class="api-desc">Cari dan ambil lirik lagu dari berbagai artis.</div>
+        </div>
+        <span class="api-chevron">›</span>
+      </div>
+      <div class="api-item" data-name="Info Film & Series" data-desc="Cari info film dan series lengkap via TMDB." data-cat="tools" onclick="openEndpoint('film')">
+        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M17 7h5M2 17h5M17 17h5"/></svg></div>
+        <div class="api-info">
+          <div class="api-name-row"><span class="api-name">Info Film &amp; Series</span><span class="api-badge">TOOLS</span></div>
+          <div class="api-desc">Cari info film dan series lengkap via TMDB.</div>
+        </div>
+        <span class="api-chevron">›</span>
+      </div>
+      <div class="api-item" data-name="Jadwal Sholat" data-desc="Jadwal sholat harian by nama kota." data-cat="tools" onclick="openEndpoint('sholat')">
+        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></div>
+        <div class="api-info">
+          <div class="api-name-row"><span class="api-name">Jadwal Sholat</span><span class="api-badge">TOOLS</span></div>
+          <div class="api-desc">Jadwal sholat harian by nama kota.</div>
+        </div>
+        <span class="api-chevron">›</span>
+      </div>
+      <div class="api-item" data-name="Cek Nomor Resi" data-desc="Lacak paket JNE, J&T, SiCepat dan kurir lainnya." data-cat="tools" onclick="openEndpoint('resi')">
+        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12H19M12 5l7 7-7 7"/></svg></div>
+        <div class="api-info">
+          <div class="api-name-row"><span class="api-name">Cek Nomor Resi</span><span class="api-badge">TOOLS</span></div>
+          <div class="api-desc">Lacak paket JNE, J&amp;T, SiCepat dan kurir lainnya.</div>
+        </div>
+        <span class="api-chevron">›</span>
+      </div>
+      <div class="api-item" data-name="Jadwal & Skor Bola" data-desc="Live score, jadwal, dan hasil pertandingan sepak bola." data-cat="tools" onclick="openEndpoint('bola')">
+        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></div>
+        <div class="api-info">
+          <div class="api-name-row"><span class="api-name">Jadwal &amp; Skor Bola</span><span class="api-badge">TOOLS</span></div>
+          <div class="api-desc">Live score, jadwal, dan hasil pertandingan sepak bola.</div>
+        </div>
+        <span class="api-chevron">›</span>
+      </div>
+      <div class="api-item" data-name="Baca Manga" data-desc="Search, detail, dan baca chapter manga via MangaDex." data-cat="tools" onclick="openEndpoint('manga')">
+        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+        <div class="api-info">
+          <div class="api-name-row"><span class="api-name">Baca Manga</span><span class="api-badge">TOOLS</span></div>
+          <div class="api-desc">Search, detail, dan baca chapter manga via MangaDex.</div>
+        </div>
+        <span class="api-chevron">›</span>
+      </div>
     </div>
 
     <div class="cat-label">FUN</div>
@@ -1406,6 +1454,84 @@ const EP = {
     params:[
       {name:'text',type:'string',req:true,desc:'Teks yang ingin dikonversi ke suara'},
       {name:'voice',type:'string',req:false,desc:'Suara TTS — contoh: id-ID-Wavenet-A, Brian, Linda — default: Brian'}
+    ]
+  },
+
+  lirik: {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+    name:'Lirik Lagu', badge:'TOOLS', method:'GET', path:'/api/tools', tool:'lirik', key:'lrk',
+    desc:'Cari dan ambil lirik lagu lengkap. Support synced lyrics (dengan timestamp) dan plain lyrics. Tanpa API key.',
+    placeholder:'bohemian rhapsody',
+    params:[
+      {name:'action',type:'select',req:false,options:['get','search'],desc:'get = ambil lirik, search = cari lagu — default: get'},
+      {name:'artist',type:'string',req:false,desc:'Nama artis (untuk action=get). Contoh: queen'},
+      {name:'title',type:'string',req:false,desc:'Judul lagu (untuk action=get). Contoh: bohemian rhapsody'},
+      {name:'query',type:'string',req:false,desc:'Kata kunci pencarian (untuk action=search). Contoh: bohemian rhapsody queen'}
+    ]
+  },
+
+  film: {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M17 7h5M2 17h5M17 17h5"/></svg>',
+    name:'Info Film & Series', badge:'TOOLS', method:'GET', path:'/api/tools', tool:'film', key:'flm',
+    desc:'Cari informasi film dan series lengkap: sinopsis, rating, cast, trailer YouTube, dan rekomendasi serupa. Data dari TMDB.',
+    placeholder:'avengers',
+    params:[
+      {name:'action',type:'select',req:false,options:['search','detail','trending'],desc:'search = cari, detail = info lengkap, trending = sedang populer — default: search'},
+      {name:'query',type:'string',req:false,desc:'Judul film/series yang dicari (untuk action=search)'},
+      {name:'type',type:'select',req:false,options:['movie','tv'],desc:'Jenis konten — movie atau tv/series — default: movie'},
+      {name:'id',type:'string',req:false,desc:'ID TMDB (untuk action=detail). Didapat dari hasil search'},
+      {name:'period',type:'select',req:false,options:['week','day'],desc:'Periode trending — week atau day — default: week'}
+    ]
+  },
+
+  sholat: {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>',
+    name:'Jadwal Sholat', badge:'TOOLS', method:'GET', path:'/api/tools', tool:'sholat', key:'slt',
+    desc:'Jadwal sholat harian berdasarkan nama kota atau koordinat. Return Subuh, Dzuhur, Ashar, Maghrib, Isya beserta tanggal Hijriah. Metode perhitungan KEMENAG Indonesia.',
+    placeholder:'Jakarta',
+    params:[
+      {name:'kota',type:'string',req:false,desc:'Nama kota. Contoh: Jakarta, Surabaya, Bandung, Medan'},
+      {name:'lat',type:'string',req:false,desc:'Latitude (alternatif dari kota). Contoh: -6.2088'},
+      {name:'lon',type:'string',req:false,desc:'Longitude (alternatif dari kota). Contoh: 106.8456'},
+      {name:'tanggal',type:'string',req:false,desc:'Tanggal format DD-MM-YYYY — default: hari ini. Contoh: 17-08-2025'}
+    ]
+  },
+
+  resi: {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12H19M12 5l7 7-7 7"/></svg>',
+    name:'Cek Nomor Resi', badge:'TOOLS', method:'GET', path:'/api/tools', tool:'resi', key:'rsi',
+    desc:'Lacak status pengiriman paket berdasarkan nomor resi. Support JNE, J&T, SiCepat, Anteraja, Ninja, Lion Parcel, TIKI, Pos Indonesia, Wahana.',
+    placeholder:'JD0123456789',
+    params:[
+      {name:'resi',type:'string',req:true,desc:'Nomor resi pengiriman. Contoh: JD0123456789'},
+      {name:'kurir',type:'select',req:false,options:['jne','jnt','sicepat','anteraja','ninja','lion','tiki','pos','wahana'],desc:'Kode kurir — default: jne'}
+    ]
+  },
+
+  bola: {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>',
+    name:'Jadwal & Skor Bola', badge:'TOOLS', method:'GET', path:'/api/tools', tool:'bola', key:'bla',
+    desc:'Data sepak bola lengkap: live score, jadwal pertandingan mendatang, hasil terbaru, dan info tim. Support EPL, La Liga, Bundesliga, Serie A, Liga Indonesia, UCL, dan lainnya.',
+    placeholder:'',
+    params:[
+      {name:'action',type:'select',req:false,options:['live','jadwal','hasil','detail','cari'],desc:'live = skor sekarang, jadwal = mendatang, hasil = terbaru, detail = info match, cari = info tim'},
+      {name:'liga',type:'select',req:false,options:['epl','laliga','bundesliga','seriea','ligue1','liga indonesia','champions'],desc:'Kode liga (untuk action=jadwal/hasil). Contoh: epl, laliga, bundesliga'},
+      {name:'id',type:'string',req:false,desc:'ID pertandingan (untuk action=detail). Didapat dari jadwal/hasil'},
+      {name:'tim',type:'string',req:false,desc:'Nama tim (untuk action=cari). Contoh: manchester united, barcelona'}
+    ]
+  },
+
+  manga: {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+    name:'Baca Manga', badge:'TOOLS', method:'GET', path:'/api/tools', tool:'manga', key:'mga',
+    desc:'Search, detail, daftar chapter, dan baca halaman manga via MangaDex. Support bahasa Indonesia dan Inggris. Gratis dan legal.',
+    placeholder:'naruto',
+    params:[
+      {name:'action',type:'select',req:false,options:['search','detail','chapters','read','trending'],desc:'search = cari, detail = info manga, chapters = daftar chapter, read = baca halaman, trending = populer'},
+      {name:'query',type:'string',req:false,desc:'Judul manga yang dicari (untuk action=search). Contoh: naruto, one piece'},
+      {name:'id',type:'string',req:false,desc:'ID manga dari MangaDex (untuk action=detail/chapters). Didapat dari search'},
+      {name:'chapter',type:'string',req:false,desc:'ID chapter (untuk action=read). Didapat dari action=chapters'},
+      {name:'lang',type:'select',req:false,options:['id','en'],desc:'Bahasa — id (Indonesia) atau en (Inggris) — default: id'}
     ]
   }
 };
