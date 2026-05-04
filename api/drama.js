@@ -91,7 +91,7 @@ export default async function handler(req, res) {
 
   Object.entries(CORS_HEADERS).forEach(([k, v]) => res.setHeader(k, v));
 
-  if (![\"GET\", \"POST\"].includes(req.method)) {
+  if (!["GET", "POST"].includes(req.method)) {
     return res.status(405).json({ status: false, code: 405, message: "Method Not Allowed." });
   }
 
