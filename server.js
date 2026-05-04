@@ -68,6 +68,7 @@ const server = createServer(async (req, res) => {
     "/api/tools":      "./api/tools.js",
     "/api/proxy":      "./api/proxy.js",
     "/api/drama":      "./api/drama.js",
+    "/api/news":       "./api/news.js",
   };
 
   if (apiMap[pathname]) {
@@ -118,5 +119,11 @@ server.listen(PORT, () => {
   console.log(`   Screenshot→ http://localhost:${PORT}/api/tools?tool=screenshot&url=https://example.com`);
   console.log(`   Short URL → http://localhost:${PORT}/api/tools?tool=shorturl&url=https://example.com`);
   console.log(`   TTS       → http://localhost:${PORT}/api/tools?tool=tts&text=Halo`);
+  console.log(`\n  📰 NEWS`);
+  console.log(`   Latest    → http://localhost:${PORT}/api/news?source=detik`);
+  console.log(`   Category  → http://localhost:${PORT}/api/news?source=cnn&category=teknologi`);
+  console.log(`   Search    → http://localhost:${PORT}/api/news?action=search&query=ekonomi`);
+  console.log(`   Multi     → http://localhost:${PORT}/api/news?action=multi&sources=detik,cnn,kompas`);
+  console.log(`   Sources   → http://localhost:${PORT}/api/news?action=sources`);
   console.log("\n   Press Ctrl+C to stop\n");
 });
