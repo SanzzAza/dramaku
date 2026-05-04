@@ -59,8 +59,22 @@ export default async function handler(req, res) {
       if (!VALID_SOURCES.includes(source)) return res.status(400).json({ status:false, code:400, message:"Source '"+source+"' tidak didukung.", available:VALID_SOURCES });
       const cfg = SOURCES[source];
       if (!cfg.categories[category]) return res.status(400).json({ status:false, code:400, message:"Kategori '"+category+"' tidak tersedia.", available_categories:Object.keys(cfg.categories) });
-      const articles = await fetchRSS(cfg.categories[category], limit);
-      result = { source, name:cfg.name, website:cfg.website, category, total:articles.length, articles };
+
+      // Pakai try/catch per-source supaya error satu sumber tidak hancurkan semua
+      let articles = [];
+      let fetchError = null;
+      try {
+        articles = await fetchRSS(cfg.categories[category], limit);
+      } catch (e) {
+        fetchError = e.message;
+      }
+
+      result = {
+        source, name:cfg.name, website:cfg.website, category,
+        total: articles.length,
+        articles,
+        ...(fetchError && articles.length === 0 ? { warning: "Gagal mengambil berita: " + fetchError } : {}),
+      };
 
     } else if (action === "search") {
       const query = req.query.query || req.body?.query;
@@ -108,32 +122,74 @@ export default async function handler(req, res) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+// Coba beberapa User-Agent berbeda, karena beberapa portal blokir bot tertentu
+const FETCH_HEADERS = [
+  {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Accept": "application/rss+xml, application/xml, text/xml, application/json, */*",
+    "Accept-Language": "id-ID,id;q=0.9,en;q=0.8",
+    "Cache-Control": "no-cache",
+  },
+  {
+    "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+    "Accept": "*/*",
+  },
+  {
+    "User-Agent": "feedparser/6.0",
+    "Accept": "application/rss+xml, application/xml, text/xml, */*",
+  },
+];
+
 async function fetchRSS(url, limit) {
-  const resp = await fetch(url, {
-    headers: { "User-Agent":"Mozilla/5.0 (compatible; NewsBot/1.0)", "Accept":"application/rss+xml, application/xml, text/xml, */*" },
-    signal: AbortSignal.timeout(15_000),
-  });
-  if (!resp.ok) throw new Error("Gagal fetch RSS (" + resp.status + "): " + url);
-  const xml = await resp.text();
-  return parseRSS(xml).slice(0, limit);
+  let lastErr;
+  for (const headers of FETCH_HEADERS) {
+    try {
+      const resp = await fetch(url, {
+        headers,
+        signal: AbortSignal.timeout(20_000),
+      });
+      if (!resp.ok) {
+        lastErr = new Error("HTTP " + resp.status + " dari " + url);
+        continue; // coba User-Agent berikutnya
+      }
+      const text = await resp.text();
+      const articles = parseRSS(text);
+      if (articles.length > 0) return articles.slice(0, limit);
+      lastErr = new Error("Tidak ada artikel terparsing dari " + url);
+    } catch (e) {
+      lastErr = e;
+      // kalau timeout atau network error, coba UA berikutnya
+    }
+  }
+  throw lastErr || new Error("Gagal fetch RSS: " + url);
 }
 
 function parseRSS(xml) {
-  if (xml.trim().startsWith("{") || xml.trim().startsWith("[")) {
+  const trimmed = xml.trim();
+
+  // ── JSON format (e.g. Kompas) ──
+  if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
     try {
-      const data = JSON.parse(xml);
-      const entries = data.posts || data.items || data.articles || (Array.isArray(data) ? data : []);
-      return entries.map(e => ({
-        title: stripHtml(e.title || e.name || ""),
-        link: e.link || e.url || e.guid || "",
-        description: stripHtml(e.description || e.excerpt || e.summary || "").slice(0, 300),
-        published_at: parseDate(e.pubDate || e.date || e.published || e.created_at || ""),
-        image: e.thumbnail || e.image || e.featured_image || null,
-        author: e.author || e.byline || null,
-      }));
+      const data = JSON.parse(trimmed);
+      // Kompas: { posts: [...] }, generic: { items/articles/data/results: [...] }, atau plain array
+      const entries =
+        data.posts || data.items || data.articles ||
+        data.data  || data.result || data.results ||
+        (Array.isArray(data) ? data : null);
+      if (entries && Array.isArray(entries) && entries.length > 0) {
+        return entries.map(e => ({
+          title:        stripHtml(e.title || e.name || ""),
+          link:         e.link || e.url || e.guid || e.permalink || "",
+          description:  stripHtml(e.description || e.excerpt || e.summary || e.content || "").slice(0, 300),
+          published_at: parseDate(e.pubDate || e.date || e.published || e.created_at || e.updated_at || ""),
+          image:        e.thumbnail || e.image || e.featured_image || e.img || e.photo || null,
+          author:       (typeof e.author === "string" ? e.author : e.author?.name) || e.byline || null,
+        })).filter(e => e.title || e.link);
+      }
     } catch (_) {}
   }
 
+  // ── XML / RSS / Atom format ──
   const items = [];
   const re    = /<(?:item|entry)[^>]*>([\s\S]*?)<\/(?:item|entry)>/gi;
   let m;
@@ -147,12 +203,12 @@ function parseRSS(xml) {
     const auth  = extractTag(b, "author") || extractTag(b, "dc:creator");
     if (title || link) {
       items.push({
-        title: stripHtml(title || ""),
-        link: link || "",
-        description: stripHtml(desc || "").slice(0, 300),
+        title:        stripHtml(title || ""),
+        link:         link || "",
+        description:  stripHtml(desc || "").slice(0, 300),
         published_at: parseDate(date || ""),
-        image: img || null,
-        author: stripHtml(auth || "") || null,
+        image:        img || null,
+        author:       stripHtml(auth || "") || null,
       });
     }
   }
@@ -191,10 +247,12 @@ function extractImage(block) {
 
 function stripHtml(html) {
   return html
+    .replace(/<!--[\s\S]*?-->/g, "")
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/gi, "$1")
     .replace(/<[^>]+>/g, "")
     .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, " ")
+    .replace(/&#\d+;/g, "").replace(/&[a-z]+;/g, "")
     .replace(/\s+/g, " ").trim();
 }
 
