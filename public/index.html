@@ -825,6 +825,7 @@ body::before{
 const base = window.location.origin;
 let ytFormat = 'mp3', ytQuality = '128';
 
+let _newsInited = false;
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
@@ -1703,10 +1704,7 @@ function renderNewsArticles(articles) {
 }
 
 // Init news page when navigating to it
-const _origShowPage = showPage;
-// Patch showPage to init news on first visit
-let _newsInited = false;
-const _showPageOrig = window.showPage || function(){};
+
 </script>
 </body>
 </html>
