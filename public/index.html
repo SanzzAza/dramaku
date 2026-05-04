@@ -124,7 +124,7 @@ body::before{
 /* FEATURE CARDS */
 .home-features{
   display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
-  padding:0 24px 48px;max-width:780px;margin:0 auto;
+  padding:0 24px 48px;max-width:900px;margin:0 auto;
 }
 .feat-card{
   background:var(--surface);border:1px solid var(--border);
@@ -442,6 +442,7 @@ body::before{
   <div class="nav-links">
     <a href="#" id="nav-home" class="active" onclick="showPage('home');setNav('home');return false">HOME</a>
     <a href="#" id="nav-docs" onclick="showPage('docs');setNav('docs');return false">DOCS</a>
+    <a href="#" id="nav-news" onclick="showPage('news');setNav('news');return false">NEWS</a>
   </div>
   <div class="nav-right">
     <a class="nav-btn" href="#" onclick="showPage('docs');setNav('docs');return false">GET STARTED</a>
@@ -454,9 +455,9 @@ body::before{
     <div class="hero-badge">✦ THE FUTURE OF REST API</div>
     <div class="hero-avatar"><img src="https://i.ibb.co.com/q4HBSw3/1777719969821.jpg" alt="SanzXD"/></div>
     <h1>Powerful API for<br><span class="grad">Modern Developers</span></h1>
-    <p class="hero-sub">Akses endpoint <strong>TikTok</strong>, <strong>Instagram</strong>, dan <strong>YouTube</strong> downloader dalam satu platform yang cepat, aman, dan mudah digunakan.</p>
+    <p class="hero-sub">Akses endpoint <strong>Downloader</strong>, <strong>Drama</strong>, <strong>Berita</strong>, dan banyak tools lainnya dalam satu platform yang cepat, aman, dan mudah digunakan.</p>
     <div class="hero-cta">
-      <a class="btn-primary" href="#" onclick="showPage('docs');setNav('docs');return false">START DOWNLOADING NOW</a>
+      <a class="btn-primary" href="#" onclick="showPage('docs');setNav('docs');return false">EXPLORE API</a>
       <a class="btn-outline" href="#" onclick="showPage('docs');setNav('docs');return false">VIEW DOCUMENTATION</a>
     </div>
   </div>
@@ -476,6 +477,21 @@ body::before{
       <div class="feat-icon">🌐</div>
       <h3>CORS Ready</h3>
       <p>CORS sudah aktif untuk semua origin. Cocok untuk web & mobile apps.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📰</div>
+      <h3>Berita Live</h3>
+      <p>Agregasi berita dari 12 portal Indonesia via RSS. Tanpa API key.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🎬</div>
+      <h3>Short Drama</h3>
+      <p>Akses drama dari 15+ platform: DramaBox, GoodShort, Melolo, dan lainnya.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🛠️</div>
+      <h3>Multi Tools</h3>
+      <p>QR Code, Cuaca, Kurs, TTS, Screenshot, Short URL, dan AI Image dalam satu API.</p>
     </div>
   </div>
 
@@ -522,6 +538,7 @@ body::before{
       <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('kurs'),10);return false">Kurs Mata Uang</a>
       <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('aiimage'),10);return false">AI Image</a>
       <a href="#" onclick="showPage('docs');setTimeout(()=>openEndpoint('tts'),10);return false">Text to Speech</a>
+      <a href="#" onclick="showPage('news');setNav('news');return false">📰 Berita API</a>
     </div>
     <div class="footer-col">
       <h4>Social</h4>
@@ -724,9 +741,80 @@ body::before{
     </div>
   </div>
 
+  <div class="cat-label">NEWS</div>
+  <div class="api-list">
+    <div class="api-item" data-name="Berita Latest" data-desc="Berita terbaru dari portal Indonesia." data-cat="news" onclick="openEndpoint('news-latest')">
+      <div class="api-badge" style="background:rgba(16,185,129,0.15);color:#34d399;border-color:rgba(52,211,153,0.3)">NEWS</div>
+      <div class="api-info">
+        <div class="api-name">Berita Latest</div>
+        <div class="api-desc">Ambil berita terkini dari 12 sumber portal Indonesia.</div>
+      </div>
+      <span class="api-chevron">›</span>
+    </div>
+    <div class="api-item" data-name="Berita Search" data-desc="Cari berita berdasarkan kata kunci." data-cat="news" onclick="openEndpoint('news-search')">
+      <div class="api-badge" style="background:rgba(16,185,129,0.15);color:#34d399;border-color:rgba(52,211,153,0.3)">NEWS</div>
+      <div class="api-info">
+        <div class="api-name">Berita Search</div>
+        <div class="api-desc">Cari berita dari multiple sumber berdasarkan kata kunci.</div>
+      </div>
+      <span class="api-chevron">›</span>
+    </div>
+    <div class="api-item" data-name="Berita Multi Source" data-desc="Gabungkan berita dari beberapa sumber." data-cat="news" onclick="openEndpoint('news-multi')">
+      <div class="api-badge" style="background:rgba(16,185,129,0.15);color:#34d399;border-color:rgba(52,211,153,0.3)">NEWS</div>
+      <div class="api-info">
+        <div class="api-name">Berita Multi Source</div>
+        <div class="api-desc">Gabung dan urutkan berita terbaru dari beberapa portal sekaligus.</div>
+      </div>
+      <span class="api-chevron">›</span>
+    </div>
+  </div>
+
   <div class="cat-label">DRAMA</div>
   <div id="drama-platforms-list"></div>
 </div>
+
+<!-- ═══════════ NEWS ═══════════ -->
+<div id="page-news" class="page">
+  <div class="docs-inner">
+    <div style="margin-bottom:24px">
+      <h2 style="font-size:22px;font-weight:800;letter-spacing:-0.02em;margin-bottom:6px">📰 Berita API</h2>
+      <p style="font-size:13px;color:var(--text2)">Agregasi berita terkini dari 12 portal Indonesia via RSS Feed. Gratis, tanpa API key.</p>
+    </div>
+
+    <!-- Source grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:28px" id="news-source-grid"></div>
+
+    <!-- Controls -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+      <select id="news-source-sel" style="flex:1;min-width:140px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none">
+        <option value="detik">Detik</option>
+        <option value="cnn">CNN Indonesia</option>
+        <option value="kompas">Kompas</option>
+        <option value="tempo">Tempo</option>
+        <option value="tribun">Tribunnews</option>
+        <option value="liputan6">Liputan6</option>
+        <option value="antara">Antara</option>
+        <option value="republika">Republika</option>
+        <option value="cnbc">CNBC Indonesia</option>
+        <option value="merdeka">Merdeka</option>
+        <option value="okezone">Okezone</option>
+        <option value="viva">Viva</option>
+      </select>
+      <select id="news-cat-sel" style="flex:1;min-width:120px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none">
+        <option value="utama">Utama</option>
+      </select>
+      <input id="news-search-inp" placeholder="🔍 Cari berita..." style="flex:2;min-width:160px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none" oninput="newsSearch(this.value)"/>
+      <button onclick="loadNews()" style="background:var(--primary);color:#fff;font-family:var(--sans);font-weight:700;font-size:13px;padding:10px 20px;border-radius:10px;border:none;cursor:pointer;white-space:nowrap">Muat Berita</button>
+    </div>
+
+    <!-- API URL display -->
+    <div id="news-url-bar" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:20px;font-family:monospace;font-size:12px;color:var(--text2);word-break:break-all"></div>
+
+    <!-- Results -->
+    <div id="news-results" style="display:grid;gap:12px"></div>
+  </div>
+</div>
+
 
 <!-- ═══════════ DETAIL ═══════════ -->
 <div id="page-detail" class="page">
@@ -740,6 +828,7 @@ let ytFormat = 'mp3', ytQuality = '128';
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
+  if(name === 'news' && !_newsInited){ _newsInited=true; initNewsPage(); loadNews(); }
   window.scrollTo(0,0);
 }
 
@@ -888,6 +977,38 @@ const EP = {
     desc:'Download video atau gambar dari Threads (Meta).',
     placeholder:'https://www.threads.net/@user/post/abc123',
     params:[{name:'url',type:'string',req:true,desc:'URL post Threads'}]
+  },
+  'news-latest': {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5M10 6h8v4h-8z"/></svg>',
+    name:'Berita Latest', badge:'NEWS', method:'GET', path:'/api/news', key:'nl',
+    desc:'Ambil berita terbaru dari 12 portal berita Indonesia via RSS Feed. Pilih sumber dan kategori yang diinginkan.',
+    params:[
+      {name:'source', label:'Sumber Berita', type:'select', options:['detik','cnn','kompas','tempo','tribun','liputan6','antara','republika','cnbc','merdeka','okezone','viva'], default:'detik'},
+      {name:'category', label:'Kategori', type:'string', req:false, desc:'utama / teknologi / olahraga / ekonomi / dll (default: utama)'},
+      {name:'limit', label:'Jumlah Artikel', type:'string', req:false, desc:'Maks 30 (default: 10)'},
+    ],
+    buildUrl(p){return \`/api/news?source=\${p.source||'detik'}&category=\${p.category||'utama'}&limit=\${p.limit||'10'}\`},
+  },
+  'news-search': {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>',
+    name:'Berita Search', badge:'NEWS', method:'GET', path:'/api/news', key:'ns',
+    desc:'Cari berita dari beberapa portal berdasarkan kata kunci. Hasil diurutkan dari yang terbaru.',
+    params:[
+      {name:'query', label:'Kata Kunci', type:'string', req:true, desc:'Kata kunci yang ingin dicari'},
+      {name:'source', label:'Sumber (opsional)', type:'string', req:false, desc:'Filter ke satu sumber tertentu. Default: semua sumber utama'},
+      {name:'limit', label:'Jumlah Hasil', type:'string', req:false, desc:'Maks 30 (default: 10)'},
+    ],
+    buildUrl(p){let u='/api/news?action=search&query='+(p.query||'ekonomi');if(p.source)u+='&source='+p.source;if(p.limit)u+='&limit='+p.limit;return u;},
+  },
+  'news-multi': {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>',
+    name:'Berita Multi Source', badge:'NEWS', method:'GET', path:'/api/news', key:'nm',
+    desc:'Gabungkan berita dari beberapa portal sekaligus dan urutkan dari yang terbaru.',
+    params:[
+      {name:'sources', label:'Sumber (pisah koma)', type:'string', req:false, desc:'Contoh: detik,cnn,kompas (default: detik,cnn,kompas)'},
+      {name:'limit', label:'Total Artikel', type:'string', req:false, desc:'Maks 30 (default: 10)'},
+    ],
+    buildUrl(p){return \`/api/news?action=multi&sources=\${p.sources||'detik,cnn,kompas'}&limit=\${p.limit||'10'}\`},
   },
   'drama-search': {
     icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>',
@@ -1488,6 +1609,104 @@ function copyEl(id, btn) {
     setTimeout(() => btn.textContent = o, 1500);
   });
 }
+
+// ── NEWS PAGE ─────────────────────────────────────────────────────────────────
+
+const NEWS_SOURCES = {
+  detik:     { name:'Detik',         cats:['utama','news','finance','hot','sport','teknologi','otomotif','travel','food','health'] },
+  cnn:       { name:'CNN Indonesia', cats:['utama','nasional','internasional','ekonomi','olahraga','teknologi','hiburan','gaya_hidup'] },
+  kompas:    { name:'Kompas',        cats:['utama','nasional','regional','ekonomi','olahraga','teknologi','hiburan','otomotif','kesehatan'] },
+  tempo:     { name:'Tempo',         cats:['utama','nasional','bisnis','olahraga','dunia','teknologi','gaya_hidup','otomotif'] },
+  tribun:    { name:'Tribunnews',    cats:['utama','nasional','regional','internasional','olahraga','bisnis','seleb','techno'] },
+  liputan6:  { name:'Liputan6',      cats:['utama','news','bisnis','bola','tekno','showbiz','otomotif','health','global'] },
+  antara:    { name:'Antara',        cats:['utama','nasional','internasional','ekonomi','olahraga','teknologi','hiburan','humaniora'] },
+  republika: { name:'Republika',     cats:['utama','nasional','internasional','ekonomi','olahraga','teknologi','gaya_hidup'] },
+  cnbc:      { name:'CNBC Indonesia',cats:['utama','market','news','tech','entrepreneur','lifestyle','investment'] },
+  merdeka:   { name:'Merdeka',       cats:['utama','politik','teknologi','olahraga','gaya_hidup','otomotif','dunia','uang'] },
+  okezone:   { name:'Okezone',       cats:['utama','news','economy','celebrity','sports','techno','auto','lifestyle'] },
+  viva:      { name:'Viva',          cats:['utama','nasional','dunia','bisnis','bola','teknologi','otomotif'] },
+};
+
+let newsAllArticles = [];
+
+function initNewsPage() {
+  const src = document.getElementById('news-source-sel');
+  if(!src) return;
+  src.addEventListener('change', () => {
+    updateNewsCats(src.value);
+    updateNewsUrlBar();
+  });
+  document.getElementById('news-cat-sel').addEventListener('change', updateNewsUrlBar);
+  updateNewsCats('detik');
+  updateNewsUrlBar();
+}
+
+function updateNewsCats(source) {
+  const sel = document.getElementById('news-cat-sel');
+  const cats = NEWS_SOURCES[source]?.cats || ['utama'];
+  sel.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function updateNewsUrlBar() {
+  const src = document.getElementById('news-source-sel')?.value || 'detik';
+  const cat = document.getElementById('news-cat-sel')?.value || 'utama';
+  const url = `${base}/api/news?source=${src}&category=${cat}&limit=10`;
+  const bar = document.getElementById('news-url-bar');
+  if(bar) bar.textContent = 'GET ' + url;
+}
+
+async function loadNews() {
+  const src = document.getElementById('news-source-sel')?.value || 'detik';
+  const cat = document.getElementById('news-cat-sel')?.value || 'utama';
+  const container = document.getElementById('news-results');
+  container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">⏳ Memuat berita...</div>';
+  updateNewsUrlBar();
+  try {
+    const r = await fetch(`${base}/api/news?source=${src}&category=${cat}&limit=15`);
+    const d = await r.json();
+    if(!d.status) throw new Error(d.message);
+    newsAllArticles = d.result.articles || [];
+    renderNewsArticles(newsAllArticles);
+  } catch(e) {
+    container.innerHTML = `<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:20px;color:#f87171;font-size:13px">❌ ${e.message}</div>`;
+  }
+}
+
+function newsSearch(q) {
+  if(!q) return renderNewsArticles(newsAllArticles);
+  const ql = q.toLowerCase();
+  renderNewsArticles(newsAllArticles.filter(a => (a.title+' '+a.description).toLowerCase().includes(ql)));
+}
+
+function renderNewsArticles(articles) {
+  const container = document.getElementById('news-results');
+  if(!articles.length) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Tidak ada berita ditemukan.</div>';
+    return;
+  }
+  container.innerHTML = articles.map(a => {
+    const date = a.published_at ? new Date(a.published_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+    const img  = a.image ? `<img src="${a.image}" style="width:80px;height:80px;object-fit:cover;border-radius:10px;flex-shrink:0" onerror="this.style.display='none'"/>` : '';
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;gap:14px;align-items:flex-start;transition:border-color 0.2s;cursor:pointer" onclick="window.open('${a.link}','_blank')" onmouseover="this.style.borderColor='rgba(139,92,246,0.4)'" onmouseout="this.style.borderColor='var(--border)'">
+      ${img}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;line-height:1.4;margin-bottom:6px;color:var(--text)">${a.title}</div>
+        ${a.description ? `<div style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${a.description}</div>` : ''}
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          ${a.author ? `<span style="font-size:11px;color:var(--muted)">✍️ ${a.author}</span>` : ''}
+          ${date ? `<span style="font-size:11px;color:var(--muted)">🕐 ${date}</span>` : ''}
+          <span style="font-size:11px;color:var(--primary-light);margin-left:auto">Baca →</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Init news page when navigating to it
+const _origShowPage = showPage;
+// Patch showPage to init news on first visit
+let _newsInited = false;
+const _showPageOrig = window.showPage || function(){};
 </script>
 </body>
 </html>
