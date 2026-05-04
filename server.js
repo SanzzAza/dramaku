@@ -25,7 +25,6 @@ const MIME = {
 const server = createServer(async (req, res) => {
   const { pathname, query } = parse(req.url, true);
 
-  // ── Mock req/res for API handlers ──
   const mockReq = {
     method: req.method,
     query,
@@ -33,7 +32,6 @@ const server = createServer(async (req, res) => {
     url: req.url,
   };
 
-  // Parse body for POST
   if (req.method === "POST") {
     const chunks = [];
     for await (const chunk of req) chunks.push(chunk);
@@ -62,7 +60,6 @@ const server = createServer(async (req, res) => {
     },
   };
 
-  // ── Route API ──
   const apiMap = {
     "/api/downloader": "./api/downloader.js",
     "/api/tools":      "./api/tools.js",
@@ -82,7 +79,6 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  // ── Serve static files ──
   let filePath = pathname === "/" ? "/public/index.html" : pathname;
   filePath = join(__dirname, filePath);
 
@@ -99,6 +95,7 @@ const server = createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`\n🚀 Server running at http://localhost:${PORT}`);
+
   console.log(`\n  📥 DOWNLOADER`);
   console.log(`   YouTube   → http://localhost:${PORT}/api/downloader?platform=youtube&url=...`);
   console.log(`   TikTok    → http://localhost:${PORT}/api/downloader?platform=tiktok&url=...`);
@@ -108,6 +105,7 @@ server.listen(PORT, () => {
   console.log(`   Twitter/X → http://localhost:${PORT}/api/downloader?platform=twitter&url=...`);
   console.log(`   Threads   → http://localhost:${PORT}/api/downloader?platform=threads&url=...`);
   console.log(`   Terabox   → http://localhost:${PORT}/api/downloader?platform=terabox&url=...`);
+
   console.log(`\n  🛠️  TOOLS`);
   console.log(`   AI Image  → http://localhost:${PORT}/api/tools?tool=aiimage&prompt=...`);
   console.log(`   Anime     → http://localhost:${PORT}/api/tools?tool=anime&type=neko`);
@@ -125,11 +123,23 @@ server.listen(PORT, () => {
   console.log(`   Resi      → http://localhost:${PORT}/api/tools?tool=resi&resi=JD0123456789&kurir=jne`);
   console.log(`   Bola      → http://localhost:${PORT}/api/tools?tool=bola&action=live`);
   console.log(`   Manga     → http://localhost:${PORT}/api/tools?tool=manga&action=search&query=naruto`);
+
+  console.log(`\n  🎬 DRAMA (via Dracinku API)`);
+  console.log(`   ForYou    → http://localhost:${PORT}/api/drama?action=foryou&source=goodshort&page=1`);
+  console.log(`   Trending  → http://localhost:${PORT}/api/drama?action=trending&source=dramamax`);
+  console.log(`   Search    → http://localhost:${PORT}/api/drama?action=search&source=goodshort&query=cinta`);
+  console.log(`   Detail    → http://localhost:${PORT}/api/drama?action=detail&source=goodshort&id=ID_DRAMA`);
+  console.log(`   Episode   → http://localhost:${PORT}/api/drama?action=episode&source=goodshort&id=ID_DRAMA&ep=1`);
+  console.log(`\n   Sources   : goodshort, netshort, freereels, dramamax, radreels, chill,`);
+  console.log(`               dramarush, animev2, movie, tv, drakor, bjav, microdrama,`);
+  console.log(`               rapidtv, cubetv, dramadash, shortmax`);
+
   console.log(`\n  📰 NEWS`);
   console.log(`   Latest    → http://localhost:${PORT}/api/news?source=detik`);
   console.log(`   Category  → http://localhost:${PORT}/api/news?source=cnn&category=teknologi`);
   console.log(`   Search    → http://localhost:${PORT}/api/news?action=search&query=ekonomi`);
   console.log(`   Multi     → http://localhost:${PORT}/api/news?action=multi&sources=detik,cnn,kompas`);
   console.log(`   Sources   → http://localhost:${PORT}/api/news?action=sources`);
+
   console.log("\n   Press Ctrl+C to stop\n");
 });
