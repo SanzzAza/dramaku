@@ -1525,20 +1525,53 @@ function openDramaEndpoint(epId) {
   openEndpoint(epId);
 }
 
+function toggleDramaPlatform(platId) {
+  const list = document.getElementById('drama-ep-list-' + platId);
+  const arrow = document.getElementById('drama-arrow-' + platId);
+  if (!list || !arrow) return;
+  const isOpen = list.classList.toggle('open');
+  arrow.classList.toggle('open', isOpen);
+}
+
 function renderDramaPlatforms() {
   const container = document.getElementById('drama-platforms-list');
   if (!container) return;
+
+  const epIcons = {
+    foryou:   '❤️',
+    trending: '📈',
+    search:   '🔍',
+    detail:   '📄',
+    episode:  '▶️',
+  };
+  const epLabels = {
+    foryou:   'For You',
+    trending: 'Trending',
+    search:   'Search',
+    detail:   'Detail',
+    episode:  'Episode',
+  };
+
   container.innerHTML = DRAMA_PLATFORMS.map(plat => `
-    <div class="api-item" data-name="${plat.name}" data-desc="${plat.endpoints.length} endpoints tersedia" data-cat="drama" onclick="openDramaEndpoint('${plat.endpoints[0].epId}')">
-      <div class="api-icon" style="font-size:13px;font-weight:800;color:#a78bfa;letter-spacing:-0.5px">${plat.emoji}</div>
-      <div class="api-info">
-        <div class="api-name-row">
-          <span class="api-name">${plat.name}</span>
-          <span class="api-badge">DRAMA</span>
-        </div>
-        <div class="api-desc">${plat.endpoints.length} endpoints tersedia</div>
+    <div class="drama-platform-group">
+      <div class="drama-platform-header" onclick="toggleDramaPlatform('${plat.id}')">
+        <div class="drama-platform-icon">${plat.emoji}</div>
+        <span class="drama-platform-name">${plat.name}</span>
+        <span class="drama-platform-count">${plat.endpoints.length} endpoints</span>
+        <span class="drama-platform-arrow" id="drama-arrow-${plat.id}">›</span>
       </div>
-      <span class="api-chevron">›</span>
+      <div class="drama-endpoint-list" id="drama-ep-list-${plat.id}">
+        ${plat.endpoints.map(ep => {
+          const action = ep.path.match(/action=(\w+)/)?.[1] || '';
+          return `
+          <div class="drama-ep-item" onclick="openDramaEndpoint('${ep.epId}')">
+            <span style="font-size:16px">${epIcons[action] || '📌'}</span>
+            <span class="drama-ep-method">GET</span>
+            <span class="drama-ep-path">${epLabels[action] || action}</span>
+            <span class="drama-ep-desc">${ep.desc}</span>
+          </div>`;
+        }).join('')}
+      </div>
     </div>
   `).join('');
 }
