@@ -402,11 +402,12 @@ body::before{
 }
 .drama-platform-header:hover{background:rgba(124,58,237,0.12)}
 .drama-platform-icon{
-  width:32px;height:32px;border-radius:8px;flex-shrink:0;
+  width:44px;height:44px;border-radius:12px;flex-shrink:0;
   background:linear-gradient(135deg,#7c3aed,#a855f7);
   display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:800;color:#fff;
+  color:#fff;box-shadow:0 2px 12px rgba(124,58,237,0.35);
 }
+.drama-platform-icon svg{display:block}
 .drama-platform-name{flex:1;font-size:14px;font-weight:700;color:var(--text)}
 .drama-platform-count{font-size:11px;color:var(--muted);margin-right:4px}
 .drama-platform-arrow{color:var(--muted);font-size:16px;transition:transform 0.2s}
@@ -1541,7 +1542,7 @@ const EP = {
 // ── Per-platform drama endpoint definitions ────────────────────────────────
 const DRAMA_PLATFORMS = [
   {
-    id: 'goodshort', name: 'GoodShort', emoji: 'GS',
+    id: 'goodshort', name: 'GoodShort', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
     endpoints: [
       { epId: 'gs-foryou',   path: '/api/drama?action=foryou&source=goodshort',   desc: 'For You / Rekomendasi' },
       { epId: 'gs-trending', path: '/api/drama?action=trending&source=goodshort', desc: 'Trending drama' },
@@ -1551,7 +1552,7 @@ const DRAMA_PLATFORMS = [
     ]
   },
   {
-    id: 'netshort', name: 'NetShort', emoji: 'NS',
+    id: 'netshort', name: 'NetShort', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
     endpoints: [
       { epId: 'ns-foryou',   path: '/api/drama?action=foryou&source=netshort',   desc: 'For You / Rekomendasi' },
       { epId: 'ns-trending', path: '/api/drama?action=trending&source=netshort', desc: 'Trending drama' },
@@ -1561,7 +1562,7 @@ const DRAMA_PLATFORMS = [
     ]
   },
   {
-    id: 'freereels', name: 'FreeReels', emoji: 'FR',
+    id: 'freereels', name: 'FreeReels', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polygon points="10 8.5 16 12 10 15.5 10 8.5"/></svg>',
     endpoints: [
       { epId: 'fr-foryou',   path: '/api/drama?action=foryou&source=freereels',   desc: 'For You / Rekomendasi' },
       { epId: 'fr-trending', path: '/api/drama?action=trending&source=freereels', desc: 'Trending drama' },
@@ -1571,7 +1572,7 @@ const DRAMA_PLATFORMS = [
     ]
   },
   {
-    id: 'dramamax', name: 'DramaMax', emoji: 'DM',
+    id: 'dramamax', name: 'DramaMax', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/></svg>',
     endpoints: [
       { epId: 'dm-foryou',   path: '/api/drama?action=foryou&source=dramamax',   desc: 'For You / Rekomendasi' },
       { epId: 'dm-trending', path: '/api/drama?action=trending&source=dramamax', desc: 'Trending drama' },
@@ -1581,7 +1582,7 @@ const DRAMA_PLATFORMS = [
     ]
   },
   {
-    id: 'radreels', name: 'RadReels', emoji: 'RR',
+    id: 'radreels', name: 'RadReels', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>',
     endpoints: [
       { epId: 'rr-foryou',   path: '/api/drama?action=foryou&source=radreels',   desc: 'For You / Rekomendasi' },
       { epId: 'rr-trending', path: '/api/drama?action=trending&source=radreels', desc: 'Trending drama' },
@@ -1591,7 +1592,7 @@ const DRAMA_PLATFORMS = [
     ]
   },
   {
-    id: 'chill', name: 'Chill', emoji: 'CH',
+    id: 'chill', name: 'Chill', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 8v4l3 3"/><path d="M18 2v6h6"/></svg>',
     endpoints: [
       { epId: 'ch-foryou',   path: '/api/drama?action=foryou&source=chill',   desc: 'For You / Rekomendasi' },
       { epId: 'ch-trending', path: '/api/drama?action=trending&source=chill', desc: 'Trending drama' },
@@ -1601,7 +1602,7 @@ const DRAMA_PLATFORMS = [
     ]
   },
   {
-    id: 'dramarush', name: 'DramaRush', emoji: 'DR',
+    id: 'dramarush', name: 'DramaRush', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
     endpoints: [
       { epId: 'dr-foryou',   path: '/api/drama?action=foryou&source=dramarush',   desc: 'For You / Rekomendasi' },
       { epId: 'dr-trending', path: '/api/drama?action=trending&source=dramarush', desc: 'Trending drama' },
@@ -1611,7 +1612,7 @@ const DRAMA_PLATFORMS = [
     ]
   },
   {
-    id: 'animev2', name: 'AnimeV2', emoji: 'AV',
+    id: 'animev2', name: 'AnimeV2', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><path d="M8 8s-.5 2 1 3"/><path d="M16 8s.5 2-1 3"/></svg>',
     endpoints: [
       { epId: 'av-foryou',   path: '/api/drama?action=foryou&source=animev2',   desc: 'For You / Rekomendasi' },
       { epId: 'av-trending', path: '/api/drama?action=trending&source=animev2', desc: 'Trending' },
@@ -1621,7 +1622,7 @@ const DRAMA_PLATFORMS = [
     ]
   },
   {
-    id: 'movie', name: 'Movie', emoji: 'MV',
+    id: 'movie', name: 'Movie', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>',
     endpoints: [
       { epId: 'mv-foryou',   path: '/api/drama?action=foryou&source=movie',   desc: 'For You / Rekomendasi' },
       { epId: 'mv-trending', path: '/api/drama?action=trending&source=movie', desc: 'Trending movie' },
@@ -1631,7 +1632,7 @@ const DRAMA_PLATFORMS = [
     ]
   },
   {
-    id: 'tv', name: 'TV', emoji: 'TV',
+    id: 'tv', name: 'TV', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>',
     endpoints: [
       { epId: 'tv-foryou',   path: '/api/drama?action=foryou&source=tv',   desc: 'For You / Rekomendasi' },
       { epId: 'tv-trending', path: '/api/drama?action=trending&source=tv', desc: 'Trending TV' },
@@ -1641,7 +1642,7 @@ const DRAMA_PLATFORMS = [
     ]
   },
   {
-    id: 'drakor', name: 'Drakor', emoji: 'DK',
+    id: 'drakor', name: 'Drakor', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
     endpoints: [
       { epId: 'dk-foryou',   path: '/api/drama?action=foryou&source=drakor',   desc: 'For You / Rekomendasi' },
       { epId: 'dk-trending', path: '/api/drama?action=trending&source=drakor', desc: 'Trending drakor' },
@@ -1651,7 +1652,7 @@ const DRAMA_PLATFORMS = [
     ]
   },
   {
-    id: 'bjav', name: 'BJAV', emoji: 'BJ',
+    id: 'bjav', name: 'BJAV', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
     endpoints: [
       { epId: 'bj-foryou',   path: '/api/drama?action=foryou&source=bjav',   desc: 'For You / Rekomendasi' },
       { epId: 'bj-trending', path: '/api/drama?action=trending&source=bjav', desc: 'Trending' },
@@ -1661,7 +1662,7 @@ const DRAMA_PLATFORMS = [
     ]
   },
   {
-    id: 'microdrama', name: 'MicroDrama', emoji: 'MD',
+    id: 'microdrama', name: 'MicroDrama', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>',
     endpoints: [
       { epId: 'md-foryou',   path: '/api/drama?action=foryou&source=microdrama',   desc: 'For You / Rekomendasi' },
       { epId: 'md-trending', path: '/api/drama?action=trending&source=microdrama', desc: 'Trending' },
@@ -1671,7 +1672,7 @@ const DRAMA_PLATFORMS = [
     ]
   },
   {
-    id: 'rapidtv', name: 'RapidTV', emoji: 'RT',
+    id: 'rapidtv', name: 'RapidTV', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>',
     endpoints: [
       { epId: 'rt-foryou',   path: '/api/drama?action=foryou&source=rapidtv',   desc: 'For You / Rekomendasi' },
       { epId: 'rt-trending', path: '/api/drama?action=trending&source=rapidtv', desc: 'Trending' },
@@ -1681,7 +1682,7 @@ const DRAMA_PLATFORMS = [
     ]
   },
   {
-    id: 'cubetv', name: 'CubeTV', emoji: 'CT',
+    id: 'cubetv', name: 'CubeTV', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
     endpoints: [
       { epId: 'ct-foryou',   path: '/api/drama?action=foryou&source=cubetv',   desc: 'For You / Rekomendasi' },
       { epId: 'ct-trending', path: '/api/drama?action=trending&source=cubetv', desc: 'Trending' },
@@ -1691,7 +1692,7 @@ const DRAMA_PLATFORMS = [
     ]
   },
   {
-    id: 'dramadash', name: 'DramaDash', emoji: 'DD',
+    id: 'dramadash', name: 'DramaDash', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
     endpoints: [
       { epId: 'dd-foryou',   path: '/api/drama?action=foryou&source=dramadash',   desc: 'For You / Rekomendasi' },
       { epId: 'dd-trending', path: '/api/drama?action=trending&source=dramadash', desc: 'Trending' },
@@ -1701,7 +1702,7 @@ const DRAMA_PLATFORMS = [
     ]
   },
   {
-    id: 'shortmax', name: 'ShortMax', emoji: 'SM',
+    id: 'shortmax', name: 'ShortMax', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>',
     endpoints: [
       { epId: 'sm-foryou',   path: '/api/drama?action=foryou&source=shortmax',   desc: 'For You / Rekomendasi' },
       { epId: 'sm-trending', path: '/api/drama?action=trending&source=shortmax', desc: 'Trending' },
