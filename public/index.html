@@ -1391,14 +1391,26 @@ const EP = {
     buildUrl(p){return `/api/news?source=${p.source||'detik'}&category=${p.category||'utama'}&limit=${p.limit||'10'}`},
   },
 
+  'drama-foryou': {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 10.26 23.77 11.25 17.77 17.25 19.18 25.95 12 21.77 4.82 25.95 6.23 17.25 0.23 11.25 8.91 10.26 12 2"/></svg>',
+    name:'Drama ForYou', badge:'DRAMA', method:'GET', path:'/api/drama', key:'df',
+    desc:'Dapatkan rekomendasi drama trending untuk kamu berdasarkan platform pilihan.',
+    params:[
+      {name:'action', value:'foryou', type:'hidden'},
+      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
+      {name:'page', label:'Halaman', placeholder:'1', type:'text', value:'1'},
+    ],
+  },
+
   'drama-search': {
     icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>',
     name:'Drama Search', badge:'DRAMA', method:'GET', path:'/api/drama', key:'ds',
-    desc:'Cari drama dari berbagai platform short drama. Pilih source dan masukkan kata kunci pencarian.',
+    desc:'Cari drama dari berbagai platform short drama. Vyreels untuk pencarian lebih lengkap, Dracinku sebagai fallback.',
     params:[
       {name:'action', value:'search', type:'hidden'},
-      {name:'source', label:'Source Platform', type:'select', options:['goodshort','netshort','freereels','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','rapidtv','cubetv','dramadash','shortmax'], default:'goodshort'},
+      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
       {name:'query', label:'Kata Kunci', placeholder:'Contoh: cinta, CEO, balas dendam...', type:'text'},
+      {name:'page', label:'Halaman', placeholder:'1', type:'text', value:'1'},
     ],
   },
   'drama-trending': {
@@ -1407,27 +1419,30 @@ const EP = {
     desc:'Drama yang sedang trending di platform pilihan.',
     params:[
       {name:'action', value:'trending', type:'hidden'},
-      {name:'source', label:'Source Platform', type:'select', options:['goodshort','netshort','freereels','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','rapidtv','cubetv','dramadash','shortmax'], default:'goodshort'},
+      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
+      {name:'page', label:'Halaman', placeholder:'1', type:'text', value:'1'},
     ],
   },
   'drama-detail': {
     icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
     name:'Drama Detail', badge:'DRAMA', method:'GET', path:'/api/drama', key:'dd',
-    desc:'Info lengkap drama: sinopsis, poster, genre, total episode, dan list episode.',
+    desc:'Info lengkap drama: sinopsis, poster, genre, total episode, dan list episode. Gunakan slug untuk Vyreels, id untuk Dracinku.',
     params:[
       {name:'action', value:'detail', type:'hidden'},
-      {name:'source', label:'Source Platform', type:'select', options:['goodshort','netshort','freereels','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','rapidtv','cubetv','dramadash','shortmax'], default:'goodshort'},
-      {name:'id', label:'ID Drama', type:'drama_id'},
+      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
+      {name:'slug', label:'Drama Slug (Vyreels)', placeholder:'drama-slug-xxxxx', type:'text'},
+      {name:'id', label:'Drama ID (Dracinku)', placeholder:'12345', type:'text'},
     ],
   },
   'drama-episode': {
     icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
     name:'Drama Episode', badge:'DRAMA', method:'GET', path:'/api/drama', key:'de',
-    desc:'Dapatkan URL video episode (.mp4) yang bisa langsung diputar. Beberapa episode mungkin terkunci (locked) di platform aslinya.',
+    desc:'Dapatkan URL video episode (.mp4/.m3u8) yang bisa langsung diputar. Gunakan slug untuk Vyreels, id untuk Dracinku.',
     params:[
       {name:'action', value:'episode', type:'hidden'},
-      {name:'source', label:'Source Platform', type:'select', options:['goodshort','netshort','freereels','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','rapidtv','cubetv','dramadash','shortmax'], default:'goodshort'},
-      {name:'id', label:'ID Drama', type:'drama_id'},
+      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
+      {name:'slug', label:'Drama Slug (Vyreels)', placeholder:'drama-slug-xxxxx', type:'text'},
+      {name:'id', label:'Drama ID (Dracinku)', placeholder:'12345', type:'text'},
       {name:'ep', label:'Nomor Episode', placeholder:'Contoh: 1', type:'text'},
     ],
   },
@@ -1709,6 +1724,76 @@ const DRAMA_PLATFORMS = [
       { epId: 'sm-search',   path: '/api/drama?action=search&source=shortmax',   desc: 'Search' },
       { epId: 'sm-detail',   path: '/api/drama?action=detail&source=shortmax',   desc: 'Detail' },
       { epId: 'sm-episode',  path: '/api/drama?action=episode&source=shortmax',  desc: 'Get video episode' },
+    ]
+  },
+  {
+    id: 'melolo', name: 'Melolo', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>',
+    endpoints: [
+      { epId: 'ml-foryou',   path: '/api/drama?action=foryou&source=melolo',   desc: 'For You' },
+      { epId: 'ml-trending', path: '/api/drama?action=trending&source=melolo', desc: 'Trending' },
+      { epId: 'ml-search',   path: '/api/drama?action=search&source=melolo',   desc: 'Search' },
+      { epId: 'ml-detail',   path: '/api/drama?action=detail&source=melolo',   desc: 'Detail' },
+      { epId: 'ml-episode',  path: '/api/drama?action=episode&source=melolo',  desc: 'Episode' },
+    ]
+  },
+  {
+    id: 'flickreels', name: 'FlickReels', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/></svg>',
+    endpoints: [
+      { epId: 'fr-foryou',   path: '/api/drama?action=foryou&source=flickreels',   desc: 'For You' },
+      { epId: 'fr-trending', path: '/api/drama?action=trending&source=flickreels', desc: 'Trending' },
+      { epId: 'fr-search',   path: '/api/drama?action=search&source=flickreels',   desc: 'Search' },
+      { epId: 'fr-detail',   path: '/api/drama?action=detail&source=flickreels',   desc: 'Detail' },
+      { epId: 'fr-episode',  path: '/api/drama?action=episode&source=flickreels',  desc: 'Episode' },
+    ]
+  },
+  {
+    id: 'stardusttv', name: 'StardustTV', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><path d="M12 2v4m0 8v4M2 12h4m8 0h4"/></svg>',
+    endpoints: [
+      { epId: 'st-foryou',   path: '/api/drama?action=foryou&source=stardusttv',   desc: 'For You' },
+      { epId: 'st-trending', path: '/api/drama?action=trending&source=stardusttv', desc: 'Trending' },
+      { epId: 'st-search',   path: '/api/drama?action=search&source=stardusttv',   desc: 'Search' },
+      { epId: 'st-detail',   path: '/api/drama?action=detail&source=stardusttv',   desc: 'Detail' },
+      { epId: 'st-episode',  path: '/api/drama?action=episode&source=stardusttv',  desc: 'Episode' },
+    ]
+  },
+  {
+    id: 'idrama', name: 'IDrama', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+    endpoints: [
+      { epId: 'id-foryou',   path: '/api/drama?action=foryou&source=idrama',   desc: 'For You' },
+      { epId: 'id-trending', path: '/api/drama?action=trending&source=idrama', desc: 'Trending' },
+      { epId: 'id-search',   path: '/api/drama?action=search&source=idrama',   desc: 'Search' },
+      { epId: 'id-detail',   path: '/api/drama?action=detail&source=idrama',   desc: 'Detail' },
+      { epId: 'id-episode',  path: '/api/drama?action=episode&source=idrama',  desc: 'Episode' },
+    ]
+  },
+  {
+    id: 'dramawave', name: 'DramaWave', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/><polyline points="1 12 8 5 15 12"/></svg>',
+    endpoints: [
+      { epId: 'dw-foryou',   path: '/api/drama?action=foryou&source=dramawave',   desc: 'For You' },
+      { epId: 'dw-trending', path: '/api/drama?action=trending&source=dramawave', desc: 'Trending' },
+      { epId: 'dw-search',   path: '/api/drama?action=search&source=dramawave',   desc: 'Search' },
+      { epId: 'dw-detail',   path: '/api/drama?action=detail&source=dramawave',   desc: 'Detail' },
+      { epId: 'dw-episode',  path: '/api/drama?action=episode&source=dramawave',  desc: 'Episode' },
+    ]
+  },
+  {
+    id: 'flickshort', name: 'FlickShort', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3m0-18v18m8-18h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3m0-18v18"/></svg>',
+    endpoints: [
+      { epId: 'fs-foryou',   path: '/api/drama?action=foryou&source=flickshort',   desc: 'For You' },
+      { epId: 'fs-trending', path: '/api/drama?action=trending&source=flickshort', desc: 'Trending' },
+      { epId: 'fs-search',   path: '/api/drama?action=search&source=flickshort',   desc: 'Search' },
+      { epId: 'fs-detail',   path: '/api/drama?action=detail&source=flickshort',   desc: 'Detail' },
+      { epId: 'fs-episode',  path: '/api/drama?action=episode&source=flickshort',  desc: 'Episode' },
+    ]
+  },
+  {
+    id: 'reelshort', name: 'ReelShort', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
+    endpoints: [
+      { epId: 'rs-foryou',   path: '/api/drama?action=foryou&source=reelshort',   desc: 'For You' },
+      { epId: 'rs-trending', path: '/api/drama?action=trending&source=reelshort', desc: 'Trending' },
+      { epId: 'rs-search',   path: '/api/drama?action=search&source=reelshort',   desc: 'Search' },
+      { epId: 'rs-detail',   path: '/api/drama?action=detail&source=reelshort',   desc: 'Detail' },
+      { epId: 'rs-episode',  path: '/api/drama?action=episode&source=reelshort',  desc: 'Episode' },
     ]
   },
 ];
