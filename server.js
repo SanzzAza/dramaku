@@ -119,6 +119,12 @@ server.listen(PORT, () => {
   console.log(`   Screenshot→ http://localhost:${PORT}/api/tools?tool=screenshot&url=https://example.com`);
   console.log(`   Short URL → http://localhost:${PORT}/api/tools?tool=shorturl&url=https://example.com`);
   console.log(`   TTS       → http://localhost:${PORT}/api/tools?tool=tts&text=Halo`);
+  console.log(`   Lirik     → http://localhost:${PORT}/api/tools?tool=lirik&artist=queen&title=bohemian rhapsody`);
+  console.log(`   Film      → http://localhost:${PORT}/api/tools?tool=film&action=search&query=avengers`);
+  console.log(`   Sholat    → http://localhost:${PORT}/api/tools?tool=sholat&kota=Jakarta`);
+  console.log(`   Resi      → http://localhost:${PORT}/api/tools?tool=resi&resi=JD0123456789&kurir=jne`);
+  console.log(`   Bola      → http://localhost:${PORT}/api/tools?tool=bola&action=live`);
+  console.log(`   Manga     → http://localhost:${PORT}/api/tools?tool=manga&action=search&query=naruto`);
   console.log(`\n  📰 NEWS`);
   console.log(`   Latest    → http://localhost:${PORT}/api/news?source=detik`);
   console.log(`   Category  → http://localhost:${PORT}/api/news?source=cnn&category=teknologi`);
