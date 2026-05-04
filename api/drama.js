@@ -277,7 +277,7 @@ async function vyForYou(src, page = 1) {
 
   const data = r.data || {};
   const dramas = Array.isArray(data.dramas) ? data.dramas : [];
-  const items = dramas.map(vyFmtBook);
+  const items = dramas.filter(b => !b.platform || b.platform === src).map(vyFmtBook);
 
   return {
     code: 200,
@@ -296,7 +296,7 @@ async function vyTrending(src, page = 1) {
 
   const data = r.data || {};
   const dramas = Array.isArray(data.dramas) ? data.dramas : [];
-  const items = dramas.map(vyFmtBook);
+  const items = dramas.filter(b => !b.platform || b.platform === src).map(vyFmtBook);
 
   return {
     code: 200,
@@ -318,7 +318,7 @@ async function vySearch(src, keyword, page = 1) {
   const data = r.data || {};
   const dramas = Array.isArray(data.dramas) ? data.dramas : [];
   const total = data.total || 0;
-  const items = dramas.map(vyFmtBook);
+  const items = dramas.filter(b => !b.platform || b.platform === src).map(vyFmtBook);
 
   return {
     code: 200,
