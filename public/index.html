@@ -77,69 +77,256 @@ body::before{
 .page.active{display:block}
 
 /* ══ HOME ══════════════════════════════════════════ */
+/* ── KEYFRAMES ── */
+@keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 32px rgba(124,58,237,0.45),0 0 0 1px rgba(139,92,246,0.3)}50%{box-shadow:0 0 64px rgba(124,58,237,0.7),0 0 0 1px rgba(139,92,246,0.5)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── HERO ── */
 .home-hero{
   display:flex;flex-direction:column;align-items:center;
-  text-align:center;padding:64px 24px 48px;
+  text-align:center;padding:72px 24px 48px;
+  position:relative;
 }
+.hero-bg-orb{
+  position:absolute;pointer-events:none;border-radius:50%;filter:blur(80px);z-index:0;
+}
+.hero-bg-orb-1{width:500px;height:500px;background:rgba(124,58,237,0.15);top:-100px;left:50%;transform:translateX(-50%)}
+.hero-bg-orb-2{width:300px;height:300px;background:rgba(99,102,241,0.1);top:100px;right:-80px}
+.hero-bg-orb-3{width:250px;height:250px;background:rgba(168,85,247,0.08);top:150px;left:-60px}
+.home-hero>*{position:relative;z-index:1}
+
 .hero-badge{
-  display:inline-flex;align-items:center;gap:6px;
-  background:rgba(124,58,237,0.1);border:1px solid rgba(139,92,246,0.3);
-  border-radius:100px;padding:6px 16px;
-  font-size:12px;font-weight:600;color:#a78bfa;
-  margin-bottom:28px;letter-spacing:0.04em;
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(124,58,237,0.12);border:1px solid rgba(139,92,246,0.35);
+  border-radius:100px;padding:7px 18px;
+  font-size:11px;font-weight:700;color:#c4b5fd;
+  margin-bottom:32px;letter-spacing:0.08em;text-transform:uppercase;
+  animation:fadeUp 0.6s ease both;
 }
+.hero-badge-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:#a78bfa;box-shadow:0 0 8px #a78bfa;
+  animation:blink 2s infinite;
+}
+
 .hero-avatar{
-  width:72px;height:72px;border-radius:18px;
+  width:80px;height:80px;border-radius:20px;
   background:linear-gradient(135deg,#7c3aed,#a855f7,#6366f1);
   display:flex;align-items:center;justify-content:center;
-  font-size:32px;margin-bottom:28px;
-  box-shadow:0 0 48px rgba(124,58,237,0.45),0 0 0 1px rgba(139,92,246,0.3);
+  font-size:32px;margin-bottom:32px;
+  animation:pulseGlow 3s ease-in-out infinite, floatY 4s ease-in-out infinite, fadeUp 0.6s 0.1s ease both;
+  animation-fill-mode:both;
   overflow:hidden;
 }
-.hero-avatar img{width:100%;height:100%;object-fit:cover;border-radius:18px}
-.hero h1{
-  font-size:clamp(2rem,8vw,3rem);font-weight:800;
-  letter-spacing:-0.03em;line-height:1.1;margin-bottom:16px;
-}
-.hero h1 .grad{color:var(--primary-light)}
-.hero-sub{font-size:14px;color:var(--text2);line-height:1.7;max-width:400px;margin-bottom:32px}
-.hero-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:56px}
-.btn-primary{
-  background:var(--primary);color:#fff;
-  font-family:var(--sans);font-size:13px;font-weight:700;
-  padding:12px 24px;border-radius:10px;border:none;cursor:pointer;
-  text-decoration:none;display:inline-block;
-  box-shadow:0 0 24px var(--primary-glow);transition:all 0.2s;
-}
-.btn-primary:hover{background:#6d28d9}
-.btn-outline{
-  background:transparent;color:var(--text2);
-  font-family:var(--sans);font-size:13px;font-weight:700;
-  padding:12px 24px;border-radius:10px;
-  border:1px solid var(--border2);cursor:pointer;
-  text-decoration:none;display:inline-block;transition:all 0.2s;
-}
-.btn-outline:hover{color:var(--text);border-color:rgba(139,92,246,0.5);background:rgba(124,58,237,0.05)}
+.hero-avatar img{width:100%;height:100%;object-fit:cover;border-radius:20px}
 
-/* FEATURE CARDS */
+.hero h1{
+  font-size:clamp(2.2rem,9vw,3.4rem);font-weight:800;
+  letter-spacing:-0.03em;line-height:1.08;margin-bottom:20px;
+  animation:fadeUp 0.6s 0.2s ease both;
+}
+.hero h1 .grad{
+  background:linear-gradient(135deg,#a78bfa,#7c3aed,#6366f1,#a855f7);
+  background-size:300% 300%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:gradientShift 4s ease infinite;
+}
+.hero-sub{
+  font-size:14px;color:var(--text2);line-height:1.75;
+  max-width:420px;margin-bottom:36px;
+  animation:fadeUp 0.6s 0.3s ease both;
+}
+.hero-cta{
+  display:flex;gap:12px;justify-content:center;flex-wrap:wrap;
+  margin-bottom:48px;
+  animation:fadeUp 0.6s 0.4s ease both;
+}
+.btn-primary{
+  background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;
+  font-family:var(--sans);font-size:13px;font-weight:700;
+  padding:13px 28px;border-radius:12px;border:none;cursor:pointer;
+  text-decoration:none;display:inline-flex;align-items:center;gap:8px;
+  box-shadow:0 0 32px rgba(124,58,237,0.5),0 4px 16px rgba(0,0,0,0.3);
+  transition:all 0.2s;
+}
+.btn-primary:hover{
+  background:linear-gradient(135deg,#6d28d9,#5b21b6);
+  box-shadow:0 0 48px rgba(124,58,237,0.7),0 4px 20px rgba(0,0,0,0.4);
+  transform:translateY(-1px);
+}
+.btn-outline{
+  background:rgba(124,58,237,0.08);color:var(--text);
+  font-family:var(--sans);font-size:13px;font-weight:700;
+  padding:13px 28px;border-radius:12px;
+  border:1px solid rgba(139,92,246,0.35);cursor:pointer;
+  text-decoration:none;display:inline-flex;align-items:center;gap:8px;
+  transition:all 0.2s;backdrop-filter:blur(8px);
+}
+.btn-outline:hover{
+  color:#fff;border-color:rgba(139,92,246,0.6);
+  background:rgba(124,58,237,0.15);transform:translateY(-1px);
+}
+
+/* ── CODE SNIPPET ── */
+.hero-snippet{
+  width:100%;max-width:500px;margin-bottom:56px;
+  background:rgba(13,13,26,0.8);border:1px solid rgba(139,92,246,0.2);
+  border-radius:16px;overflow:hidden;
+  backdrop-filter:blur(16px);
+  box-shadow:0 8px 40px rgba(0,0,0,0.4),0 0 0 1px rgba(139,92,246,0.1);
+  animation:fadeUp 0.6s 0.5s ease both;
+  text-align:left;
+}
+.snippet-topbar{
+  display:flex;align-items:center;gap:8px;
+  padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.03);
+}
+.snippet-dot{width:10px;height:10px;border-radius:50%}
+.snippet-dot-r{background:#ff5f57}
+.snippet-dot-y{background:#febc2e}
+.snippet-dot-g{background:#28c840}
+.snippet-tabs{display:flex;gap:4px;margin-left:8px;flex:1}
+.snippet-tab{
+  font-size:11px;font-weight:600;padding:4px 12px;border-radius:6px;
+  cursor:pointer;color:var(--muted);transition:all 0.15s;border:none;
+  background:transparent;font-family:var(--sans);
+}
+.snippet-tab.active{background:rgba(124,58,237,0.2);color:#a78bfa}
+.snippet-copy-btn{
+  font-size:11px;font-weight:600;padding:4px 12px;border-radius:6px;
+  cursor:pointer;color:var(--muted);background:rgba(255,255,255,0.05);
+  border:1px solid var(--border);font-family:var(--sans);transition:all 0.15s;
+}
+.snippet-copy-btn:hover{color:var(--text);border-color:var(--border2)}
+.snippet-body{padding:20px;font-family:monospace;font-size:12px;line-height:1.8;overflow-x:auto}
+.s-dim{color:#5a5680}
+.s-method{color:#34d399}
+.s-url{color:#a78bfa}
+.s-key{color:#60a5fa}
+.s-val{color:#fbbf24}
+.s-str{color:#f87171}
+
+/* ── STATS BAR ── */
+.hero-stats{
+  display:flex;gap:0;justify-content:center;flex-wrap:wrap;
+  width:100%;max-width:560px;
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;margin-bottom:56px;
+  animation:fadeUp 0.6s 0.55s ease both;
+}
+.stat-item{
+  flex:1;min-width:120px;padding:20px 16px;text-align:center;
+  border-right:1px solid var(--border);position:relative;
+}
+.stat-item:last-child{border-right:none}
+.stat-num{
+  font-size:26px;font-weight:800;letter-spacing:-0.02em;
+  background:linear-gradient(135deg,#a78bfa,#7c3aed);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  display:block;margin-bottom:4px;
+}
+.stat-label{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.04em;text-transform:uppercase}
+
+/* ── MARQUEE ── */
+.hero-marquee{
+  width:100%;overflow:hidden;padding:14px 0;
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  margin-bottom:56px;
+  background:rgba(124,58,237,0.04);
+}
+.marquee-track{
+  display:flex;gap:0;white-space:nowrap;
+  animation:ticker 28s linear infinite;
+}
+.marquee-item{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:0 24px;font-size:12px;font-weight:600;color:var(--muted);
+  letter-spacing:0.02em;
+}
+.marquee-item span{
+  width:6px;height:6px;border-radius:50%;
+  background:rgba(124,58,237,0.5);flex-shrink:0;
+}
+
+/* ── FEATURE CARDS ── */
 .home-features{
   display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
-  padding:0 24px 48px;max-width:900px;margin:0 auto;
+  padding:0 24px 56px;max-width:900px;margin:0 auto;
 }
 .feat-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:16px;padding:24px 20px;
-  transition:border-color 0.2s,transform 0.2s;
+  background:rgba(24,24,48,0.6);
+  border:1px solid var(--border);
+  border-radius:18px;padding:24px 20px;
+  transition:all 0.25s;
+  backdrop-filter:blur(12px);
+  position:relative;overflow:hidden;
 }
-.feat-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.feat-card::before{
+  content:'';position:absolute;inset:0;border-radius:18px;
+  background:linear-gradient(135deg,rgba(124,58,237,0.08),transparent);
+  opacity:0;transition:opacity 0.25s;
+}
+.feat-card:hover{
+  border-color:rgba(139,92,246,0.35);
+  transform:translateY(-4px);
+  box-shadow:0 8px 32px rgba(124,58,237,0.2),0 0 0 1px rgba(139,92,246,0.1);
+}
+.feat-card:hover::before{opacity:1}
 .feat-icon{
-  width:40px;height:40px;border-radius:10px;
-  background:rgba(124,58,237,0.12);border:1px solid rgba(139,92,246,0.2);
+  width:44px;height:44px;border-radius:12px;
+  background:rgba(124,58,237,0.15);border:1px solid rgba(139,92,246,0.25);
   display:flex;align-items:center;justify-content:center;
-  font-size:18px;margin-bottom:14px;
+  font-size:20px;margin-bottom:16px;
+  box-shadow:0 0 20px rgba(124,58,237,0.15);
 }
-.feat-card h3{font-size:14px;font-weight:700;margin-bottom:6px}
-.feat-card p{font-size:12px;color:var(--text2);line-height:1.6}
+.feat-card h3{font-size:14px;font-weight:700;margin-bottom:8px}
+.feat-card p{font-size:12px;color:var(--text2);line-height:1.65}
+
+/* ── HOW IT WORKS ── */
+.how-section{
+  padding:0 24px 64px;max-width:760px;margin:0 auto;
+}
+.section-label{
+  text-align:center;font-size:11px;font-weight:700;
+  color:var(--primary-light);letter-spacing:0.1em;text-transform:uppercase;
+  margin-bottom:12px;
+}
+.section-title{
+  text-align:center;font-size:22px;font-weight:800;
+  letter-spacing:-0.02em;margin-bottom:8px;
+}
+.section-sub{
+  text-align:center;font-size:13px;color:var(--text2);
+  margin-bottom:36px;
+}
+.how-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.how-step{
+  text-align:center;padding:28px 20px;
+  background:rgba(24,24,48,0.5);border:1px solid var(--border);
+  border-radius:18px;position:relative;backdrop-filter:blur(8px);
+  transition:all 0.25s;
+}
+.how-step:hover{border-color:var(--border2);transform:translateY(-2px)}
+.how-num{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,#7c3aed,#a855f7);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:800;color:#fff;
+  margin:0 auto 16px;
+  box-shadow:0 0 20px rgba(124,58,237,0.4);
+}
+.how-step h4{font-size:14px;font-weight:700;margin-bottom:8px}
+.how-step p{font-size:12px;color:var(--text2);line-height:1.6}
+.how-connector{
+  position:absolute;top:50%;right:-8px;
+  width:16px;height:2px;
+  background:linear-gradient(90deg,var(--border2),transparent);
+}
 
 /* FAQ */
 .home-faq{padding:0 24px 64px;max-width:680px;margin:0 auto}
@@ -492,6 +679,9 @@ body::before{
 @media(max-width:640px){
   .nav-links{display:none}
   .home-features{grid-template-columns:1fr;max-width:400px}
+  .how-steps{grid-template-columns:1fr}
+  .hero-stats{grid-template-columns:repeat(2,1fr);display:grid}
+  .stat-item{border-right:none;border-bottom:1px solid var(--border)}
   .footer{grid-template-columns:1fr 1fr;gap:24px}
   .param-table th:last-child,.param-table td:last-child{display:none}
 }
@@ -521,16 +711,70 @@ body::before{
 <!-- ═══════════ HOME ═══════════ -->
 <div id="page-home" class="page active">
   <div class="home-hero">
-    <div class="hero-badge">✦ THE FUTURE OF REST API</div>
+    <!-- orbs -->
+    <div class="hero-bg-orb hero-bg-orb-1"></div>
+    <div class="hero-bg-orb hero-bg-orb-2"></div>
+    <div class="hero-bg-orb hero-bg-orb-3"></div>
+
+    <div class="hero-badge"><span class="hero-badge-dot"></span>THE FUTURE OF REST API</div>
     <div class="hero-avatar"><img src="https://i.ibb.co.com/q4HBSw3/1777719969821.jpg" alt="SanzXD"/></div>
     <h1>Powerful API for<br><span class="grad">Modern Developers</span></h1>
     <p class="hero-sub">Akses endpoint <strong>Downloader</strong>, <strong>Drama</strong>, <strong>Berita</strong>, dan banyak tools lainnya dalam satu platform yang cepat, aman, dan mudah digunakan.</p>
     <div class="hero-cta">
-      <a class="btn-primary" href="#" onclick="showPage('docs');setNav('docs');return false">EXPLORE API</a>
-      <a class="btn-outline" href="#" onclick="showPage('docs');setNav('docs');return false">VIEW DOCUMENTATION</a>
+      <a class="btn-primary" href="#" onclick="showPage('docs');setNav('docs');return false">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        EXPLORE API
+      </a>
+      <a class="btn-outline" href="#" onclick="showPage('docs');setNav('docs');return false">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        VIEW DOCS
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-num" data-target="30">0</span>
+        <span class="stat-label">Endpoints</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num" data-target="15">0</span>
+        <span class="stat-label">Platforms</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num" data-target="12">0</span>
+        <span class="stat-label">News Sources</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num" data-target="100" data-suffix="%">0</span>
+        <span class="stat-label">Free Forever</span>
+      </div>
+    </div>
+
+    <!-- Code Snippet -->
+    <div class="hero-snippet">
+      <div class="snippet-topbar">
+        <div class="snippet-dot snippet-dot-r"></div>
+        <div class="snippet-dot snippet-dot-y"></div>
+        <div class="snippet-dot snippet-dot-g"></div>
+        <div class="snippet-tabs">
+          <button class="snippet-tab active" onclick="switchSnippet('tiktok',this)">TikTok</button>
+          <button class="snippet-tab" onclick="switchSnippet('youtube',this)">YouTube</button>
+          <button class="snippet-tab" onclick="switchSnippet('news',this)">News</button>
+          <button class="snippet-tab" onclick="switchSnippet('drama',this)">Drama</button>
+        </div>
+        <button class="snippet-copy-btn" id="snippet-copy-btn" onclick="copySnippet()">COPY</button>
+      </div>
+      <div class="snippet-body" id="snippet-body"></div>
     </div>
   </div>
 
+  <!-- Marquee -->
+  <div class="hero-marquee">
+    <div class="marquee-track" id="marquee-track"></div>
+  </div>
+
+  <!-- Feature Cards -->
   <div class="home-features">
     <div class="feat-card">
       <div class="feat-icon">⚡</div>
@@ -549,18 +793,42 @@ body::before{
     </div>
     <div class="feat-card">
       <div class="feat-icon">📰</div>
-      <h3>Berita Live</h3>
-      <p>Agregasi berita dari 12 portal Indonesia via RSS. Tanpa API key.</p>
+      <h3>12 News Sources</h3>
+      <p>Agregasi berita dari 12 portal Indonesia via RSS. Real-time, tanpa API key.</p>
     </div>
     <div class="feat-card">
       <div class="feat-icon">🎬</div>
-      <h3>Short Drama</h3>
-      <p>Akses drama dari 15+ platform: DramaBox, GoodShort, Melolo, dan lainnya.</p>
+      <h3>15+ Drama Platforms</h3>
+      <p>DramaBox, GoodShort, Melolo, FreeReels, dan 11 platform lainnya.</p>
     </div>
     <div class="feat-card">
       <div class="feat-icon">🛠️</div>
       <h3>Multi Tools</h3>
       <p>QR Code, Cuaca, Kurs, TTS, Screenshot, Short URL, dan AI Image dalam satu API.</p>
+    </div>
+  </div>
+
+  <!-- How It Works -->
+  <div class="how-section">
+    <div class="section-label">How It Works</div>
+    <div class="section-title">Mulai dalam 3 langkah</div>
+    <div class="section-sub">Tidak perlu setup rumit. Cukup pilih endpoint dan langsung pakai.</div>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-num">1</div>
+        <h4>Pilih Endpoint</h4>
+        <p>Browse docs dan pilih endpoint yang sesuai kebutuhanmu dari 30+ endpoint tersedia.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-num">2</div>
+        <h4>Hit URL</h4>
+        <p>Kirim GET request ke endpoint dengan parameter yang dibutuhkan. Tanpa API key.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-num">3</div>
+        <h4>Dapat Response</h4>
+        <p>Terima JSON response dalam milidetik. Langsung integrasikan ke aplikasimu.</p>
+      </div>
     </div>
   </div>
 
@@ -1874,10 +2142,179 @@ function copyNicCurl(id) {
 }
 
 // Init NIC url bars on DOM ready
+
+// ── SNIPPET DATA ──
+const SNIPPETS = {
+  tiktok: {
+    lines: [
+      {t:'dim', v:'# Download TikTok tanpa watermark'},
+      {t:'method', v:'GET '},
+      {t:'url', v:'https://dramafeed.vercel.app/api/downloader'},
+      {t:'dim', v:'  ?platform='},
+      {t:'val', v:'tiktok'},
+      {t:'dim', v:'  &url='},
+      {t:'str', v:'https://vt.tiktok.com/xxxxx'},
+      {t:'dim', v:''},
+      {t:'dim', v:'# Response'},
+      {t:'key', v:'status'},
+      {t:'dim', v:': '},
+      {t:'val', v:'true'},
+      {t:'key', v:'download.no_watermark'},
+      {t:'dim', v:': '},
+      {t:'str', v:'"https://..."'},
+    ]
+  },
+  youtube: {
+    lines: [
+      {t:'dim', v:'# Download YouTube ke MP3/MP4'},
+      {t:'method', v:'GET '},
+      {t:'url', v:'https://dramafeed.vercel.app/api/downloader'},
+      {t:'dim', v:'  ?platform='},
+      {t:'val', v:'youtube'},
+      {t:'dim', v:'  &url='},
+      {t:'str', v:'https://youtu.be/xxxxx'},
+      {t:'dim', v:'  &format='},
+      {t:'val', v:'mp3'},
+      {t:'dim', v:'  &quality='},
+      {t:'val', v:'320'},
+      {t:'dim', v:''},
+      {t:'key', v:'title'},
+      {t:'dim', v:': '},
+      {t:'str', v:'"Video Title Here"'},
+      {t:'key', v:'download'},
+      {t:'dim', v:': '},
+      {t:'str', v:'"https://..."'},
+    ]
+  },
+  news: {
+    lines: [
+      {t:'dim', v:'# Ambil berita terkini dari Detik'},
+      {t:'method', v:'GET '},
+      {t:'url', v:'https://dramafeed.vercel.app/api/news'},
+      {t:'dim', v:'  ?source='},
+      {t:'val', v:'detik'},
+      {t:'dim', v:'  &category='},
+      {t:'val', v:'utama'},
+      {t:'dim', v:'  &limit='},
+      {t:'val', v:'10'},
+      {t:'dim', v:''},
+      {t:'key', v:'articles[0].title'},
+      {t:'dim', v:': '},
+      {t:'str', v:'"Judul berita..."'},
+      {t:'key', v:'articles[0].link'},
+      {t:'dim', v:': '},
+      {t:'str', v:'"https://..."'},
+    ]
+  },
+  drama: {
+    lines: [
+      {t:'dim', v:'# Drama trending dari DramaBox'},
+      {t:'method', v:'GET '},
+      {t:'url', v:'https://dramafeed.vercel.app/api/drama'},
+      {t:'dim', v:'  ?action='},
+      {t:'val', v:'trending'},
+      {t:'dim', v:'  &source='},
+      {t:'val', v:'dramabox'},
+      {t:'dim', v:''},
+      {t:'key', v:'data[0].title'},
+      {t:'dim', v:': '},
+      {t:'str', v:'"Drama Title..."'},
+      {t:'key', v:'data[0].episodes'},
+      {t:'dim', v:': '},
+      {t:'val', v:'48'},
+    ]
+  }
+};
+
+let _curSnippet = 'tiktok';
+
+function renderSnippet(key) {
+  const s = SNIPPETS[key];
+  if (!s) return;
+  const colorMap = {dim:'s-dim',method:'s-method',url:'s-url',key:'s-key',val:'s-val',str:'s-str'};
+  document.getElementById('snippet-body').innerHTML =
+    s.lines.map(l => `<div><span class="${colorMap[l.t]||'s-dim'}">${l.v}</span></div>`).join('');
+}
+
+function switchSnippet(key, btn) {
+  _curSnippet = key;
+  document.querySelectorAll('.snippet-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderSnippet(key);
+  const copyBtn = document.getElementById('snippet-copy-btn');
+  if (copyBtn) { copyBtn.textContent = 'COPY'; }
+}
+
+function copySnippet() {
+  const s = SNIPPETS[_curSnippet];
+  if (!s) return;
+  const text = s.lines.map(l => l.v).join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('snippet-copy-btn');
+    btn.textContent = 'COPIED!';
+    setTimeout(() => btn.textContent = 'COPY', 2000);
+  });
+}
+
+// ── STATS COUNT-UP ──
+function countUp(el, target, suffix='') {
+  const suffix_ = el.dataset.suffix || suffix;
+  let start = 0;
+  const dur = 1800;
+  const step = 16;
+  const inc = target / (dur / step);
+  const timer = setInterval(() => {
+    start = Math.min(start + inc, target);
+    el.textContent = Math.floor(start) + (start >= target ? suffix_ : '');
+    if (start >= target) clearInterval(timer);
+  }, step);
+}
+
+function initStats() {
+  document.querySelectorAll('.stat-num[data-target]').forEach(el => {
+    countUp(el, parseInt(el.dataset.target));
+  });
+}
+
+// ── MARQUEE ──
+function initMarquee() {
+  const items = [
+    'TikTok DL','YouTube DL','Instagram DL','Facebook DL','Pinterest DL',
+    'Twitter/X DL','Threads DL','Terabox DL','DramaBox','FreeReels',
+    'Melolo','GoodShort','Reelshort','Berita Latest','QR Code',
+    'Short URL','Cuaca','Kurs','Text to Speech','Screenshot Web',
+    'AI Image','Random Quote','Anime Image','Cek Nomor HP'
+  ];
+  const doubled = [...items, ...items];
+  const track = document.getElementById('marquee-track');
+  if (!track) return;
+  track.innerHTML = doubled.map(i =>
+    `<span class="marquee-item"><span></span>${i}</span>`
+  ).join('');
+}
+
+// ── INTERSECTION OBSERVER for stats ──
+function initObserver() {
+  const statsEl = document.querySelector('.hero-stats');
+  if (!statsEl) return;
+  let fired = false;
+  const obs = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting && !fired) {
+      fired = true;
+      initStats();
+      obs.disconnect();
+    }
+  }, {threshold: 0.3});
+  obs.observe(statsEl);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   nicUpdateUrl('nl');
   const nlSrc = document.getElementById('nic-nl-source');
   if (nlSrc) nlSrc.addEventListener('change', () => nicUpdateUrl('nl'));
+  renderSnippet('tiktok');
+  initMarquee();
+  initObserver();
 });
 
 </script>
