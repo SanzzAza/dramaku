@@ -417,8 +417,77 @@ body::before{
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .fade-in{animation:fadeUp 0.2s ease both}
 
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+/* ══ NEWS INLINE CARDS ══════════════════════════════ */
+.news-inline-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;
+  transition:border-color 0.2s;
+}
+.news-inline-card:hover{border-color:rgba(52,211,153,0.3)}
+.nic-header{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 18px 14px;
+}
+.nic-icon{
+  width:40px;height:40px;border-radius:10px;flex-shrink:0;
+  background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);
+  display:flex;align-items:center;justify-content:center;
+}
+.nic-info{flex:1;min-width:0}
+.nic-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px}
+.nic-badge{
+  font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;
+  background:rgba(52,211,153,0.12);color:#34d399;
+  border:1px solid rgba(52,211,153,0.25);letter-spacing:0.04em;
+}
+.nic-desc{font-size:12px;color:var(--muted)}
+.nic-params{
+  padding:0 18px 14px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;
+}
+.nic-param-row{display:flex;flex-direction:column;gap:4px}
+.nic-param-row label{font-size:11px;font-weight:600;color:var(--text2)}
+.nic-select,.nic-input{
+  background:rgba(0,0,0,0.25);border:1px solid var(--border);
+  border-radius:8px;padding:9px 12px;color:var(--text);
+  font-family:var(--sans);font-size:12px;outline:none;
+  transition:border-color 0.15s;width:100%;
+}
+.nic-select:focus,.nic-input:focus{border-color:rgba(52,211,153,0.5)}
+.nic-input::placeholder{color:var(--muted)}
+.nic-urlbar{
+  margin:0 18px 14px;
+  background:rgba(0,0,0,0.2);border:1px solid var(--border);
+  border-radius:8px;padding:9px 12px;
+  font-family:monospace;font-size:11px;color:var(--text2);
+  word-break:break-all;display:flex;align-items:center;gap:8px;
+}
+.nic-urlbar::before{
+  content:'🌐';font-size:12px;flex-shrink:0;
+}
+.nic-exec-btn{
+  width:calc(100% - 36px);margin:0 18px 16px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  background:linear-gradient(135deg,#059669,#10b981);
+  color:#fff;font-family:var(--sans);font-weight:700;font-size:13px;
+  padding:13px 20px;border-radius:10px;border:none;cursor:pointer;
+  letter-spacing:0.03em;
+  box-shadow:0 0 24px rgba(16,185,129,0.3);
+  transition:all 0.2s;
+}
+.nic-exec-btn:hover:not(:disabled){background:linear-gradient(135deg,#047857,#059669);box-shadow:0 0 32px rgba(16,185,129,0.45)}
+.nic-exec-btn:disabled{opacity:0.55;cursor:not-allowed}
+.nic-result{border-top:1px solid var(--border)}
+.nic-urlfoot{
+  font-family:monospace;font-size:11px;color:var(--muted);
+  padding:10px 16px 0;word-break:break-all;
+}
+
+@media(max-width:480px){
+  .nic-params{grid-template-columns:1fr}
+}
+
+
 
 @media(max-width:640px){
   .nav-links{display:none}
@@ -742,31 +811,147 @@ body::before{
   </div>
 
   <div class="cat-label">NEWS</div>
-  <div class="api-list">
-    <div class="api-item" data-name="Berita Latest" data-desc="Berita terbaru dari portal Indonesia." data-cat="news" onclick="openEndpoint('news-latest')">
-      <div class="api-badge" style="background:rgba(16,185,129,0.15);color:#34d399;border-color:rgba(52,211,153,0.3)">NEWS</div>
-      <div class="api-info">
-        <div class="api-name">Berita Latest</div>
-        <div class="api-desc">Ambil berita terkini dari 12 sumber portal Indonesia.</div>
+  <div class="api-list" style="gap:16px">
+
+    <!-- ── Berita Latest card ── -->
+    <div class="news-inline-card" data-name="Berita Latest" data-desc="Berita terbaru dari portal Indonesia." data-cat="news">
+      <div class="nic-header">
+        <div class="nic-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5M10 6h8v4h-8z"/></svg></div>
+        <div class="nic-info">
+          <div class="nic-title">Berita Latest <span class="nic-badge">NEWS</span></div>
+          <div class="nic-desc">Ambil berita terkini dari 12 sumber portal Indonesia.</div>
+        </div>
       </div>
-      <span class="api-chevron">›</span>
-    </div>
-    <div class="api-item" data-name="Berita Search" data-desc="Cari berita berdasarkan kata kunci." data-cat="news" onclick="openEndpoint('news-search')">
-      <div class="api-badge" style="background:rgba(16,185,129,0.15);color:#34d399;border-color:rgba(52,211,153,0.3)">NEWS</div>
-      <div class="api-info">
-        <div class="api-name">Berita Search</div>
-        <div class="api-desc">Cari berita dari multiple sumber berdasarkan kata kunci.</div>
+      <div class="nic-params">
+        <div class="nic-param-row">
+          <label>Sumber</label>
+          <select id="nic-nl-source" onchange="nicUpdateUrl('nl')" class="nic-select">
+            <option value="detik">Detik</option><option value="cnn">CNN Indonesia</option>
+            <option value="kompas">Kompas</option><option value="tempo">Tempo</option>
+            <option value="tribun">Tribunnews</option><option value="liputan6">Liputan6</option>
+            <option value="antara">Antara</option><option value="republika">Republika</option>
+            <option value="cnbc">CNBC Indonesia</option><option value="merdeka">Merdeka</option>
+            <option value="okezone">Okezone</option><option value="viva">Viva</option>
+          </select>
+        </div>
+        <div class="nic-param-row">
+          <label>Kategori</label>
+          <select id="nic-nl-category" onchange="nicUpdateUrl('nl')" class="nic-select">
+            <option value="utama">Utama</option>
+          </select>
+        </div>
+        <div class="nic-param-row">
+          <label>Limit</label>
+          <input id="nic-nl-limit" class="nic-input" placeholder="10" oninput="nicUpdateUrl('nl')"/>
+        </div>
       </div>
-      <span class="api-chevron">›</span>
-    </div>
-    <div class="api-item" data-name="Berita Multi Source" data-desc="Gabungkan berita dari beberapa sumber." data-cat="news" onclick="openEndpoint('news-multi')">
-      <div class="api-badge" style="background:rgba(16,185,129,0.15);color:#34d399;border-color:rgba(52,211,153,0.3)">NEWS</div>
-      <div class="api-info">
-        <div class="api-name">Berita Multi Source</div>
-        <div class="api-desc">Gabung dan urutkan berita terbaru dari beberapa portal sekaligus.</div>
+      <div class="nic-urlbar" id="nic-nl-url"></div>
+      <button class="nic-exec-btn" id="nic-nl-btn" onclick="nicExec('nl')">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
+        EXECUTE API
+      </button>
+      <div class="nic-result" id="nic-nl-result" style="display:none">
+        <div class="res-topbar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          <span class="res-label">JSON RESPONSE</span>
+          <span id="nic-nl-badge"></span>
+          <button class="btn-copy" onclick="copyEl('nic-nl-code',this)" style="margin-left:6px">COPY</button>
+        </div>
+        <div class="res-code" id="nic-nl-code" style="max-height:300px"></div>
+        <div class="nic-urlfoot" id="nic-nl-foot"></div>
+        <div style="display:flex;gap:8px;padding:12px 16px 14px;border-top:1px solid var(--border)">
+          <button class="btn-copy" onclick="copyNicCurl('nl')" style="flex:1;padding:8px">⌨️ COPY CURL</button>
+        </div>
       </div>
-      <span class="api-chevron">›</span>
     </div>
+
+    <!-- ── Berita Search card ── -->
+    <div class="news-inline-card" data-name="Berita Search" data-desc="Cari berita berdasarkan kata kunci." data-cat="news">
+      <div class="nic-header">
+        <div class="nic-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+        <div class="nic-info">
+          <div class="nic-title">Berita Search <span class="nic-badge">NEWS</span></div>
+          <div class="nic-desc">Cari berita dari berbagai portal berdasarkan kata kunci.</div>
+        </div>
+      </div>
+      <div class="nic-params">
+        <div class="nic-param-row">
+          <label>Kata Kunci <span style="color:#f87171;font-size:10px">required</span></label>
+          <input id="nic-ns-query" class="nic-input" placeholder="Contoh: ekonomi, banjir, AI..." oninput="nicUpdateUrl('ns')" onkeydown="if(event.key==='Enter')nicExec('ns')"/>
+        </div>
+        <div class="nic-param-row">
+          <label>Sumber <span style="font-size:11px;color:var(--muted)">(opsional)</span></label>
+          <select id="nic-ns-source" onchange="nicUpdateUrl('ns')" class="nic-select">
+            <option value="">Semua Sumber</option>
+            <option value="detik">Detik</option><option value="cnn">CNN Indonesia</option>
+            <option value="kompas">Kompas</option><option value="tempo">Tempo</option>
+            <option value="antara">Antara</option>
+          </select>
+        </div>
+        <div class="nic-param-row">
+          <label>Limit</label>
+          <input id="nic-ns-limit" class="nic-input" placeholder="10" oninput="nicUpdateUrl('ns')"/>
+        </div>
+      </div>
+      <div class="nic-urlbar" id="nic-ns-url"></div>
+      <button class="nic-exec-btn" id="nic-ns-btn" onclick="nicExec('ns')">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
+        EXECUTE API
+      </button>
+      <div class="nic-result" id="nic-ns-result" style="display:none">
+        <div class="res-topbar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          <span class="res-label">JSON RESPONSE</span>
+          <span id="nic-ns-badge"></span>
+          <button class="btn-copy" onclick="copyEl('nic-ns-code',this)" style="margin-left:6px">COPY</button>
+        </div>
+        <div class="res-code" id="nic-ns-code" style="max-height:300px"></div>
+        <div class="nic-urlfoot" id="nic-ns-foot"></div>
+        <div style="display:flex;gap:8px;padding:12px 16px 14px;border-top:1px solid var(--border)">
+          <button class="btn-copy" onclick="copyNicCurl('ns')" style="flex:1;padding:8px">⌨️ COPY CURL</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Berita Multi Source card ── -->
+    <div class="news-inline-card" data-name="Berita Multi Source" data-desc="Gabungkan berita dari beberapa sumber." data-cat="news">
+      <div class="nic-header">
+        <div class="nic-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg></div>
+        <div class="nic-info">
+          <div class="nic-title">Berita Multi Source <span class="nic-badge">NEWS</span></div>
+          <div class="nic-desc">Gabung & urutkan berita dari beberapa portal sekaligus.</div>
+        </div>
+      </div>
+      <div class="nic-params">
+        <div class="nic-param-row">
+          <label>Sumber <span style="font-size:11px;color:var(--muted)">(pisah koma)</span></label>
+          <input id="nic-nm-sources" class="nic-input" placeholder="detik,cnn,kompas" value="detik,cnn,kompas" oninput="nicUpdateUrl('nm')"/>
+        </div>
+        <div class="nic-param-row">
+          <label>Limit</label>
+          <input id="nic-nm-limit" class="nic-input" placeholder="10" oninput="nicUpdateUrl('nm')"/>
+        </div>
+      </div>
+      <div class="nic-urlbar" id="nic-nm-url"></div>
+      <button class="nic-exec-btn" id="nic-nm-btn" onclick="nicExec('nm')">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
+        EXECUTE API
+      </button>
+      <div class="nic-result" id="nic-nm-result" style="display:none">
+        <div class="res-topbar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          <span class="res-label">JSON RESPONSE</span>
+          <span id="nic-nm-badge"></span>
+          <button class="btn-copy" onclick="copyEl('nic-nm-code',this)" style="margin-left:6px">COPY</button>
+        </div>
+        <div class="res-code" id="nic-nm-code" style="max-height:300px"></div>
+        <div class="nic-urlfoot" id="nic-nm-foot"></div>
+        <div style="display:flex;gap:8px;padding:12px 16px 14px;border-top:1px solid var(--border)">
+          <button class="btn-copy" onclick="copyNicCurl('nm')" style="flex:1;padding:8px">⌨️ COPY CURL</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <div class="cat-label">DRAMA</div>
@@ -1703,8 +1888,117 @@ function renderNewsArticles(articles) {
   }).join('');
 }
 
-// Init news page when navigating to it
+// ── NEWS INLINE CARDS (NIC) ──────────────────────────────────────────────────
 
-</script>
+const NIC_CATS = {
+  detik:     ['utama','news','finance','hot','sport','teknologi','otomotif','travel','food','health'],
+  cnn:       ['utama','nasional','internasional','ekonomi','olahraga','teknologi','hiburan','gaya_hidup'],
+  kompas:    ['utama','nasional','regional','ekonomi','olahraga','teknologi','hiburan','otomotif','kesehatan'],
+  tempo:     ['utama','nasional','bisnis','olahraga','dunia','teknologi','gaya_hidup','otomotif'],
+  tribun:    ['utama','nasional','regional','internasional','olahraga','bisnis','seleb','techno'],
+  liputan6:  ['utama','news','bisnis','bola','tekno','showbiz','otomotif','health','global'],
+  antara:    ['utama','nasional','internasional','ekonomi','olahraga','teknologi','hiburan','humaniora'],
+  republika: ['utama','nasional','internasional','ekonomi','olahraga','teknologi','gaya_hidup'],
+  cnbc:      ['utama','market','news','tech','entrepreneur','lifestyle','investment'],
+  merdeka:   ['utama','politik','teknologi','olahraga','gaya_hidup','otomotif','dunia','uang'],
+  okezone:   ['utama','news','economy','celebrity','sports','techno','auto','lifestyle'],
+  viva:      ['utama','nasional','dunia','bisnis','bola','teknologi','otomotif'],
+};
+
+function nicBuildUrl(id) {
+  if (id === 'nl') {
+    const src = document.getElementById('nic-nl-source')?.value || 'detik';
+    const cat = document.getElementById('nic-nl-category')?.value || 'utama';
+    const lim = document.getElementById('nic-nl-limit')?.value || '10';
+    return `${base}/api/news?source=${src}&category=${cat}&limit=${lim}`;
+  }
+  if (id === 'ns') {
+    const q   = document.getElementById('nic-ns-query')?.value || '';
+    const src = document.getElementById('nic-ns-source')?.value || '';
+    const lim = document.getElementById('nic-ns-limit')?.value || '10';
+    let u = `${base}/api/news?action=search&query=${encodeURIComponent(q||'ekonomi')}&limit=${lim}`;
+    if (src) u += `&source=${src}`;
+    return u;
+  }
+  if (id === 'nm') {
+    const srcs = document.getElementById('nic-nm-sources')?.value || 'detik,cnn,kompas';
+    const lim  = document.getElementById('nic-nm-limit')?.value || '10';
+    return `${base}/api/news?action=multi&sources=${encodeURIComponent(srcs)}&limit=${lim}`;
+  }
+  return '';
+}
+
+function nicUpdateUrl(id) {
+  // Update kategori dropdown kalau source berubah (hanya nl)
+  if (id === 'nl') {
+    const src = document.getElementById('nic-nl-source')?.value || 'detik';
+    const catSel = document.getElementById('nic-nl-category');
+    if (catSel) {
+      const cats = NIC_CATS[src] || ['utama'];
+      catSel.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+  }
+  const bar = document.getElementById('nic-' + id + '-url');
+  if (bar) bar.textContent = nicBuildUrl(id).replace(base, '');
+}
+
+async function nicExec(id) {
+  // Validasi required field
+  if (id === 'ns') {
+    const q = document.getElementById('nic-ns-query')?.value.trim();
+    if (!q) { alert('Masukkan kata kunci terlebih dahulu!'); document.getElementById('nic-ns-query')?.focus(); return; }
+  }
+
+  const btn    = document.getElementById('nic-' + id + '-btn');
+  const result = document.getElementById('nic-' + id + '-result');
+  const code   = document.getElementById('nic-' + id + '-code');
+  const badge  = document.getElementById('nic-' + id + '-badge');
+  const foot   = document.getElementById('nic-' + id + '-foot');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Loading...';
+  result.style.display = 'block';
+  code.textContent = 'Fetching...';
+  badge.innerHTML = '';
+  if (foot) foot.textContent = '';
+
+  const url = nicBuildUrl(id);
+
+  try {
+    const resp = await fetch(url);
+    const data = await resp.json();
+    code.innerHTML = hl(JSON.stringify(data, null, 2));
+    badge.innerHTML = (resp.ok && data.status)
+      ? `<span class="badge-ok">${resp.status} OK</span>`
+      : `<span class="badge-err">${resp.status} Error</span>`;
+    if (foot) foot.textContent = url.replace(base, '');
+  } catch(err) {
+    code.textContent = `Error: ${err.message}`;
+    badge.innerHTML = `<span class="badge-err">Network Error</span>`;
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg> EXECUTE API';
+}
+
+function copyNicCurl(id) {
+  const url = nicBuildUrl(id);
+  navigator.clipboard.writeText(`curl "${url}"`).then(() => {
+    const btn = event.target.closest('button');
+    const orig = btn.textContent; btn.textContent = '✓ COPIED';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+
+// Init NIC url bars on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+  ['nl','ns','nm'].forEach(nicUpdateUrl);
+
+  // Sync source dropdown untuk nl agar kategori update otomatis
+  const nlSrc = document.getElementById('nic-nl-source');
+  if (nlSrc) nlSrc.addEventListener('change', () => nicUpdateUrl('nl'));
+});
+
+
 </body>
 </html>
