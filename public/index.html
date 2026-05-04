@@ -988,7 +988,7 @@ const EP = {
       {name:'category', label:'Kategori', type:'string', req:false, desc:'utama / teknologi / olahraga / ekonomi / dll (default: utama)'},
       {name:'limit', label:'Jumlah Artikel', type:'string', req:false, desc:'Maks 30 (default: 10)'},
     ],
-    buildUrl(p){return \`/api/news?source=\${p.source||'detik'}&category=\${p.category||'utama'}&limit=\${p.limit||'10'}\`},
+    buildUrl(p){return `/api/news?source=${p.source||'detik'}&category=${p.category||'utama'}&limit=${p.limit||'10'}`},
   },
   'news-search': {
     icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>',
@@ -1009,7 +1009,7 @@ const EP = {
       {name:'sources', label:'Sumber (pisah koma)', type:'string', req:false, desc:'Contoh: detik,cnn,kompas (default: detik,cnn,kompas)'},
       {name:'limit', label:'Total Artikel', type:'string', req:false, desc:'Maks 30 (default: 10)'},
     ],
-    buildUrl(p){return \`/api/news?action=multi&sources=\${p.sources||'detik,cnn,kompas'}&limit=\${p.limit||'10'}\`},
+    buildUrl(p){return `/api/news?action=multi&sources=${p.sources||'detik,cnn,kompas'}&limit=${p.limit||'10'}`},
   },
   'drama-search': {
     icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>',
