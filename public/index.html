@@ -432,6 +432,8 @@ body::before{
 }
 .drama-ep-path{font-size:12px;font-weight:600;color:var(--text);font-family:monospace;flex:1}
 .drama-ep-desc{font-size:11px;color:var(--muted);white-space:nowrap}
+.drama-ep-icon{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:rgba(139,92,246,0.12);color:var(--primary-light);flex-shrink:0}
+.drama-ep-icon svg{display:block}
 
 
 .api-item{
@@ -1804,11 +1806,11 @@ function renderDramaPlatforms() {
   if (!container) return;
 
   const epIcons = {
-    foryou:   '❤️',
-    trending: '📈',
-    search:   '🔍',
-    detail:   '📄',
-    episode:  '▶️',
+    foryou:   `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+    trending: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`,
+    search:   `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+    detail:   `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
+    episode:  `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`,
   };
   const epLabels = {
     foryou:   'For You',
@@ -1831,7 +1833,7 @@ function renderDramaPlatforms() {
           const action = ep.path.match(/action=(\w+)/)?.[1] || '';
           return `
           <div class="drama-ep-item" onclick="openDramaEndpoint('${ep.epId}')">
-            <span style="font-size:16px">${epIcons[action] || '📌'}</span>
+            <span class="drama-ep-icon">${epIcons[action] || ''}</span>
             <span class="drama-ep-method">GET</span>
             <span class="drama-ep-path">${epLabels[action] || action}</span>
             <span class="drama-ep-desc">${ep.desc}</span>
