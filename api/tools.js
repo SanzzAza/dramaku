@@ -40,7 +40,7 @@ export default async function handler(req, res) {
     return res.status(400).json({
       status: false, code: 400,
       message: "Parameter 'tool' wajib diisi.",
-      available: ["aiimage", "anime", "cekno", "cuaca", "kurs", "qrcode", "quote", "screenshot", "shorturl", "tts"],
+      available: ["aiimage", "anime", "cekno", "cuaca", "kurs", "qrcode", "quote", "screenshot", "shorturl", "tts", "lirik", "film", "sholat", "resi", "bola", "manga"],
       example: "/api/tools?tool=cuaca&kota=Jakarta",
     });
   }
@@ -57,11 +57,17 @@ export default async function handler(req, res) {
       case "screenshot": return res.status(200).json(await toolScreenshot(req));
       case "shorturl":   return res.status(200).json(await toolShortUrl(req));
       case "tts":        return res.status(200).json(await toolTTS(req));
+      case "lirik":      return res.status(200).json(await toolLirik(req));
+      case "film":       return res.status(200).json(await toolFilm(req));
+      case "sholat":     return res.status(200).json(await toolSholat(req));
+      case "resi":       return res.status(200).json(await toolResi(req));
+      case "bola":       return res.status(200).json(await toolBola(req));
+      case "manga":      return res.status(200).json(await toolManga(req));
       default:
         return res.status(400).json({
           status: false, code: 400,
           message: `Tool '${tool}' tidak didukung.`,
-          available: ["aiimage", "anime", "cekno", "cuaca", "kurs", "qrcode", "quote", "screenshot", "shorturl", "tts"],
+          available: ["aiimage", "anime", "cekno", "cuaca", "kurs", "qrcode", "quote", "screenshot", "shorturl", "tts", "lirik", "film", "sholat", "resi", "bola", "manga"],
         });
     }
   } catch (err) {
@@ -399,4 +405,631 @@ async function toolTTS(req) {
       provider: "translate.google.com",
     },
   };
+}
+
+// ─── Lirik Lagu ───────────────────────────────────────────────────────────────
+
+async function toolLirik(req) {
+  const action = (req.query.action || req.body?.action || "get").toLowerCase();
+  const query  = req.query.query  || req.body?.query  || "";
+  const artist = req.query.artist || req.body?.artist || "";
+  const title  = req.query.title  || req.body?.title  || "";
+
+  if (action === "search") {
+    if (!query) throw new Error("Parameter 'query' wajib diisi. Contoh: /api/tools?tool=lirik&action=search&query=bohemian rhapsody");
+    const resp = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(query)}&limit=10`, {
+      headers: { "User-Agent": "SanzXD-API/1.0" },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!resp.ok) throw new Error("Gagal mencari lagu. Coba lagi nanti.");
+    const data = await resp.json();
+    if (!data.length) throw new Error(`Lagu '${query}' tidak ditemukan.`);
+    return {
+      creator: "@SanzXD", status: true, code: 200,
+      message: `Ditemukan ${data.length} lagu.`,
+      result: data.slice(0, 10).map(s => ({
+        id: s.id,
+        title: s.trackName,
+        artist: s.artistName,
+        album: s.albumName,
+        duration: s.duration,
+        has_synced: s.syncedLyrics ? true : false,
+        has_plain: s.plainLyrics ? true : false,
+      })),
+    };
+  }
+
+  // action = get
+  let q = "";
+  if (artist && title) q = `artist_name=${encodeURIComponent(artist)}&track_name=${encodeURIComponent(title)}`;
+  else if (query)      q = `q=${encodeURIComponent(query)}`;
+  else throw new Error("Parameter 'artist' & 'title' atau 'query' wajib diisi. Contoh: /api/tools?tool=lirik&artist=queen&title=bohemian rhapsody");
+
+  // Coba get langsung dulu
+  let song = null;
+  if (artist && title) {
+    try {
+      const r = await fetch(`https://lrclib.net/api/get?artist_name=${encodeURIComponent(artist)}&track_name=${encodeURIComponent(title)}`, {
+        headers: { "User-Agent": "SanzXD-API/1.0" }, signal: AbortSignal.timeout(10_000),
+      });
+      if (r.ok) song = await r.json();
+    } catch { /* fallback ke search */ }
+  }
+
+  // Fallback ke search
+  if (!song) {
+    const r2 = await fetch(`https://lrclib.net/api/search?${q}&limit=1`, {
+      headers: { "User-Agent": "SanzXD-API/1.0" }, signal: AbortSignal.timeout(10_000),
+    });
+    if (!r2.ok) throw new Error("Gagal mengambil lirik. Coba lagi nanti.");
+    const arr = await r2.json();
+    if (!arr.length) throw new Error("Lirik tidak ditemukan. Coba cari dengan kata kunci lain.");
+    song = arr[0];
+  }
+
+  const lirik = song.syncedLyrics || song.plainLyrics;
+  if (!lirik) throw new Error("Lirik untuk lagu ini belum tersedia.");
+
+  return {
+    creator: "@SanzXD", status: true, code: 200,
+    message: "Berhasil mengambil lirik lagu.",
+    result: {
+      id: song.id,
+      title: song.trackName,
+      artist: song.artistName,
+      album: song.albumName || null,
+      duration: song.duration || null,
+      lirik: song.plainLyrics || null,
+      lirik_synced: song.syncedLyrics || null,
+      provider: "lrclib.net",
+    },
+  };
+}
+
+// ─── Info Film / Series ───────────────────────────────────────────────────────
+
+async function toolFilm(req) {
+  const action = (req.query.action || req.body?.action || "search").toLowerCase();
+  const query  = req.query.query  || req.body?.query  || "";
+  const id     = req.query.id     || req.body?.id     || "";
+  const type   = (req.query.type  || req.body?.type   || "movie").toLowerCase(); // movie | tv
+  const lang   = req.query.lang   || req.body?.lang   || "id-ID";
+
+  const TMDB_KEY = "b3fd6185a9d2f78740e9deec9d51c9e3";
+  const BASE     = "https://api.themoviedb.org/3";
+  const IMG      = "https://image.tmdb.org/t/p/w500";
+
+  const headers  = { "Authorization": `Bearer ${TMDB_KEY}`, "accept": "application/json" };
+
+  if (action === "search") {
+    if (!query) throw new Error("Parameter 'query' wajib diisi. Contoh: /api/tools?tool=film&query=avengers&type=movie");
+    const url = `${BASE}/search/${type === "tv" ? "tv" : "movie"}?query=${encodeURIComponent(query)}&language=${lang}&page=1`;
+    const resp = await fetch(url, { headers, signal: AbortSignal.timeout(10_000) });
+    if (!resp.ok) throw new Error("Gagal mencari film. Coba lagi nanti.");
+    const data = await resp.json();
+    if (!data.results?.length) throw new Error(`Film/series '${query}' tidak ditemukan.`);
+    return {
+      creator: "@SanzXD", status: true, code: 200,
+      message: `Ditemukan ${data.total_results} hasil.`,
+      result: data.results.slice(0, 10).map(f => ({
+        id: f.id,
+        title: f.title || f.name,
+        type: type === "tv" ? "series" : "movie",
+        release_date: f.release_date || f.first_air_date || null,
+        rating: f.vote_average ? Math.round(f.vote_average * 10) / 10 : null,
+        votes: f.vote_count,
+        overview: f.overview || null,
+        poster: f.poster_path ? IMG + f.poster_path : null,
+        backdrop: f.backdrop_path ? IMG + f.backdrop_path : null,
+        popularity: f.popularity,
+      })),
+    };
+  }
+
+  if (action === "detail") {
+    if (!id) throw new Error("Parameter 'id' wajib diisi. Contoh: /api/tools?tool=film&action=detail&id=299536&type=movie");
+    const endpoint = type === "tv" ? "tv" : "movie";
+    const url = `${BASE}/${endpoint}/${id}?language=${lang}&append_to_response=credits,videos,similar`;
+    const resp = await fetch(url, { headers, signal: AbortSignal.timeout(10_000) });
+    if (!resp.ok) throw new Error(`Film dengan ID '${id}' tidak ditemukan.`);
+    const f = await resp.json();
+
+    const trailer = f.videos?.results?.find(v => v.type === "Trailer" && v.site === "YouTube");
+    const cast    = f.credits?.cast?.slice(0, 10).map(c => ({ name: c.name, character: c.character, photo: c.profile_path ? IMG + c.profile_path : null }));
+    const similar = f.similar?.results?.slice(0, 5).map(s => ({ id: s.id, title: s.title || s.name, rating: s.vote_average, poster: s.poster_path ? IMG + s.poster_path : null }));
+
+    return {
+      creator: "@SanzXD", status: true, code: 200,
+      message: "Berhasil mengambil detail film/series.",
+      result: {
+        id: f.id,
+        title: f.title || f.name,
+        tagline: f.tagline || null,
+        type: type === "tv" ? "series" : "movie",
+        status: f.status,
+        release_date: f.release_date || f.first_air_date || null,
+        runtime: f.runtime || (f.episode_run_time?.[0]) || null,
+        rating: f.vote_average ? Math.round(f.vote_average * 10) / 10 : null,
+        votes: f.vote_count,
+        genres: f.genres?.map(g => g.name) || [],
+        overview: f.overview || null,
+        poster: f.poster_path ? IMG + f.poster_path : null,
+        backdrop: f.backdrop_path ? IMG + f.backdrop_path : null,
+        trailer_youtube: trailer ? `https://youtube.com/watch?v=${trailer.key}` : null,
+        ...(type === "tv" ? { seasons: f.number_of_seasons, episodes: f.number_of_episodes } : {}),
+        production: f.production_companies?.slice(0, 3).map(p => p.name) || [],
+        cast, similar,
+        provider: "themoviedb.org",
+      },
+    };
+  }
+
+  if (action === "trending") {
+    const period = req.query.period || req.body?.period || "week"; // day | week
+    const url = `${BASE}/trending/${type === "tv" ? "tv" : "movie"}/${period}?language=${lang}`;
+    const resp = await fetch(url, { headers, signal: AbortSignal.timeout(10_000) });
+    if (!resp.ok) throw new Error("Gagal mengambil trending. Coba lagi nanti.");
+    const data = await resp.json();
+    return {
+      creator: "@SanzXD", status: true, code: 200,
+      message: `Film/series trending ${period === "day" ? "hari ini" : "minggu ini"}.`,
+      result: data.results.slice(0, 10).map(f => ({
+        id: f.id,
+        title: f.title || f.name,
+        type: f.media_type,
+        release_date: f.release_date || f.first_air_date || null,
+        rating: f.vote_average ? Math.round(f.vote_average * 10) / 10 : null,
+        overview: f.overview || null,
+        poster: f.poster_path ? IMG + f.poster_path : null,
+      })),
+    };
+  }
+
+  throw new Error("Action tidak valid. Gunakan: search, detail, trending. Contoh: /api/tools?tool=film&action=search&query=avengers");
+}
+
+// ─── Jadwal Sholat ────────────────────────────────────────────────────────────
+
+async function toolSholat(req) {
+  const action = (req.query.action || req.body?.action || "jadwal").toLowerCase();
+  const kota   = req.query.kota   || req.body?.kota   || "";
+  const lat    = req.query.lat    || req.body?.lat    || "";
+  const lon    = req.query.lon    || req.body?.lon    || "";
+  const tanggal = req.query.tanggal || req.body?.tanggal || "";
+  const method  = parseInt(req.query.method || req.body?.method || "11"); // 11 = KEMENAG Indonesia
+
+  if (action === "kota") {
+    // Cari city ID dari nama kota
+    const resp = await fetch(`https://api.aladhan.com/v1/cityInfo?city=${encodeURIComponent(kota || "Jakarta")}&country=ID`, {
+      signal: AbortSignal.timeout(10_000),
+    });
+    const data = await resp.json();
+    return {
+      creator: "@SanzXD", status: true, code: 200,
+      message: "Info kota.",
+      result: data.data || data,
+    };
+  }
+
+  // Resolve koordinat dari nama kota jika perlu
+  let latitude = lat, longitude = lon, namaKota = kota;
+  if (kota && (!lat || !lon)) {
+    const geo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(kota)}&count=1&language=id`, {
+      signal: AbortSignal.timeout(8_000),
+    });
+    const geoData = await geo.json();
+    if (!geoData.results?.length) throw new Error(`Kota '${kota}' tidak ditemukan. Coba nama kota lain.`);
+    latitude  = geoData.results[0].latitude;
+    longitude = geoData.results[0].longitude;
+    namaKota  = geoData.results[0].name;
+  }
+
+  if (!latitude || !longitude) throw new Error("Parameter 'kota' atau 'lat' & 'lon' wajib diisi. Contoh: /api/tools?tool=sholat&kota=Jakarta");
+
+  // Build tanggal
+  const now = new Date();
+  const tgl = tanggal || `${String(now.getDate()).padStart(2,"0")}-${String(now.getMonth()+1).padStart(2,"0")}-${now.getFullYear()}`;
+
+  const url = `https://api.aladhan.com/v1/timings/${tgl}?latitude=${latitude}&longitude=${longitude}&method=${method}`;
+  const resp = await fetch(url, { signal: AbortSignal.timeout(10_000) });
+  if (!resp.ok) throw new Error("Gagal mengambil jadwal sholat. Coba lagi nanti.");
+  const data = await resp.json();
+
+  if (data.code !== 200) throw new Error(data.data || "Gagal mengambil jadwal sholat.");
+
+  const t = data.data.timings;
+  const d = data.data.date;
+
+  return {
+    creator: "@SanzXD", status: true, code: 200,
+    message: "Berhasil mengambil jadwal sholat.",
+    result: {
+      kota: namaKota || `${latitude}, ${longitude}`,
+      koordinat: { lat: latitude, lon: longitude },
+      tanggal: {
+        masehi: d.readable,
+        hijriah: `${d.hijri.day} ${d.hijri.month.en} ${d.hijri.year} H`,
+      },
+      jadwal: {
+        imsak:   t.Imsak,
+        subuh:   t.Fajr,
+        terbit:  t.Sunrise,
+        dhuha:   t.Dhuha,
+        dzuhur:  t.Dhuhr,
+        ashar:   t.Asr,
+        maghrib: t.Maghrib,
+        isya:    t.Isha,
+        tengah_malam: t.Midnight,
+      },
+      metode: `KEMENAG Indonesia (method ${method})`,
+      provider: "aladhan.com",
+    },
+  };
+}
+
+// ─── Cek Nomor Resi ───────────────────────────────────────────────────────────
+
+async function toolResi(req) {
+  const resi     = req.query.resi     || req.body?.resi     || "";
+  const kurir    = (req.query.kurir   || req.body?.kurir    || "").toLowerCase();
+
+  if (!resi) throw new Error("Parameter 'resi' wajib diisi. Contoh: /api/tools?tool=resi&resi=JD0123456789&kurir=jne");
+
+  const VALID_KURIR = ["jne","jnt","sicepat","anteraja","ninja","lion","tiki","pos","wahana","dakses"];
+
+  if (kurir && !VALID_KURIR.includes(kurir)) throw new Error(`Kurir '${kurir}' tidak didukung. Pilih: ${VALID_KURIR.join(", ")}`);
+
+  // Binderbyte API (free tier tersedia)
+  const apiKey = "3dcdfdf5e1cebd98c5b2aaec0a48d42de4d6b97c09b14a9e43bf80c2f0b285e2";
+  const kurirParam = kurir || "jne";
+  const url = `https://api.binderbyte.com/v1/track?api_key=${apiKey}&courier=${kurirParam}&awb=${encodeURIComponent(resi)}`;
+
+  const resp = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+  if (!resp.ok) throw new Error("Layanan pelacakan tidak merespons. Coba lagi nanti.");
+  const data = await resp.json();
+
+  if (data.status !== 200) throw new Error(data.message || `Resi '${resi}' tidak ditemukan untuk kurir ${kurirParam.toUpperCase()}.`);
+
+  const summary = data.data?.summary;
+  const history = data.data?.history || [];
+
+  return {
+    creator: "@SanzXD", status: true, code: 200,
+    message: "Berhasil melacak paket.",
+    result: {
+      resi,
+      kurir: kurirParam.toUpperCase(),
+      status: summary?.status || "Tidak diketahui",
+      pengirim: summary?.shipper || null,
+      penerima: summary?.receiver || null,
+      asal: summary?.origin || null,
+      tujuan: summary?.destination || null,
+      berat: summary?.weight || null,
+      tanggal_kirim: summary?.date || null,
+      tanggal_terima: summary?.waybill_date || null,
+      deskripsi: summary?.desc || null,
+      riwayat: history.slice(0, 10).map(h => ({
+        tanggal: h.date,
+        keterangan: h.desc,
+        lokasi: h.location || null,
+      })),
+      provider: "binderbyte.com",
+    },
+  };
+}
+
+// ─── Jadwal & Skor Bola ───────────────────────────────────────────────────────
+
+async function toolBola(req) {
+  const action  = (req.query.action  || req.body?.action  || "live").toLowerCase();
+  const liga    = (req.query.liga    || req.body?.liga    || "").toLowerCase();
+  const tim     = req.query.tim      || req.body?.tim     || "";
+  const matchId = req.query.id       || req.body?.id      || "";
+
+  // Liga IDs di TheSportsDB (gratis)
+  const LIGA_MAP = {
+    "epl":           "4328", "premier league": "4328",
+    "laliga":        "4335", "la liga":        "4335",
+    "bundesliga":    "4331",
+    "serie a":       "4332", "seriea":         "4332",
+    "ligue 1":       "4334", "ligue1":         "4334",
+    "liga indonesia":"4364", "bri liga 1":     "4364",
+    "champions":     "4480", "ucl":            "4480",
+    "world cup":     "4429",
+  };
+
+  const BASE = "https://www.thesportsdb.com/api/v1/json/3";
+
+  if (action === "live") {
+    const resp = await fetch(`${BASE}/livescore.php?s=Soccer`, { signal: AbortSignal.timeout(10_000) });
+    if (!resp.ok) throw new Error("Gagal mengambil data live score.");
+    const data = await resp.json();
+    const matches = data.events || [];
+    return {
+      creator: "@SanzXD", status: true, code: 200,
+      message: matches.length ? `${matches.length} pertandingan sedang berlangsung.` : "Tidak ada pertandingan live saat ini.",
+      result: matches.map(m => ({
+        id: m.idEvent,
+        liga: m.strLeague,
+        home: m.strHomeTeam,
+        away: m.strAwayTeam,
+        skor: `${m.intHomeScore ?? "-"} - ${m.intAwayScore ?? "-"}`,
+        menit: m.strProgress || null,
+        venue: m.strVenue || null,
+      })),
+    };
+  }
+
+  if (action === "jadwal") {
+    const ligaId = LIGA_MAP[liga] || liga;
+    if (!ligaId) throw new Error(`Parameter 'liga' tidak valid. Pilih: ${Object.keys(LIGA_MAP).filter((_, i) => i % 2 === 0).join(", ")}`);
+    const resp = await fetch(`${BASE}/eventsnextleague.php?id=${ligaId}`, { signal: AbortSignal.timeout(10_000) });
+    if (!resp.ok) throw new Error("Gagal mengambil jadwal.");
+    const data = await resp.json();
+    const matches = data.events || [];
+    if (!matches.length) throw new Error("Jadwal tidak tersedia saat ini.");
+    return {
+      creator: "@SanzXD", status: true, code: 200,
+      message: `${matches.length} pertandingan mendatang.`,
+      result: matches.slice(0, 15).map(m => ({
+        id: m.idEvent,
+        liga: m.strLeague,
+        home: m.strHomeTeam,
+        away: m.strAwayTeam,
+        tanggal: m.dateEvent,
+        waktu: m.strTime || null,
+        venue: m.strVenue || null,
+      })),
+    };
+  }
+
+  if (action === "hasil") {
+    const ligaId = LIGA_MAP[liga] || liga;
+    if (!ligaId) throw new Error(`Parameter 'liga' tidak valid. Pilih: ${Object.keys(LIGA_MAP).filter((_, i) => i % 2 === 0).join(", ")}`);
+    const resp = await fetch(`${BASE}/eventspastleague.php?id=${ligaId}`, { signal: AbortSignal.timeout(10_000) });
+    if (!resp.ok) throw new Error("Gagal mengambil hasil pertandingan.");
+    const data = await resp.json();
+    const matches = (data.events || []).reverse();
+    return {
+      creator: "@SanzXD", status: true, code: 200,
+      message: `${matches.length} hasil pertandingan terakhir.`,
+      result: matches.slice(0, 15).map(m => ({
+        id: m.idEvent,
+        liga: m.strLeague,
+        home: m.strHomeTeam,
+        away: m.strAwayTeam,
+        skor: `${m.intHomeScore ?? "-"} - ${m.intAwayScore ?? "-"}`,
+        tanggal: m.dateEvent,
+        venue: m.strVenue || null,
+      })),
+    };
+  }
+
+  if (action === "detail") {
+    if (!matchId) throw new Error("Parameter 'id' wajib diisi. Gunakan action=jadwal atau action=hasil untuk dapat ID.");
+    const resp = await fetch(`${BASE}/lookupevent.php?id=${matchId}`, { signal: AbortSignal.timeout(10_000) });
+    if (!resp.ok) throw new Error("Gagal mengambil detail pertandingan.");
+    const data = await resp.json();
+    const m = data.events?.[0];
+    if (!m) throw new Error(`Pertandingan ID '${matchId}' tidak ditemukan.`);
+    return {
+      creator: "@SanzXD", status: true, code: 200,
+      message: "Detail pertandingan.",
+      result: {
+        id: m.idEvent,
+        liga: m.strLeague,
+        musim: m.strSeason,
+        home: m.strHomeTeam,
+        away: m.strAwayTeam,
+        skor: `${m.intHomeScore ?? "-"} - ${m.intAwayScore ?? "-"}`,
+        tanggal: m.dateEvent,
+        waktu: m.strTime || null,
+        venue: m.strVenue || null,
+        kota: m.strCity || null,
+        highlight: m.strVideo || null,
+        thumbnail: m.strThumb || null,
+        deskripsi: m.strDescriptionEN || null,
+      },
+    };
+  }
+
+  if (action === "cari") {
+    if (!tim) throw new Error("Parameter 'tim' wajib diisi. Contoh: /api/tools?tool=bola&action=cari&tim=manchester united");
+    const resp = await fetch(`${BASE}/searchteams.php?t=${encodeURIComponent(tim)}`, { signal: AbortSignal.timeout(10_000) });
+    if (!resp.ok) throw new Error("Gagal mencari tim.");
+    const data = await resp.json();
+    const teams = data.teams || [];
+    if (!teams.length) throw new Error(`Tim '${tim}' tidak ditemukan.`);
+    const t = teams[0];
+    return {
+      creator: "@SanzXD", status: true, code: 200,
+      message: `Info tim ${t.strTeam}.`,
+      result: {
+        id: t.idTeam,
+        nama: t.strTeam,
+        liga: t.strLeague,
+        negara: t.strCountry,
+        berdiri: t.intFormedYear,
+        stadion: t.strStadium,
+        kapasitas: t.intStadiumCapacity,
+        deskripsi: t.strDescriptionEN?.slice(0, 300) || null,
+        logo: t.strTeamBadge || null,
+        jersey: t.strTeamJersey || null,
+        website: t.strWebsite || null,
+      },
+    };
+  }
+
+  throw new Error("Action tidak valid. Gunakan: live, jadwal, hasil, detail, cari. Contoh: /api/tools?tool=bola&action=jadwal&liga=epl");
+}
+
+// ─── Baca Manga / Komik ───────────────────────────────────────────────────────
+
+async function toolManga(req) {
+  const action  = (req.query.action  || req.body?.action  || "search").toLowerCase();
+  const query   = req.query.query    || req.body?.query   || "";
+  const id      = req.query.id       || req.body?.id      || "";
+  const chapter = req.query.chapter  || req.body?.chapter || "";
+  const lang    = req.query.lang     || req.body?.lang    || "id"; // id | en
+  const limit   = Math.min(parseInt(req.query.limit || req.body?.limit || "10"), 20);
+
+  const BASE = "https://api.mangadex.org";
+  const IMG  = "https://uploads.mangadex.org/covers";
+
+  if (action === "search") {
+    if (!query) throw new Error("Parameter 'query' wajib diisi. Contoh: /api/tools?tool=manga&action=search&query=naruto");
+    const params = new URLSearchParams({
+      title: query,
+      limit: String(limit),
+      "availableTranslatedLanguage[]": lang,
+      "includes[]": "cover_art",
+      order: "relevance",
+    });
+    const resp = await fetch(`${BASE}/manga?${params}`, { signal: AbortSignal.timeout(10_000) });
+    if (!resp.ok) throw new Error("Gagal mencari manga. Coba lagi nanti.");
+    const data = await resp.json();
+    if (!data.data?.length) throw new Error(`Manga '${query}' tidak ditemukan.`);
+
+    return {
+      creator: "@SanzXD", status: true, code: 200,
+      message: `Ditemukan ${data.total} manga.`,
+      result: data.data.map(m => {
+        const cover = m.relationships?.find(r => r.type === "cover_art");
+        const coverUrl = cover?.attributes?.fileName ? `${IMG}/${m.id}/${cover.attributes.fileName}` : null;
+        return {
+          id: m.id,
+          title: m.attributes.title?.en || m.attributes.title?.id || Object.values(m.attributes.title)[0] || "Untitled",
+          alt_titles: m.attributes.altTitles?.slice(0, 2).map(t => Object.values(t)[0]) || [],
+          status: m.attributes.status,
+          year: m.attributes.year || null,
+          rating: m.attributes.contentRating,
+          genres: m.attributes.tags?.filter(t => t.attributes.group === "genre").map(t => t.attributes.name.en).slice(0, 5) || [],
+          cover: coverUrl,
+          desc: m.attributes.description?.id || m.attributes.description?.en || null,
+        };
+      }),
+    };
+  }
+
+  if (action === "detail") {
+    if (!id) throw new Error("Parameter 'id' wajib diisi. Gunakan action=search untuk dapat ID manga.");
+    const resp = await fetch(`${BASE}/manga/${id}?includes[]=cover_art&includes[]=author`, { signal: AbortSignal.timeout(10_000) });
+    if (!resp.ok) throw new Error(`Manga ID '${id}' tidak ditemukan.`);
+    const { data: m } = await resp.json();
+
+    const cover  = m.relationships?.find(r => r.type === "cover_art");
+    const author = m.relationships?.find(r => r.type === "author");
+    const coverUrl = cover?.attributes?.fileName ? `${IMG}/${m.id}/${cover.attributes.fileName}` : null;
+
+    // Ambil total chapter
+    const chapResp = await fetch(`${BASE}/manga/${id}/aggregate?translatedLanguage[]=${lang}`, { signal: AbortSignal.timeout(8_000) });
+    const chapData = chapResp.ok ? await chapResp.json() : {};
+    const volumes  = chapData.volumes ? Object.keys(chapData.volumes).length : null;
+    const chapters = chapData.volumes ? Object.values(chapData.volumes).reduce((acc, v) => acc + Object.keys(v.chapters || {}).length, 0) : null;
+
+    return {
+      creator: "@SanzXD", status: true, code: 200,
+      message: "Detail manga.",
+      result: {
+        id: m.id,
+        title: m.attributes.title?.en || m.attributes.title?.id || Object.values(m.attributes.title)[0],
+        author: author?.attributes?.name || null,
+        status: m.attributes.status,
+        year: m.attributes.year || null,
+        rating: m.attributes.contentRating,
+        genres: m.attributes.tags?.filter(t => t.attributes.group === "genre").map(t => t.attributes.name.en) || [],
+        themes: m.attributes.tags?.filter(t => t.attributes.group === "theme").map(t => t.attributes.name.en) || [],
+        cover: coverUrl,
+        volumes_available: volumes,
+        chapters_available: chapters,
+        desc: m.attributes.description?.id || m.attributes.description?.en || null,
+        links: m.attributes.links || {},
+        provider: "mangadex.org",
+      },
+    };
+  }
+
+  if (action === "chapters") {
+    if (!id) throw new Error("Parameter 'id' wajib diisi. Contoh: /api/tools?tool=manga&action=chapters&id=MANGA_ID&lang=id");
+    const params = new URLSearchParams({
+      manga: id,
+      "translatedLanguage[]": lang,
+      order: "chapter",
+      limit: String(limit),
+      "includes[]": "scanlation_group",
+    });
+    const resp = await fetch(`${BASE}/chapter?${params}`, { signal: AbortSignal.timeout(10_000) });
+    if (!resp.ok) throw new Error("Gagal mengambil daftar chapter.");
+    const data = await resp.json();
+    if (!data.data?.length) throw new Error(`Chapter bahasa '${lang}' tidak tersedia. Coba lang=en.`);
+    return {
+      creator: "@SanzXD", status: true, code: 200,
+      message: `${data.total} chapter tersedia.`,
+      result: data.data.map(c => ({
+        id: c.id,
+        chapter: c.attributes.chapter || "Oneshot",
+        title: c.attributes.title || null,
+        lang: c.attributes.translatedLanguage,
+        pages: c.attributes.pages,
+        published: c.attributes.publishAt?.slice(0, 10),
+        group: c.relationships?.find(r => r.type === "scanlation_group")?.attributes?.name || null,
+      })),
+    };
+  }
+
+  if (action === "read") {
+    if (!chapter) throw new Error("Parameter 'chapter' (chapter ID) wajib diisi. Gunakan action=chapters untuk dapat ID chapter.");
+    const resp = await fetch(`${BASE}/at-home/server/${chapter}`, { signal: AbortSignal.timeout(10_000) });
+    if (!resp.ok) throw new Error(`Chapter ID '${chapter}' tidak ditemukan.`);
+    const data = await resp.json();
+    const base  = data.baseUrl;
+    const hash  = data.chapter?.hash;
+    const pages = data.chapter?.data || [];
+    const pagesSaver = data.chapter?.dataSaver || [];
+
+    return {
+      creator: "@SanzXD", status: true, code: 200,
+      message: `${pages.length} halaman tersedia.`,
+      result: {
+        chapter_id: chapter,
+        total_pages: pages.length,
+        pages: pages.map((p, i) => ({
+          page: i + 1,
+          url: `${base}/data/${hash}/${p}`,
+          url_saver: pagesSaver[i] ? `${base}/data-saver/${hash}/${pagesSaver[i]}` : null,
+        })),
+        provider: "mangadex.org",
+      },
+    };
+  }
+
+  if (action === "trending") {
+    const params = new URLSearchParams({
+      limit: "10",
+      "includes[]": "cover_art",
+      order: "followedCount",
+      "availableTranslatedLanguage[]": lang,
+      contentRating: "safe",
+    });
+    const resp = await fetch(`${BASE}/manga?${params}`, { signal: AbortSignal.timeout(10_000) });
+    if (!resp.ok) throw new Error("Gagal mengambil manga trending.");
+    const data = await resp.json();
+    return {
+      creator: "@SanzXD", status: true, code: 200,
+      message: "Manga populer.",
+      result: data.data.map(m => {
+        const cover = m.relationships?.find(r => r.type === "cover_art");
+        const coverUrl = cover?.attributes?.fileName ? `${IMG}/${m.id}/${cover.attributes.fileName}` : null;
+        return {
+          id: m.id,
+          title: m.attributes.title?.en || Object.values(m.attributes.title)[0],
+          status: m.attributes.status,
+          cover: coverUrl,
+          genres: m.attributes.tags?.filter(t => t.attributes.group === "genre").map(t => t.attributes.name.en).slice(0, 4) || [],
+        };
+      }),
+    };
+  }
+
+  throw new Error("Action tidak valid. Gunakan: search, detail, chapters, read, trending. Contoh: /api/tools?tool=manga&action=search&query=naruto");
 }
