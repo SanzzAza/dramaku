@@ -908,6 +908,31 @@ function filterApis(q) {
   });
 }
 
+const NEWS_CATEGORIES = {
+  detik:     ['utama','news','finance','sport','hot','oto','inet','food','health','wolipop','edu','travel'],
+  cnn:       ['utama','nasional','internasional','ekonomi','olahraga','teknologi','hiburan','gaya-hidup'],
+  kompas:    ['utama','nasional','global','ekonomi','olahraga','tekno','hiburan','lifestyle','sains'],
+  tempo:     ['utama','nasional','bisnis','olahraga','teknologi','hiburan','gaya-hidup','internasional'],
+  tribun:    ['utama','nasional','regional','bisnis','olahraga','teknologi','hiburan','lifestyle'],
+  liputan6:  ['utama','news','bisnis','bola','tekno','showbiz','otomotif','lifestyle','health'],
+  antara:    ['utama','nasional','hukum','ekonomi','olahraga','teknologi','hiburan','internasional'],
+  republika: ['utama','nasional','internasional','ekonomi','olahraga','teknologi','hiburan'],
+  cnbc:      ['utama','market','entrepreneur','tech','lifestyle','opini'],
+  merdeka:   ['utama','dunia','uang','teknologi','olahraga','sehat','otomotif','gaya'],
+  okezone:   ['utama','nasional','internasional','ekonomi','olahraga','techno','lifestyle','entertainment'],
+  viva:      ['utama','nasional','dunia','bisnis','bola','otomotif','teknologi','gaya-hidup'],
+};
+
+function refreshNewsCategories(epKey) {
+  const srcEl = document.getElementById('inp-' + epKey + '-source');
+  const catEl = document.getElementById('inp-' + epKey + '-category');
+  if (!srcEl || !catEl) return;
+  const src = srcEl.value;
+  const cats = NEWS_CATEGORIES[src] || ['utama'];
+  catEl.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  liveUpdateCurl(window._curEpId || '');
+}
+
 const EP = {
   tiktok: {
     icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="#a78bfa" xmlns="http://www.w3.org/2000/svg"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.74a4.85 4.85 0 0 1-1.01-.05z"/></svg>',
@@ -1041,8 +1066,8 @@ const EP = {
     name:'Berita Latest', badge:'NEWS', method:'GET', path:'/api/news', key:'nl',
     desc:'Ambil berita terbaru dari 12 portal berita Indonesia via RSS Feed. Pilih sumber dan kategori yang diinginkan.',
     params:[
-      {name:'source', label:'Sumber Berita', type:'select', options:['detik','cnn','kompas','tempo','tribun','liputan6','antara','republika','cnbc','merdeka','okezone','viva'], default:'detik'},
-      {name:'category', label:'Kategori', type:'string', req:false, desc:'utama / teknologi / olahraga / ekonomi / dll (default: utama)'},
+      {name:'source', label:'Sumber Berita', type:'news_source', options:['detik','cnn','kompas','tempo','tribun','liputan6','antara','republika','cnbc','merdeka','okezone','viva'], default:'detik'},
+      {name:'category', label:'Kategori', type:'news_category'},
       {name:'limit', label:'Jumlah Artikel', type:'string', req:false, desc:'Maks 30 (default: 10)'},
     ],
     buildUrl(p){return `/api/news?source=${p.source||'detik'}&category=${p.category||'utama'}&limit=${p.limit||'10'}`},
@@ -1258,7 +1283,7 @@ function buildCurl(ep, val, vals) {
   let s = `curl "${base}${ep.path}?`;
   if (ep.platform) s += `platform=${ep.platform}&`;
   if (ep.tool)     s += `tool=${ep.tool}&`;
-  const isMultiEp = ep.params && ep.params.some(p => p.type === 'hidden' || p.type === 'select' || p.type === 'drama_id');
+  const isMultiEp = ep.params && ep.params.some(p => p.type === 'hidden' || p.type === 'select' || p.type === 'drama_id' || p.type === 'news_source' || p.type === 'news_category');
   if (isMultiEp) {
     // Selalu pakai getParamValues supaya hidden params ikut masuk
     const v = vals || getParamValues(ep);
@@ -1364,6 +1389,24 @@ function refreshDramaPresets(epKey) {
 
 function buildParamInputs(ep) {
   return (ep.params || []).filter(p => p.type !== 'hidden').map(p => {
+    if (p.type === 'news_source') {
+      const opts = (p.options || []).map(o =>
+        `<option value="${o}" ${o === (p.default||p.options[0]) ? 'selected' : ''}>${o}</option>`
+      ).join('');
+      return `<div style="display:flex;flex-direction:column;gap:4px;width:100%">
+        <label style="font-size:12px;color:var(--text2);font-weight:600">${p.label||p.name}</label>
+        <select class="url-input" id="inp-${ep.key}-${p.name}" onchange="refreshNewsCategories('${ep.key}')" style="cursor:pointer">${opts}</select>
+      </div>`;
+    }
+    if (p.type === 'news_category') {
+      const defaultSrc = 'detik';
+      const cats = NEWS_CATEGORIES[defaultSrc] || ['utama'];
+      const opts = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+      return `<div style="display:flex;flex-direction:column;gap:4px;width:100%">
+        <label style="font-size:12px;color:var(--text2);font-weight:600">${p.label||p.name}</label>
+        <select class="url-input" id="inp-${ep.key}-${p.name}" onchange="liveUpdateCurl(window._curEpId||'')" style="cursor:pointer">${opts}</select>
+      </div>`;
+    }
     if (p.type === 'select') {
       const opts = (p.options || []).map(o =>
         `<option value="${o}" ${o === (p.default||p.options[0]) ? 'selected' : ''}>${o}</option>`
@@ -1433,13 +1476,16 @@ function openEndpoint(id) {
   const ep = EP[id];
   ytFormat = 'mp3'; ytQuality = '128';
 
-  const rows = ep.params.map(p => `
-    <tr>
+  const rows = ep.params.filter(p => p.type !== 'hidden').map(p => {
+    const displayType = (p.type === 'news_source' || p.type === 'news_category') ? 'select' : p.type;
+    const displayDesc = p.desc || (p.type === 'news_source' ? 'Pilih sumber portal berita' : p.type === 'news_category' ? 'Pilih kategori sesuai sumber' : '');
+    return `<tr>
       <td class="p-name">${p.name}</td>
-      <td class="p-type">${p.type}</td>
+      <td class="p-type">${displayType}</td>
       <td><span class="${p.req?'b-req':'b-opt'}">${p.req?'Required':'Optional'}</span></td>
-      <td>${p.desc}</td>
-    </tr>`).join('');
+      <td>${displayDesc}</td>
+    </tr>`;
+  }).join('');
 
   const ytOpts = id === 'youtube' ? `
     <div class="yt-options">
@@ -1567,12 +1613,12 @@ async function execApi(id) {
   const ep = EP[id];
 
   // Multi-param mode (drama) vs legacy single-param
-  const isMulti = ep.params && ep.params.some(p => p.type === 'select' || p.type === 'hidden' || p.type === 'drama_id');
+  const isMulti = ep.params && ep.params.some(p => p.type === 'select' || p.type === 'hidden' || p.type === 'drama_id' || p.type === 'news_source' || p.type === 'news_category');
   let val, vals;
   if (isMulti) {
     vals = getParamValues(ep);
     // Cek param required yang masih kosong (drama_id dianggap required)
-    const missing = (ep.params||[]).filter(p => p.type !== 'hidden' && p.type !== 'select' && !vals[p.name]);
+    const missing = (ep.params||[]).filter(p => p.type !== 'hidden' && p.type !== 'select' && p.type !== 'news_source' && p.type !== 'news_category' && !vals[p.name]);
     if (missing.length) { alert('Masukkan ' + missing[0].label + ' terlebih dahulu!'); return; }
   } else {
     val = document.getElementById('inp-' + ep.key)?.value.trim();
