@@ -92,11 +92,11 @@ body::before{
   position:relative;
 }
 .hero-bg-orb{
-  position:absolute;pointer-events:none;border-radius:50%;filter:blur(80px);z-index:0;
+  position:absolute;pointer-events:none;border-radius:50%;filter:blur(70px);z-index:0;
 }
-.hero-bg-orb-1{width:500px;height:500px;background:rgba(124,58,237,0.15);top:-100px;left:50%;transform:translateX(-50%)}
-.hero-bg-orb-2{width:300px;height:300px;background:rgba(99,102,241,0.1);top:100px;right:-80px}
-.hero-bg-orb-3{width:250px;height:250px;background:rgba(168,85,247,0.08);top:150px;left:-60px}
+.hero-bg-orb-1{width:360px;height:260px;background:rgba(124,58,237,0.12);top:-40px;left:50%;transform:translateX(-50%)}
+.hero-bg-orb-2{width:200px;height:200px;background:rgba(99,102,241,0.08);top:60px;right:-40px}
+.hero-bg-orb-3{width:180px;height:180px;background:rgba(168,85,247,0.06);top:80px;left:-30px}
 .home-hero>*{position:relative;z-index:1}
 
 .hero-badge{
@@ -1556,9 +1556,12 @@ function buildCurl(ep, val, vals) {
     const v = vals || getParamValues(ep);
     s += Object.entries(v).map(([k,v]) => `${k}=${encodeURIComponent(v)}`).join('&');
   } else {
-    // legacy single-param mode
-    val = val || ep.placeholder;
-    s += `${ep.params[0].name}=${encodeURIComponent(val)}`;
+    // legacy single-param mode — baca dari input jika tersedia
+    const paramName = ep.params?.[0]?.name || 'url';
+    const liveEl = document.getElementById('inp-' + ep.key + '-' + paramName)
+                || document.getElementById('inp-' + ep.key);
+    val = (liveEl?.value.trim()) || val || ep.placeholder || '';
+    s += `${paramName}=${encodeURIComponent(val)}`;
     if (ep.key === 'yt') s += `&format=${ytFormat}&quality=${ytQuality}`;
   }
   return s + '"';
@@ -1888,8 +1891,11 @@ async function execApi(id) {
     const missing = (ep.params||[]).filter(p => p.type !== 'hidden' && p.type !== 'select' && p.type !== 'news_source' && p.type !== 'news_category' && !vals[p.name]);
     if (missing.length) { alert('Masukkan ' + missing[0].label + ' terlebih dahulu!'); return; }
   } else {
-    val = document.getElementById('inp-' + ep.key)?.value.trim();
-    if (!val) { alert('Masukkan ' + ep.params[0].name + ' terlebih dahulu!'); return; }
+    const paramName = ep.params?.[0]?.name || 'url';
+    const inputEl = document.getElementById('inp-' + ep.key + '-' + paramName)
+                 || document.getElementById('inp-' + ep.key);
+    val = inputEl?.value.trim();
+    if (!val) { alert('Masukkan ' + (ep.params?.[0]?.label || paramName) + ' terlebih dahulu!'); return; }
   }
 
   const btn = document.getElementById('btn-' + ep.key);
