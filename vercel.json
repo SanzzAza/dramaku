@@ -5,6 +5,7 @@
     { "source": "/api/tools",      "destination": "/api/tools.js" },
     { "source": "/api/proxy",      "destination": "/api/proxy.js" },
     { "source": "/api/drama",      "destination": "/api/drama.js" },
+    { "source": "/api/news",       "destination": "/api/news.js" },
     { "source": "/",               "destination": "/public/index.html" }
   ],
   "headers": [
