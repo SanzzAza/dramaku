@@ -1948,7 +1948,6 @@ function openDramaEndpoint(epId) {
         {name:'id', label:'ID Drama', type:'drama_id'},
       ],
     },
-    },
     episode: {
       icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
       name:`${platform.name} — Episode`, badge:'DRAMA', method:'GET', path:'/api/drama',
@@ -2897,6 +2896,8 @@ document.addEventListener('DOMContentLoaded', () => {
   renderSnippet('tiktok');
   initMarquee();
   initObserver();
+  // Fallback: langsung jalankan stats jika observer tidak ter-trigger
+  setTimeout(() => initStats(), 500);
 });
 
 </script>
