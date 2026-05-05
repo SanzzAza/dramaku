@@ -1,7 +1,7 @@
 // dramacina_multi.js - GoodShort + DramaBox + Melolo
 // Dependencies: npm install axios
 
-const axios = require('axios');
+import axios from 'axios';
 
 // ============================================================
 // KONFIGURASI
@@ -867,19 +867,10 @@ async function handler(req, res) {
 // EXPORT
 // ============================================================
 
-module.exports = handler;
-module.exports.gsHome      = gsHome;
-module.exports.gsSearch    = gsSearch;
-module.exports.gsDetail    = gsDetail;
-module.exports.gsStream    = gsStream;
-module.exports.gsStreamFast = gsStreamFast;
-module.exports.gsUnlockAll = gsUnlockAll;
-module.exports.dbHome      = dbHome;
-module.exports.dbRank      = dbRank;
-module.exports.dbSearch    = dbSearch;
-module.exports.dbDetail    = dbDetail;
-module.exports.dbEpisodes  = dbEpisodes;
-module.exports.mlHome      = mlHome;
-module.exports.mlSearch    = mlSearch;
-module.exports.mlDetail    = mlDetail;
-module.exports.mlVideo     = mlVideo;
+export default handler;
+
+export {
+  gsHome, gsSearch, gsDetail, gsStream, gsStreamFast, gsUnlockAll,
+  dbHome, dbRank, dbSearch, dbDetail, dbEpisodes,
+  mlHome, mlSearch, mlDetail, mlVideo
+};
