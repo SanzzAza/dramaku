@@ -1571,21 +1571,22 @@ const DRAMA_PLATFORMS = [
   {
     id: 'goodshort', name: 'GoodShort', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
     endpoints: [
-      { epId: 'gs-foryou',   path: '/api/drama?action=foryou&source=goodshort',   desc: 'For You / Rekomendasi' },
-      { epId: 'gs-trending', path: '/api/drama?action=trending&source=goodshort', desc: 'Trending drama' },
-      { epId: 'gs-search',   path: '/api/drama?action=search&source=goodshort',   desc: 'Search drama' },
-      { epId: 'gs-detail',   path: '/api/drama?action=detail&source=goodshort',   desc: 'Detail drama' },
-      { epId: 'gs-episode',  path: '/api/drama?action=episode&source=goodshort',  desc: 'Get video episode' },
+      { epId: 'gs-home',        path: '/api/drama?action=home&source=goodshort',        desc: 'Home / Rekomendasi' },
+      { epId: 'gs-search',      path: '/api/drama?action=search&source=goodshort',      desc: 'Search drama' },
+      { epId: 'gs-detail',      path: '/api/drama?action=detail&source=goodshort',      desc: 'Detail drama' },
+      { epId: 'gs-stream',      path: '/api/drama?action=stream&source=goodshort',      desc: 'Stream episode (normal)' },
+      { epId: 'gs-stream-fast', path: '/api/drama?action=stream_fast&source=goodshort', desc: 'Stream episode (fast)' },
+      { epId: 'gs-unlock',      path: '/api/drama?action=unlock&source=goodshort',      desc: 'Unlock All episode' },
     ]
   },
   {
     id: 'dramabox', name: 'DramaBox', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>',
     endpoints: [
-      { epId: 'db-foryou',   path: '/api/drama?action=foryou&source=dramabox',   desc: 'For You / Rekomendasi' },
+      { epId: 'db-home',     path: '/api/drama?action=home&source=dramabox',     desc: 'Home / Rekomendasi' },
       { epId: 'db-rank',     path: '/api/drama?action=rank&source=dramabox',     desc: 'Ranking drama' },
       { epId: 'db-search',   path: '/api/drama?action=search&source=dramabox',   desc: 'Search drama' },
       { epId: 'db-detail',   path: '/api/drama?action=detail&source=dramabox',   desc: 'Detail drama' },
-      { epId: 'db-episode',  path: '/api/drama?action=episode&source=dramabox',  desc: 'Get video episode' },
+      { epId: 'db-episodes', path: '/api/drama?action=episodes&source=dramabox', desc: 'List episodes' },
     ]
   },
   {
@@ -1751,11 +1752,10 @@ const DRAMA_PLATFORMS = [
   {
     id: 'melolo', name: 'Melolo', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>',
     endpoints: [
-      { epId: 'ml-foryou',   path: '/api/drama?action=foryou&source=melolo',   desc: 'For You' },
-      { epId: 'ml-trending', path: '/api/drama?action=trending&source=melolo', desc: 'Trending' },
-      { epId: 'ml-search',   path: '/api/drama?action=search&source=melolo',   desc: 'Search' },
-      { epId: 'ml-detail',   path: '/api/drama?action=detail&source=melolo',   desc: 'Detail' },
-      { epId: 'ml-episode',  path: '/api/drama?action=episode&source=melolo',  desc: 'Episode' },
+      { epId: 'ml-home',   path: '/api/drama?action=home&source=melolo',   desc: 'Home / Rekomendasi' },
+      { epId: 'ml-search', path: '/api/drama?action=search&source=melolo', desc: 'Search drama' },
+      { epId: 'ml-detail', path: '/api/drama?action=detail&source=melolo', desc: 'Detail drama' },
+      { epId: 'ml-video',  path: '/api/drama?action=video&source=melolo',  desc: 'Get video episode' },
     ]
   },
   {
