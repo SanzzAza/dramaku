@@ -1391,14 +1391,26 @@ const EP = {
     buildUrl(p){return `/api/news?source=${p.source||'detik'}&category=${p.category||'utama'}&limit=${p.limit||'10'}`},
   },
 
+  'drama-rank': {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 20 18 10"/><polyline points="12 20 12 4"/><polyline points="6 20 6 14"/></svg>',
+    name:'Drama Rank', badge:'DRAMA', method:'GET', path:'/api/drama', key:'drk',
+    desc:'Ranking drama terpopuler di DramaBox.',
+    params:[
+      {name:'action', value:'rank', type:'hidden'},
+      {name:'source', value:'dramabox', type:'hidden'},
+      {name:'lang', label:'Bahasa', type:'select', options:['in','en','id','zh'], default:'in'},
+    ],
+  },
   'drama-foryou': {
     icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 10.26 23.77 11.25 17.77 17.25 19.18 25.95 12 21.77 4.82 25.95 6.23 17.25 0.23 11.25 8.91 10.26 12 2"/></svg>',
     name:'Drama ForYou', badge:'DRAMA', method:'GET', path:'/api/drama', key:'df',
     desc:'Dapatkan rekomendasi drama trending untuk kamu berdasarkan platform pilihan.',
     params:[
       {name:'action', value:'foryou', type:'hidden'},
-      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
+      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramabox','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
       {name:'page', label:'Halaman', placeholder:'1', type:'text', value:'1'},
+      {name:'lang', label:'Bahasa (DramaBox/Melolo)', type:'select', options:['in','en','id','zh'], default:'in'},
+      {name:'channel', label:'Channel (GoodShort)', type:'select', options:['id','pt','kr','th'], default:'id'},
     ],
   },
 
@@ -1408,7 +1420,7 @@ const EP = {
     desc:'Cari drama dari berbagai platform short drama. Vyreels untuk pencarian lebih lengkap, Dracinku sebagai fallback.',
     params:[
       {name:'action', value:'search', type:'hidden'},
-      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
+      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramabox','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
       {name:'query', label:'Kata Kunci', placeholder:'Contoh: cinta, CEO, balas dendam...', type:'text'},
       {name:'page', label:'Halaman', placeholder:'1', type:'text', value:'1'},
     ],
@@ -1419,7 +1431,7 @@ const EP = {
     desc:'Drama yang sedang trending di platform pilihan.',
     params:[
       {name:'action', value:'trending', type:'hidden'},
-      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
+      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramabox','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
       {name:'page', label:'Halaman', placeholder:'1', type:'text', value:'1'},
     ],
   },
@@ -1429,9 +1441,9 @@ const EP = {
     desc:'Info lengkap drama: sinopsis, poster, genre, total episode, dan list episode. Gunakan slug untuk Vyreels, id untuk Dracinku.',
     params:[
       {name:'action', value:'detail', type:'hidden'},
-      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
-      {name:'slug', label:'Drama Slug (Vyreels)', placeholder:'drama-slug-xxxxx', type:'text'},
-      {name:'id', label:'Drama ID (Dracinku)', placeholder:'12345', type:'text'},
+      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramabox','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
+      {name:'id', label:'Drama ID', placeholder:'Contoh: 42000002888 (DramaBox), 31001345248 (GoodShort)', type:'text'},
+      {name:'lang', label:'Bahasa', type:'select', options:['in','en','id','zh'], default:'in'},
     ],
   },
   'drama-episode': {
@@ -1440,10 +1452,10 @@ const EP = {
     desc:'Dapatkan URL video episode (.mp4/.m3u8) yang bisa langsung diputar. Gunakan slug untuk Vyreels, id untuk Dracinku.',
     params:[
       {name:'action', value:'episode', type:'hidden'},
-      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
-      {name:'slug', label:'Drama Slug (Vyreels)', placeholder:'drama-slug-xxxxx', type:'text'},
-      {name:'id', label:'Drama ID (Dracinku)', placeholder:'12345', type:'text'},
+      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramabox','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
+      {name:'id', label:'Drama ID', placeholder:'Contoh: 42000002888 (DramaBox), 31001345248 (GoodShort)', type:'text'},
       {name:'ep', label:'Nomor Episode', placeholder:'Contoh: 1', type:'text'},
+      {name:'lang', label:'Bahasa (DramaBox)', type:'select', options:['in','en','id','zh'], default:'in'},
     ],
   },
   terabox: {
@@ -1564,6 +1576,16 @@ const DRAMA_PLATFORMS = [
       { epId: 'gs-search',   path: '/api/drama?action=search&source=goodshort',   desc: 'Search drama' },
       { epId: 'gs-detail',   path: '/api/drama?action=detail&source=goodshort',   desc: 'Detail drama' },
       { epId: 'gs-episode',  path: '/api/drama?action=episode&source=goodshort',  desc: 'Get video episode' },
+    ]
+  },
+  {
+    id: 'dramabox', name: 'DramaBox', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>',
+    endpoints: [
+      { epId: 'db-foryou',   path: '/api/drama?action=foryou&source=dramabox',   desc: 'For You / Rekomendasi' },
+      { epId: 'db-rank',     path: '/api/drama?action=rank&source=dramabox',     desc: 'Ranking drama' },
+      { epId: 'db-search',   path: '/api/drama?action=search&source=dramabox',   desc: 'Search drama' },
+      { epId: 'db-detail',   path: '/api/drama?action=detail&source=dramabox',   desc: 'Detail drama' },
+      { epId: 'db-episode',  path: '/api/drama?action=episode&source=dramabox',  desc: 'Get video episode' },
     ]
   },
   {
