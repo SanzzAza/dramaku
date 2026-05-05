@@ -1,731 +1,792 @@
-/**
- * Drama API — ForYou, Trending, Search, Detail, Episode
- * 
- * Platform dari Vyreels (Primary - search/trending lebih lengkap):
- *   shortmax, melolo, flickreels, stardusttv, idrama, netshort,
- *   freereels, rapidtv, flickshort, dramawave, reelshort
- *
- * Platform dari Dracinku (Fallback):
- *   goodshort, dramamax, radreels, chill, dramarush, animev2, movie, tv,
- *   drakor, bjav, microdrama, cubetv, dramadash
- *
- * GET /api/drama?action=foryou&source=shortmax&page=1
- * GET /api/drama?action=trending&source=shortmax&page=1
- * GET /api/drama?action=search&source=shortmax&query=cinta&page=1
- * GET /api/drama?action=detail&source=shortmax&slug=xxxxx
- * GET /api/drama?action=episode&source=shortmax&slug=xxxxx&ep=1
- */
+// dramacina_multi.js - GoodShort + DramaBox + Melolo
+// Dependencies: npm install axios
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin" : "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-  "Content-Type"                : "application/json",
+const axios = require('axios');
+
+// ============================================================
+// KONFIGURASI
+// ============================================================
+
+const GS_BASE = "https://captain.sapimu.au/goodshort";
+const DB_BASE = "https://captain.sapimu.au/dramaboxv4";
+const ML_BASE = "https://melolo.dramabos.my.id";
+
+const TOKEN_MAIN = "5a6df8230521283fad1e9d4590b619171793e8173953af434e478929c761b2ed";
+const TOKEN_ML   = "04AA0FC87491A42A11A33C32610CD172";
+
+const HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "Accept"    : "application/json, text/plain, */*",
+    "Origin"    : "https://dramacina.vip",
+    "Referer"   : "https://dramacina.vip/",
 };
 
-// ─── VYREELS API (Primary - untuk platform: shortmax, melolo, flickreels, dll) ───
-const VYREELS_BASE = "https://vyreels.xydevs.com";
-const VYREELS_HEADERS = {
-  "User-Agent": "Mozilla/5.0",
-  "Accept": "application/json, text/plain, */*",
-  "Referer": VYREELS_BASE,
-  "Origin": VYREELS_BASE,
+const AUTH_H = {
+    "token": TOKEN_MAIN,
+    "Authorization": `Bearer ${TOKEN_MAIN}`,
+    "Content-Type": "application/json"
 };
 
-// ─── DRACINKU API (Fallback untuk platform lainnya) ───
-const DRACINKU_API = "https://api.dracinku.site";
-const DRACINKU_KEY = "dracinku";
-const DRACINKU_HEADERS = {
-  "X-API-Key"   : DRACINKU_KEY,
-  "User-Agent"  : "Mozilla/5.0",
-  "Accept"      : "application/json",
-  "Content-Type": "application/json",
-  "Origin"      : "https://dracinku.site",
-  "Referer"     : "https://dracinku.site/",
+const ML_H = {
+    "token": TOKEN_ML,
+    "Authorization": `Bearer ${TOKEN_ML}`,
+    "Content-Type": "application/json",
+    "Origin": "https://melolo.dramabos.my.id",
+    "Referer": "https://melolo.dramabos.my.id/",
+    "Accept": "application/json, text/plain, */*",
 };
 
-// Platform yang support Vyreels (Primary)
-const VYREELS_PLATFORMS = {
-  shortmax   : { search: true, trending: true },
-  melolo     : { search: true, trending: true },
-  flickreels : { search: true, trending: true },
-  stardusttv : { search: true, trending: true },
-  idrama     : { search: true, trending: true },
-  netshort   : { search: true, trending: true },
-  freereels  : { search: true, trending: true },
-  rapidtv    : { search: true, trending: true },
-  flickshort : { search: true, trending: true },
-  dramawave  : { search: true, trending: true },
-  reelshort  : { search: true, trending: true },
+const GS_CHANNELS = {
+    "id": 562,
+    "pt": 564,
+    "kr": 565,
+    "th": 568,
 };
 
-// Platform dari Dracinku (Fallback)
-const DRACINKU_PLATFORMS = {
-  goodshort : { search: true,  tabfeed: false },
-  dramamax  : { search: true,  tabfeed: true  },
-  radreels  : { search: true,  tabfeed: false },
-  chill     : { search: true,  tabfeed: true  },
-  dramarush : { search: true,  tabfeed: false },
-  animev2   : { search: true,  tabfeed: false },
-  movie     : { search: true,  tabfeed: false },
-  tv        : { search: true,  tabfeed: false },
-  drakor    : { search: true,  tabfeed: false },
-  bjav      : { search: true,  tabfeed: true  },
-  microdrama: { search: true,  tabfeed: true  },
-  cubetv    : { search: true,  tabfeed: false },
-  dramadash : { search: true,  tabfeed: false },
-};
+// ============================================================
+// HELPERS
+// ============================================================
 
-// Gabungan
-const PLATFORMS = { ...VYREELS_PLATFORMS, ...DRACINKU_PLATFORMS };
-const VALID_SOURCES = Object.keys(PLATFORMS);
-const VALID_ACTIONS = ["foryou", "trending", "search", "detail", "episode"];
-
-// ─── Main Handler ───────────────────────────────────────────────────────────
-
-export default async function handler(req, res) {
-  if (req.method === "OPTIONS") {
-    res.writeHead(200, CORS_HEADERS);
-    return res.end();
-  }
-
-  Object.entries(CORS_HEADERS).forEach(([k, v]) => res.setHeader(k, v));
-
-  if (!["GET", "POST"].includes(req.method)) {
-    return res.status(405).json({ status: false, code: 405, message: "Method Not Allowed." });
-  }
-
-  const action = (req.query.action || req.body?.action || "").toLowerCase();
-  const source = (req.query.source || req.body?.source || "").toLowerCase();
-  const page   = parseInt(req.query.page || req.body?.page || "1");
-
-  if (!action) {
-    return res.status(400).json({
-      status: false, code: 400,
-      message: "Parameter 'action' wajib diisi.",
-      available_actions: VALID_ACTIONS,
-      available_sources: VALID_SOURCES,
-      examples: {
-        foryou  : "/api/drama?action=foryou&source=shortmax&page=1",
-        trending: "/api/drama?action=trending&source=shortmax&page=1",
-        search  : "/api/drama?action=search&source=shortmax&query=cinta&page=1",
-        detail  : "/api/drama?action=detail&source=shortmax&slug=xxxxx",
-        episode : "/api/drama?action=episode&source=shortmax&slug=xxxxx&ep=1",
-      },
-    });
-  }
-
-  if (!VALID_ACTIONS.includes(action)) {
-    return res.status(400).json({
-      status: false, code: 400,
-      message: `Action '${action}' tidak didukung.`,
-      available: VALID_ACTIONS,
-    });
-  }
-
-  if (!source || !VALID_SOURCES.includes(source)) {
-    return res.status(400).json({
-      status: false, code: 400,
-      message: source ? `Source '${source}' tidak didukung.` : "Parameter 'source' wajib diisi.",
-      available: VALID_SOURCES,
-    });
-  }
-
-  const isVyreels = source in VYREELS_PLATFORMS;
-  const cfg = PLATFORMS[source];
-
-  try {
-    let result;
-
-    switch (action) {
-      case "foryou": {
-        result = isVyreels
-          ? await vyForYou(source, page)
-          : await dracinku_ForYou(source, cfg, page);
-        break;
-      }
-
-      case "trending": {
-        result = isVyreels
-          ? await vyTrending(source, page)
-          : await dracinku_Trending(source, cfg, page);
-        break;
-      }
-
-      case "search": {
-        const query = req.query.query || req.body?.query;
-        if (!query) {
-          return res.status(400).json({
-            status: false, code: 400,
-            message: "Parameter 'query' wajib diisi untuk action search.",
-            example: `/api/drama?action=search&source=${source}&query=cinta`,
-          });
-        }
-        result = isVyreels
-          ? await vySearch(source, query, page)
-          : await dracinku_Search(source, query, page);
-        break;
-      }
-
-      case "detail": {
-        const slug = req.query.slug || req.body?.slug;
-        const id = req.query.id || req.body?.id; // fallback untuk dracinku
-        const dramaid = slug || id;
-        if (!dramaid) {
-          return res.status(400).json({
-            status: false, code: 400,
-            message: "Parameter 'slug' (atau 'id' untuk dracinku) wajib diisi untuk action detail.",
-            example: `/api/drama?action=detail&source=${source}&slug=xxxxx`,
-          });
-        }
-        result = isVyreels
-          ? await vyDetail(source, slug)
-          : await dracinku_Detail(source, id);
-        break;
-      }
-
-      case "episode": {
-        const slug = req.query.slug || req.body?.slug;
-        const id = req.query.id || req.body?.id;
-        const ep = parseInt(req.query.ep || req.body?.ep || "1");
-        const dramaid = slug || id;
-        if (!dramaid) {
-          return res.status(400).json({
-            status: false, code: 400,
-            message: "Parameter 'slug' (atau 'id' untuk dracinku) wajib diisi untuk action episode.",
-            example: `/api/drama?action=episode&source=${source}&slug=xxxxx&ep=1`,
-          });
-        }
-        result = isVyreels
-          ? await vyEpisode(source, slug, ep)
-          : await dracinku_Episode(source, id, ep);
-        break;
-      }
-    }
-
-    return res.status(200).json({
-      creator: "@ChatGPT + @SanzXD",
-      status : true,
-      code   : 200,
-      action,
-      source,
-      result,
-    });
-
-  } catch (err) {
-    console.error(`[Drama:${action}:${source}]`, err.message);
-    return res.status(500).json({
-      status : false,
-      code   : 500,
-      message: err.message || "Terjadi kesalahan.",
-    });
-  }
+function clean(t) {
+    if (!t) return "";
+    return String(t).replace(/<[^>]+>/g, "").trim();
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// VYREELS API FUNCTIONS
-// ═══════════════════════════════════════════════════════════════════════════
-
-async function vyApiGet(path, params = {}) {
-  try {
-    const url = new URL(`${VYREELS_BASE}${path}`);
-    Object.entries(params).forEach(([k, v]) => {
-      if (v !== null && v !== undefined) url.searchParams.set(k, String(v));
-    });
-    const r = await fetch(url.toString(), {
-      headers: VYREELS_HEADERS,
-      signal: AbortSignal.timeout(20000),
-    });
-    const d = await r.json();
-    return d.success ? d : null;
-  } catch (err) {
-    console.error(`[vyApiGet] ${path}:`, err.message);
-    return null;
-  }
-}
-
-function vyCleanHtml(t) {
-  return t ? String(t).replace(/<[^>]+>/g, "").trim() : "";
-}
-
-function vyFmtBook(b) {
-  if (!b || typeof b !== "object") return {};
-  const slug = String(b.slug || b.id || "");
-  const cover = b.cover || b.coverImage || "";
-  return {
-    id: slug,
-    slug: slug,
-    dramaId: slug,
-    externalId: String(b.externalId || ""),
-    platform: b.platform || "",
-    title: vyCleanHtml(b.title || "Unknown"),
-    synopsis: vyCleanHtml(b.synopsis || ""),
-    cover: cover,
-    posterImg: cover,
-    views: b.views || 0,
-    rating: b.rating || "",
-    year: b.year || "",
-    totalEpisodes: b.totalEpisodes || 0,
-    freeEpisodes: b.freeEpisodes || 0,
-    isVip: Boolean(b.isVip),
-  };
-}
-
-async function vyForYou(src, page = 1) {
-  const r = await vyApiGet("/api/dramas/trending", { platform: src, page });
-  if (!r) throw new Error(`ForYou ${src} gagal`);
-
-  const data = r.data || {};
-  const dramas = Array.isArray(data.dramas) ? data.dramas : [];
-  const items = dramas.filter(b => !b.platform || b.platform === src).map(vyFmtBook);
-
-  return {
-    code: 200,
-    msg: "SUCCESS",
-    page,
-    platform: src,
-    items,
-    rows: items,
-    total: items.length,
-  };
-}
-
-async function vyTrending(src, page = 1) {
-  const r = await vyApiGet("/api/dramas/trending", { platform: src, page });
-  if (!r) throw new Error(`Trending ${src} gagal`);
-
-  const data = r.data || {};
-  const dramas = Array.isArray(data.dramas) ? data.dramas : [];
-  const items = dramas.filter(b => !b.platform || b.platform === src).map(vyFmtBook);
-
-  return {
-    code: 200,
-    msg: "SUCCESS",
-    page,
-    platform: src,
-    items,
-    rows: items,
-    total: items.length,
-  };
-}
-
-async function vySearch(src, keyword, page = 1) {
-  if (!keyword) throw new Error("Keyword kosong");
-
-  const r = await vyApiGet("/api/dramas/search", { q: keyword, platform: src, page });
-  if (!r) throw new Error(`Search '${keyword}' di ${src} gagal`);
-
-  const data = r.data || {};
-  const dramas = Array.isArray(data.dramas) ? data.dramas : [];
-  const total = data.total || 0;
-  const items = dramas.filter(b => !b.platform || b.platform === src).map(vyFmtBook);
-
-  return {
-    code: 200,
-    msg: "SUCCESS",
-    keyword,
-    platform: src,
-    items,
-    rows: items,
-    total,
-  };
-}
-
-async function vyDetail(src, slug) {
-  if (!slug) throw new Error("Slug kosong");
-
-  const r = await vyApiGet(`/api/dramas/${slug}`);
-  if (!r) throw new Error(`Detail ${slug} tidak ditemukan`);
-
-  const data = r.data || {};
-  
-  // Ambil episodes
-  const epsR = await vyApiGet(`/api/dramas/${slug}/episodes`);
-  const eps = [];
-  
-  if (epsR) {
-    const epsData = epsR.data || {};
-    const epsList = Array.isArray(epsData.episodes) ? epsData.episodes : [];
-    
-    // Fetch video untuk semua episodes PARALEL (max 10)
-    const promises = epsList.map((ep, i) => {
-      const epNum = ep.episodeNumber || i + 1;
-      const locked = ep.locked || false;
-      return vyFetchVideo(slug, epNum, locked);
-    });
-    
-    const results = await Promise.all(promises);
-    eps.push(...results);
-  }
-
-  const book = vyFmtBook(data);
-  book.episodes = eps;
-  book.totalEpisodes = eps.length || book.totalEpisodes || 0;
-
-  return {
-    code: 200,
-    msg: "SUCCESS",
-    data: book,
-  };
-}
-
-async function vyFetchVideo(slug, epNum, locked) {
-  try {
-    const vr = await vyApiGet(`/api/dramas/${slug}/video`, { episode: epNum });
-    
-    let videoUrl = "";
-    let videoId = "";
-    let duration = 0;
-    let qualities = {};
-    let ql = [];
-
-    if (vr) {
-      const vdata = vr.data || {};
-      videoUrl = vdata.videoUrl || "";
-      videoId = vdata.videoId || "";
-      qualities = vdata.qualities || {};
-      const epInfo = vdata.episode || {};
-      duration = epInfo.duration || 0;
-
-      for (const [label, url] of Object.entries(qualities)) {
-        if (url) {
-          const kind = String(url).includes(".m3u8") ? "hls" : String(url).includes(".mp4") ? "mp4" : "other";
-          ql.push({ label, url, type: kind });
-        }
-      }
-      if (!ql && videoUrl) {
-        const kind = videoUrl.includes(".m3u8") ? "hls" : videoUrl.includes(".mp4") ? "mp4" : "other";
-        ql = [{ label: "Auto", url: videoUrl, type: kind }];
-      }
-    }
-
+function ok(action, source, result) {
     return {
-      number: epNum,
-      episodeNumber: epNum,
-      title: `Episode ${epNum}`,
-      episodeTitle: `Episode ${epNum}`,
-      locked: Boolean(locked),
-      videoUrl: locked ? "" : videoUrl,
-      videoId,
-      duration,
-      qualityList: ql,
-      qualities,
+        creator: "SanzzXD",
+        status: true,
+        code: 200,
+        action,
+        source,
+        result
     };
-  } catch (err) {
-    console.error(`[vyFetchVideo] ${slug}:${epNum}`, err.message);
+}
+
+function err(action, source, message) {
     return {
-      number: epNum,
-      episodeNumber: epNum,
-      title: `Episode ${epNum}`,
-      episodeTitle: `Episode ${epNum}`,
-      locked: Boolean(locked),
-      videoUrl: "",
-      videoId: "",
-      duration: 0,
-      qualityList: [],
-      qualities: {},
+        creator: "SanzzXD",
+        status: false,
+        code: 400,
+        action,
+        source,
+        message
     };
-  }
 }
 
-async function vyEpisode(src, slug, number) {
-  if (!slug) throw new Error("Slug kosong");
-  if (!number) throw new Error("Episode number kosong");
-
-  const r = await vyApiGet(`/api/dramas/${slug}/video`, { episode: number });
-  if (!r) throw new Error(`Video episode ${number} tidak ditemukan`);
-
-  const data = r.data || {};
-  const videoUrl = data.videoUrl || "";
-  const qualities = data.qualities || {};
-  const episodeInfo = data.episode || {};
-
-  let ql = [];
-  for (const [label, url] of Object.entries(qualities)) {
-    if (url) {
-      const kind = String(url).includes(".m3u8") ? "hls" : String(url).includes(".mp4") ? "mp4" : "other";
-      ql.push({ label, url, type: kind });
+async function dx(url, params = {}, hdrs = {}) {
+    try {
+        const res = await axios.get(url, {
+            params,
+            headers: { ...HEADERS, ...hdrs },
+            timeout: 20000,
+            validateStatus: () => true
+        });
+        return res.status === 200 ? res.data : null;
+    } catch (e) {
+        return null;
     }
-  }
-  if (!ql && videoUrl) {
-    const kind = videoUrl.includes(".m3u8") ? "hls" : videoUrl.includes(".mp4") ? "mp4" : "other";
-    ql = [{ label: "Auto", url: videoUrl, type: kind }];
-  }
-
-  return {
-    code: 200,
-    msg: "SUCCESS",
-    episodeNumber: number,
-    number,
-    locked: false,
-    qualityList: ql,
-    videoUrl,
-    videoId: data.videoId || "",
-    duration: episodeInfo.duration || 0,
-  };
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// DRACINKU API FUNCTIONS (Fallback)
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================================
+// GOODSHORT
+// ============================================================
 
-async function dracinku_ApiGet(path, params = {}) {
-  try {
-    const url = new URL(`${DRACINKU_API}${path}`);
-    Object.entries(params).forEach(([k, v]) => {
-      if (v !== null && v !== undefined) url.searchParams.set(k, String(v));
-    });
-    const r = await fetch(url.toString(), {
-      headers: DRACINKU_HEADERS,
-      signal: AbortSignal.timeout(20000),
-    });
-    const d = await r.json();
-    return d?.success ? d : null;
-  } catch (err) {
-    console.error(`[dracinku_ApiGet] ${path}:`, err.message);
-    return null;
-  }
-}
+async function gsHome(page = 1, channel = "id") {
+    const channelId = GS_CHANNELS[channel] || 562;
 
-async function dracinku_ApiPost(path, body = {}, params = {}) {
-  try {
-    const url = new URL(`${DRACINKU_API}${path}`);
-    Object.entries(params).forEach(([k, v]) => {
-      if (v !== null && v !== undefined) url.searchParams.set(k, String(v));
-    });
-    const r = await fetch(url.toString(), {
-      method: "POST",
-      headers: DRACINKU_HEADERS,
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(20000),
-    });
-    const d = await r.json();
-    return d?.success ? d : null;
-  } catch (err) {
-    console.error(`[dracinku_ApiPost] ${path}:`, err.message);
-    return null;
-  }
-}
+    const r = await dx(`${GS_BASE}/api/v1/home`, {
+        channelId,
+        page,
+        pageSize: 12,
+        language: "id"
+    }, AUTH_H);
 
-function dracinku_CleanHtml(str) {
-  return String(str || "").replace(/<[^>]+>/g, "").trim();
-}
+    if (!r) return err("home", "goodshort", "gagal");
 
-function dracinku_FmtBook(b) {
-  if (!b || typeof b !== "object") return {};
-  const sid = String(b.id || b.dramaId || "");
-  const cover = b.cover || b.posterImg || "";
-  return {
-    categoryNames  : b.categoryNames || b.tags || [],
-    cover,
-    defaultLanguage: b.defaultLanguage || "id",
-    dramaId        : sid,
-    episodes       : b.episodes || b.chapterCount || 0,
-    favoriteCount  : b.favoriteCount || 0,
-    id             : sid,
-    isCompleted    : String(b.isCompleted || ""),
-    likeCount      : b.likeCount || 0,
-    posterImg      : cover,
-    publishedAt    : b.publishedAt || "",
-    title          : dracinku_CleanHtml(b.title || b.name || "Unknown"),
-    totalEpisodes  : b.totalEpisodes || b.chapterCount || 0,
-    viewCount      : b.viewCount || b.playCount || 0,
-  };
-}
+    const data = r.data || {};
+    const records = data.records || [];
 
-async function dracinku_ForYou(src, cfg, page = 1) {
-  let books = [], hasMore = false;
+    const sections = [];
+    const flatItems = [];
+    const seen = new Set();
 
-  if (cfg.tabfeed) {
-    const tabsR = await dracinku_ApiGet(`/${src}/tablist`, { lang: "id" });
-    const tabs = tabsR?.data;
-    if (Array.isArray(tabs) && tabs.length > 0) {
-      const t = tabs[0];
-      const r = await dracinku_ApiPost(
-        `/${src}/tabfeed`,
-        { lang: "id", tab_key: t.tab_key, type: t.type || "", page },
-        { lang: "id" }
-      );
-      if (r) {
-        const d = r.data;
-        if (d && typeof d === "object") {
-          books = Array.isArray(d.book) ? d.book : [];
-          hasMore = d.isMore ?? d.has_more ?? false;
+    for (const rec of records) {
+        const sec = {
+            channelId: rec.channelId || 0,
+            columnId: rec.columnId || 0,
+            name: rec.name || "",
+            style: rec.style || "",
+            more: rec.more || false,
+            items: []
+        };
+
+        for (const x of (rec.items || [])) {
+            const bid = String(x.bookId || x.action || "");
+            const title = x.bookName || x.name || "";
+            const cover = x.cover || x.image || "";
+            if (!bid) continue;
+
+            const item = {
+                id: bid,
+                title,
+                cover,
+                image: x.image || x.cover || "",
+                introduction: clean(x.introduction || ""),
+                labels: x.labels || [],
+                labelInfos: x.labelInfos || [],
+                viewCount: x.viewCount || 0,
+                viewCountDisplay: x.viewCountDisplay || "",
+                chapterCount: x.chapterCount || 0,
+                firstChapterId: x.firstChapterId || 0,
+                bookType: x.bookType || 0,
+                grade: x.grade || "",
+                ratings: x.ratings || 0,
+                typeTwoNames: x.typeTwoNames || [],
+                member: x.member || 0,
+                columnStyle: x.columnStyle || "",
+                fullHDEnable: x.fullHDEnable || false,
+                downloadEnable: x.downloadEnable || false,
+                platform: "goodshort"
+            };
+
+            if (x.scheduledReleaseDay) item.scheduledReleaseDay = x.scheduledReleaseDay;
+            if (x.scheduledReleaseDayOfTime) item.scheduledReleaseDayOfTime = x.scheduledReleaseDayOfTime;
+
+            sec.items.push(item);
+
+            if (!seen.has(bid) && title) {
+                seen.add(bid);
+                flatItems.push(item);
+            }
         }
-      }
+        sections.push(sec);
     }
-  }
 
-  if (books.length === 0 && cfg.search) {
-    const r = await dracinku_ApiPost(
-      `/${src}/search`,
-      { lang: "id", keyword: "a", page },
-      { lang: "id" }
-    );
-    if (r) {
-      const d = r.data;
-      if (d && typeof d === "object") {
-        books = Array.isArray(d.book) ? d.book : [];
-        hasMore = d.isMore ?? false;
-      }
-    }
-  }
-
-  const items = books.map(dracinku_FmtBook);
-  return { code: 200, hasMore, items, msg: "SUCCESS", rows: items, total: items.length };
+    return ok("home", "goodshort", {
+        page: data.current || page,
+        pageSize: data.size || 12,
+        totalSections: data.total || records.length,
+        channelId,
+        channel,
+        sections,
+        items: flatItems,
+        totalItems: flatItems.length
+    });
 }
 
-async function dracinku_Trending(src, cfg, page = 1) {
-  let books = [], hasMore = false;
+async function gsSearch(kw, page = 1) {
+    const r = await dx(`${GS_BASE}/api/v1/search`, {
+        q: kw,
+        language: "id",
+        page,
+        pageSize: 20
+    }, AUTH_H);
 
-  if (cfg.tabfeed) {
-    const tabsR = await dracinku_ApiGet(`/${src}/tablist`, { lang: "id" });
-    const tabs = tabsR?.data;
-    if (Array.isArray(tabs) && tabs.length > 0) {
-      const target = tabs.find(t => /trend|tren|popular|populer|hot|top/i.test(t.name || "")) || tabs[0];
-      const r = await dracinku_ApiPost(
-        `/${src}/tabfeed`,
-        { lang: "id", tab_key: target.tab_key, type: target.type || "", page },
-        { lang: "id" }
-      );
-      if (r) {
-        const d = r.data;
-        if (d && typeof d === "object") {
-          books = Array.isArray(d.book) ? d.book : [];
-          hasMore = d.isMore ?? d.has_more ?? false;
+    if (!r) return err("search", "goodshort", "gagal");
+
+    const sr = (r.data && r.data.searchResult) || {};
+    const items = sr.records || [];
+
+    const dramas = items.map(x => ({
+        id: String(x.bookId || ""),
+        title: x.bookName || x.name || "",
+        cover: x.cover || "",
+        introduction: clean(x.introduction || ""),
+        labels: x.labels || [],
+        viewCount: x.viewCount || 0,
+        viewCountDisplay: x.viewCountDisplay || "",
+        chapterCount: x.chapterCount || 0,
+        firstChapterId: x.firstChapterId || 0,
+        grade: x.grade || "",
+        typeTwoNames: x.typeTwoNames || [],
+        platform: "goodshort"
+    }));
+
+    return ok("search", "goodshort", {
+        keyword: kw,
+        items: dramas,
+        total: dramas.length
+    });
+}
+
+async function gsDetail(bid) {
+    const r = await dx(`${GS_BASE}/api/v1/book/${bid}`, { language: "id" }, AUTH_H);
+    if (!r) return err("detail", "goodshort", "gagal");
+
+    const data = r.data || {};
+    const book = data.book || {};
+    const lst = data.list || [];
+
+    const episodes = lst.map((ch, i) => {
+        const chapterId = String(ch.id || "");
+        const ql = [];
+
+        for (const mv of (ch.multiVideos || [])) {
+            const cdn = mv.cdnList || [];
+            const qUrl = cdn.length ? cdn[0].videoPath : (mv.filePath || "");
+            if (qUrl) ql.push({ label: mv.type || "", url: qUrl, type: "hls" });
         }
-      }
+
+        const cdnUrls = (ch.cdnList || [])
+            .map(c => c.videoPath)
+            .filter(Boolean);
+
+        return {
+            episode: i + 1,
+            chapterId,
+            title: ch.chapterName || `Episode ${i + 1}`,
+            locked: !!ch.charged,
+            price: ch.price || 0,
+            free: (ch.price || 0) === 0,
+            playTime: ch.playTime || 0,
+            playCount: ch.playCount || 0,
+            playCountDisplay: ch.playCountDisplay || "",
+            image: ch.image || "",
+            buyWay: ch.buyWay || "",
+            payWay: ch.payWay || "",
+            cdnUrl: ch.cdn || "",
+            cdnUrls,
+            qualities: ql
+        };
+    });
+
+    return ok("detail", "goodshort", {
+        data: {
+            id: String(book.bookId || bid),
+            title: book.bookName || "",
+            cover: book.cover || "",
+            detailCover: book.bookDetailCover || "",
+            synopsis: clean(book.introduction || ""),
+            totalEpisodes: book.chapterCount || episodes.length,
+            viewCount: book.viewCount || 0,
+            viewCountDisplay: book.viewCountDisplay || "",
+            ratings: book.ratings || 0,
+            commentCount: book.commentCount || 0,
+            followCount: book.followCount || 0,
+            totalWords: book.totalWords || 0,
+            tags: book.labels || [],
+            labelInfos: book.labelInfos || [],
+            status: book.writeStatus || "",
+            language: book.languageDisplay || "",
+            unit: book.unit || "",
+            grade: book.grade || "",
+            freeEpisodes: book.free || 0,
+            memberEpisodes: book.member || 0,
+            producer: book.producer || "",
+            playwright: book.playwright || "",
+            protagonist: book.protagonist || "",
+            pseudonym: book.pseudonym || "",
+            fullHDEnable: book.fullHDEnable || false,
+            downloadEnable: book.downloadEnable || false,
+            episodes,
+            platform: "goodshort"
+        }
+    });
+}
+
+async function gsKey(bid, chapterId) {
+    const r = await dx(`${GS_BASE}/api/v1/key`, { bookId: bid, chapterId }, AUTH_H);
+    return r ? (r.key || "") : "";
+}
+
+async function gsStream(bid, ep = 1, quality = "720p") {
+    const rd = await dx(`${GS_BASE}/api/v1/book/${bid}`, { language: "id" }, AUTH_H);
+    if (!rd) return err("stream", "goodshort", "gagal ambil detail");
+
+    const data = rd.data || {};
+    const book = data.book || {};
+    const lst = data.list || [];
+
+    if (!lst.length) return err("stream", "goodshort", "tidak ada episode");
+
+    const idx = Math.min(ep - 1, lst.length - 1);
+    const ch = lst[idx];
+    const chapterId = String(ch.id || "");
+
+    if (!chapterId) return err("stream", "goodshort", "chapterId tidak ditemukan");
+
+    const rp = await dx(`${GS_BASE}/api/v1/play/${bid}/${chapterId}`, {
+        q: quality,
+        language: "id"
+    }, AUTH_H);
+    if (!rp) return err("stream", "goodshort", "gagal ambil video");
+
+    const m3u8 = rp.m3u8 || "";
+    const aes = await gsKey(bid, chapterId);
+
+    const ql = [];
+    for (const mv of (ch.multiVideos || [])) {
+        const cdn = mv.cdnList || [];
+        const qUrl = cdn.length ? cdn[0].videoPath : (mv.filePath || "");
+        if (qUrl) ql.push({ label: mv.type || "", url: qUrl, type: "hls" });
     }
-  }
-
-  if (books.length === 0 && cfg.search) {
-    const r = await dracinku_ApiPost(
-      `/${src}/search`,
-      { lang: "id", keyword: "a", page },
-      { lang: "id" }
-    );
-    if (r) {
-      const d = r.data;
-      if (d && typeof d === "object") {
-        books = Array.isArray(d.book) ? d.book : [];
-        hasMore = d.isMore ?? false;
-      }
+    if (!ql.length && m3u8) {
+        ql.push({ label: quality, url: m3u8, type: "hls" });
     }
-  }
 
-  const items = books.map(dracinku_FmtBook);
-  return { code: 200, hasMore, items, msg: "SUCCESS", rows: items, total: items.length };
+    return ok("stream", "goodshort", {
+        bookId: bid,
+        chapterId,
+        episode: idx + 1,
+        totalEps: lst.length,
+        title: book.bookName || "",
+        epTitle: ch.chapterName || `Episode ${idx + 1}`,
+        videoUrl: m3u8,
+        quality,
+        aesKey: aes,
+        kEncrypted: rp.k || "",
+        sSeed: rp.s || "",
+        isLocked: !!ch.charged,
+        isFree: !ch.charged,
+        qualityList: ql
+    });
 }
 
-async function dracinku_Search(src, keyword, page = 1) {
-  const r = await dracinku_ApiPost(
-    `/${src}/search`,
-    { lang: "id", keyword, page },
-    { lang: "id" }
-  );
-  if (!r) throw new Error(`Search '${keyword}' di ${src} gagal`);
+async function gsStreamFast(bid, ep = 1, quality = "720p") {
+    const r = await dx(`${GS_BASE}/api/v1/unlock/${bid}`, { q: quality }, AUTH_H);
+    if (!r) return err("stream_fast", "goodshort", "gagal unlock");
 
-  const d = r.data ?? {};
-  const books = Array.isArray(d.book) ? d.book : [];
-  const hasMore = d.isMore ?? false;
-  const items = books.map(dracinku_FmtBook);
+    const videos = r.videos || [];
+    const total = r.total || videos.length;
 
-  return { code: 200, hasMore, items, msg: "SUCCESS", rows: items, total: items.length };
+    if (!videos.length) return err("stream_fast", "goodshort", "tidak ada episode");
+
+    const idx = Math.min(ep - 1, videos.length - 1);
+    const target = videos[idx];
+    const chapterId = String(target.id || "");
+    const url = target.url || "";
+    const aes = chapterId ? await gsKey(bid, chapterId) : "";
+
+    const allEps = videos.map((v, i) => ({
+        episode: i + 1,
+        chapterId: String(v.id || ""),
+        name: v.name || "",
+        url: v.url || "",
+        type: "hls"
+    }));
+
+    return ok("stream_fast", "goodshort", {
+        bookId: bid,
+        chapterId,
+        episode: idx + 1,
+        totalEps: total,
+        videoUrl: url,
+        quality,
+        aesKey: aes,
+        qualityList: url ? [{ label: quality, url, type: "hls" }] : [],
+        allEpisodes: allEps
+    });
 }
 
-async function dracinku_Detail(src, dramaId) {
-  let r = await dracinku_ApiGet(`/${src}/series/${dramaId}`, { lang: "id" });
-  if (!r) r = await dracinku_ApiGet(`/cache/series/${dramaId}`);
-  if (!r) throw new Error(`Drama ID '${dramaId}' tidak ditemukan`);
+async function gsUnlockAll(bid, quality = "720p") {
+    const r = await dx(`${GS_BASE}/api/v1/unlock/${bid}`, { q: quality }, AUTH_H);
+    if (!r) return err("unlock", "goodshort", "gagal");
 
-  const d = r.data ?? {};
-  const book = (d.book && typeof d.book === "object") ? d.book : {};
-  const chs = Array.isArray(d.chapters) ? d.chapters : [];
+    const videos = r.videos || [];
+    const episodes = videos.map((v, i) => ({
+        episode: i + 1,
+        chapterId: String(v.id || ""),
+        name: v.name || "",
+        url: v.url || "",
+        type: "hls"
+    }));
 
-  const cover = book.cover || book.posterImg || "";
-  const title = dracinku_CleanHtml(book.name || book.title || "Unknown");
-  const synopsis = book.introduction || book.synopsis || book.description || "";
-  const tags = Array.isArray(book.tags)
-    ? book.tags
-    : (Array.isArray(book.categoryNames) ? book.categoryNames : []);
-  const eps = chs.map((ch, i) => dracinku_FmtEp(ch, i + 1));
-
-  return {
-    code: 200, msg: "SUCCESS",
-    data: {
-      categoryNames : tags,
-      cover, posterImg: cover,
-      description   : synopsis,
-      synopsis,
-      dramaId       : String(book.id || dramaId),
-      id            : String(book.id || dramaId),
-      title,
-      episodes      : eps,
-      totalEpisodes : book.chapterCount || eps.length,
-      viewCount     : book.playCount || 0,
-    },
-  };
+    return ok("unlock", "goodshort", {
+        bookId: bid,
+        quality,
+        total: r.total || videos.length,
+        episodes
+    });
 }
 
-async function dracinku_Episode(src, dramaId, number) {
-  const det = await dracinku_Detail(src, dramaId);
-  const eps = det.data.episodes;
+// ============================================================
+// DRAMABOX
+// ============================================================
 
-  let found = eps.find(ep => ep.number === number);
-  if (!found && number >= 1 && number <= eps.length) {
-    found = eps[number - 1];
-  }
-  if (!found) throw new Error(`Episode ${number} tidak ditemukan`);
+async function dbHome(page = 1, size = 10, lang = "in") {
+    const r = await dx(`${DB_BASE}/api/home`, { page, size, lang }, AUTH_H);
+    if (!r) return err("home", "dramabox", "gagal");
 
-  const video = found.videoUrl || "";
-  let ql = found.qualityList || [];
+    const root = (r.data && r.data.data) || {};
+    const sectionsRaw = root.sections || [];
 
-  if (ql.length === 0 && video) {
-    const kind = video.includes(".m3u8") ? "hls" : video.includes(".mp4") ? "mp4" : "other";
-    ql = [{ label: "Auto", url: video, type: kind }];
-  }
+    const sections = [];
+    const flatItems = [];
+    const seen = new Set();
 
-  return {
-    code         : 200,
-    msg          : "SUCCESS",
-    episodeNumber: found.number,
-    number       : found.number,
-    locked       : found.locked || false,
-    qualityList  : ql,
-    subtitles    : found.subtitles || [],
-    videoUrl     : video,
-    downLoadLink : found.downLoadLink || {},
-  };
+    for (const sec of sectionsRaw) {
+        const books = sec.books || [];
+        const parsedBooks = [];
+
+        for (const b of books) {
+            const item = {
+                id: String(b.bookId || ""),
+                title: b.bookName || "",
+                cover: b.coverWap || "",
+                episodes: b.chapterCount || 0,
+                synopsis: clean(b.introduction || ""),
+                tags: b.tags || [],
+                tagV3s: b.tagV3s || [],
+                isEntry: b.isEntry || 0,
+                index: b.index || 0,
+                corner: b.corner || {},
+                dataFrom: b.dataFrom || "",
+                cardType: b.cardType || 0,
+                markNamesConnectKey: b.markNamesConnectKey || "",
+                playCount: b.playCount || "",
+                bookShelfTime: b.bookShelfTime || 0,
+                shelfTime: b.shelfTime || "",
+                inLibrary: b.inLibrary || false,
+                platform: "dramabox"
+            };
+            parsedBooks.push(item);
+            if (item.id && !seen.has(item.id)) {
+                seen.add(item.id);
+                flatItems.push(item);
+            }
+        }
+
+        sections.push({
+            id: sec.id || 0,
+            title: sec.title || "",
+            subTitle: sec.subTitle || "",
+            style: sec.style || "",
+            type: sec.type || "",
+            books: parsedBooks
+        });
+    }
+
+    return ok("home", "dramabox", {
+        code: r.code || 0,
+        message: r.message || "",
+        page,
+        size,
+        lang,
+        sections,
+        items: flatItems,
+        totalSections: sections.length,
+        totalItems: flatItems.length
+    });
 }
 
-function dracinku_FmtEp(ch, idx = 1) {
-  if (!ch || typeof ch !== "object") return {};
+async function dbRank(lang = "in") {
+    const r = await dx(`${DB_BASE}/api/rank`, { lang }, AUTH_H);
+    if (!r) return err("rank", "dramabox", "gagal");
 
-  let n = idx;
-  const eps = ch.eps || "";
-  const fromEps = parseInt(String(eps).replace(/EP[-\\s]?/i, "").trim());
-  if (!isNaN(fromEps)) {
-    n = fromEps;
-  } else {
-    const fromIdx = parseInt(ch.index);
-    if (!isNaN(fromIdx)) n = fromIdx + 1;
-  }
+    const root = (r.data && r.data.data) || {};
+    const rankTypes = root.rankTypeVoList || [];
+    const rankList = root.rankList || [];
 
-  const video = ch.videoPath || ch.videoUrl || "";
-  const locked = Boolean(ch.isLock ?? ch.locked ?? false);
-  const subs = Array.isArray(ch.subtitle)
-    ? ch.subtitle
-    : (Array.isArray(ch.subtitles) ? ch.subtitles : []);
+    const items = rankList.map(x => ({
+        id: String(x.bookId || ""),
+        title: x.bookName || "",
+        cover: x.coverWap || "",
+        episodes: x.chapterCount || 0,
+        synopsis: clean(x.introduction || ""),
+        tags: x.tags || [],
+        tagV3s: x.tagV3s || [],
+        isEntry: x.isEntry || 0,
+        index: x.index || 0,
+        protagonist: x.protagonist || "",
+        dataFrom: x.dataFrom || "",
+        cardType: x.cardType || 0,
+        rankVo: x.rankVo || {},
+        markNamesConnectKey: x.markNamesConnectKey || "",
+        playCount: x.playCount || "",
+        bookShelfTime: x.bookShelfTime || 0,
+        shelfTime: x.shelfTime || "",
+        corner: x.corner || {},
+        inLibrary: x.inLibrary || false,
+        platform: "dramabox"
+    }));
 
-  return {
-    episodeNumber: n,
-    episodeTitle : `Episode ${n}`,
-    locked,
-    number       : n,
-    title        : `Episode ${n}`,
-    videoUrl     : locked ? "" : video,
-    qualityList  : ch.qualityList || [],
-    subtitles    : subs,
-    downLoadLink : ch.downLoadLink || {},
-  };
+    return ok("rank", "dramabox", {
+        code: r.code || 0,
+        message: r.message || "",
+        lang,
+        rankTypes,
+        items,
+        total: items.length
+    });
 }
+
+async function dbSearch(keyword, page = 1, lang = "in") {
+    const r = await dx(`${DB_BASE}/api/search`, { keyword, page, lang }, AUTH_H);
+    if (!r) return err("search", "dramabox", "gagal");
+
+    const root = (r.data && r.data.data) || {};
+    const searchList = root.searchList || [];
+
+    const items = searchList.map(x => ({
+        id: String(x.bookId || ""),
+        title: x.bookName || "",
+        cover: x.cover || "",
+        synopsis: clean(x.introduction || ""),
+        author: x.author || "",
+        inLibraryCount: x.inLibraryCount || 0,
+        bookSource: x.bookSource || {},
+        playCount: x.playCount || "",
+        sort: x.sort || 0,
+        protagonist: x.protagonist || "",
+        tagNames: x.tagNames || [],
+        corner: x.corner || {},
+        markNamesConnectKey: x.markNamesConnectKey || "",
+        algorithmRecomDot: x.algorithmRecomDot || "",
+        inLibrary: x.inLibrary || false,
+        platform: "dramabox"
+    }));
+
+    return ok("search", "dramabox", {
+        code: r.code || 0,
+        message: r.message || "",
+        keyword: root.keyword || keyword,
+        page,
+        lang,
+        items,
+        total: items.length
+    });
+}
+
+async function dbDetail(did, lang = "en") {
+    const r = await dx(`${DB_BASE}/api/drama/${did}`, { lang }, AUTH_H);
+    if (!r) return err("detail", "dramabox", "gagal");
+
+    const root = (r.data && r.data.data) || {};
+    const lst = root.list || [];
+
+    const episodes = lst.map((ch, i) => ({
+        episode: i + 1,
+        chapterId: String(ch.chapterId || ""),
+        chapterIndex: ch.chapterIndex || i,
+        isCharge: ch.isCharge || 0,
+        isPay: ch.isPay || 0,
+        chapterSizeVoList: ch.chapterSizeVoList || []
+    }));
+
+    return ok("detail", "dramabox", {
+        code: r.code || 0,
+        message: r.message || "",
+        data: {
+            id: String(root.bookId || did),
+            title: root.bookName || "",
+            cover: root.coverWap || root.cover || "",
+            synopsis: clean(root.introduction || "") || clean(root.description || ""),
+            bookStatus: root.bookStatus || 0,
+            corner: root.corner || {},
+            crossChapter: root.crossChapter || false,
+            crossChapterTips: root.crossChapterTips || "",
+            episodes,
+            totalEpisodes: episodes.length,
+            platform: "dramabox"
+        }
+    });
+}
+
+async function dbEpisodes(did, lang = "in") {
+    const r = await dx(`${DB_BASE}/api/drama/${did}/episodes`, { lang }, AUTH_H);
+    if (!r) return err("episodes", "dramabox", "gagal");
+
+    const root = r.data || {};
+    const eps = root.episodes || [];
+
+    const episodes = eps.map(e => {
+        const qlabel = typeof e.quality === "number" ? `${e.quality}p` : String(e.quality || "Auto");
+        const ql = [];
+        if (e.url) ql.push({ label: qlabel, url: e.url, type: "mp4" });
+
+        return {
+            episode: e.episode || 0,
+            chapterId: String(e.chapterId || ""),
+            chapterName: e.chapterName || "",
+            cover: e.cover || "",
+            quality: e.quality || 0,
+            url: e.url || "",
+            subtitles: e.subtitles || [],
+            qualityList: ql
+        };
+    });
+
+    return ok("episodes", "dramabox", {
+        code: r.code || 0,
+        message: r.message || "",
+        bookId: root.bookId || did,
+        bookName: root.bookName || "",
+        cover: root.cover || "",
+        description: clean(root.description || ""),
+        totalEpisodes: root.totalEpisodes || episodes.length,
+        quality: root.quality || 0,
+        episodes,
+        platform: "dramabox"
+    });
+}
+
+// ============================================================
+// MELOLO
+// ============================================================
+
+async function mlHome(lang = "id", offset = 0) {
+    const r = await dx(`${ML_BASE}/api/home`, { lang, offset }, ML_H);
+    if (!r || r.code !== 0) return err("home", "melolo", "gagal");
+
+    const items = r.data || [];
+    const dramas = items.map(x => ({
+        id: String(x.id || ""),
+        title: x.name || "",
+        cover: x.cover || "",
+        episodes: x.episodes || 0,
+        synopsis: clean(x.intro || ""),
+        platform: "melolo"
+    }));
+
+    return ok("home", "melolo", {
+        lang,
+        offset,
+        items: dramas,
+        total: dramas.length
+    });
+}
+
+async function mlSearch(kw, lang = "id") {
+    const r = await dx(`${ML_BASE}/api/search`, { q: kw, lang }, ML_H);
+    if (!r || r.code !== 0) return err("search", "melolo", "gagal");
+
+    const items = r.data || [];
+    const dramas = items.map(x => ({
+        id: String(x.id || ""),
+        title: x.name || "",
+        cover: x.cover || "",
+        episodes: x.episodes || 0,
+        synopsis: clean(x.intro || ""),
+        author: x.author || "",
+        platform: "melolo"
+    }));
+
+    return ok("search", "melolo", {
+        keyword: kw,
+        lang,
+        count: r.count || dramas.length,
+        items: dramas,
+        total: dramas.length
+    });
+}
+
+async function mlDetail(did, lang = "id") {
+    const r = await dx(`${ML_BASE}/api/detail/${did}`, { lang }, ML_H);
+    if (!r || r.code !== 0) return err("detail", "melolo", "gagal");
+
+    const videos = r.videos || [];
+    const epList = videos.map(v => ({
+        episode: v.episode || 0,
+        vid: String(v.vid || ""),
+        duration: v.duration || 0
+    }));
+
+    return ok("detail", "melolo", {
+        data: {
+            id: String(r.id || did),
+            title: r.title || "",
+            cover: r.cover || "",
+            episodes: r.episodes || epList.length,
+            synopsis: clean(r.intro || ""),
+            videos: epList,
+            platform: "melolo"
+        }
+    });
+}
+
+async function mlVideo(did, ep = 1) {
+    try {
+        const candidateIds = [String(did)];
+
+        // Fallback: ambil vid dari detail
+        const detail = await dx(`${ML_BASE}/api/detail/${did}`, { lang: "id" }, ML_H);
+        if (detail && detail.code === 0) {
+            for (const v of (detail.videos || [])) {
+                if (parseInt(v.episode) === parseInt(ep)) {
+                    const vid = String(v.vid || "");
+                    if (vid && !candidateIds.includes(vid)) {
+                        candidateIds.push(vid);
+                    }
+                    break;
+                }
+            }
+        }
+
+        let lastError = "gagal";
+
+        for (const currentId of candidateIds) {
+            try {
+                const res = await axios.get(`${ML_BASE}/api/video`, {
+                    params: { id: currentId, ep, code: TOKEN_ML },
+                    headers: { ...HEADERS, ...ML_H },
+                    timeout: 20000,
+                    validateStatus: () => true
+                });
+
+                if (res.status !== 200) {
+                    lastError = `HTTP ${res.status}`;
+                    continue;
+                }
+
+                const data = res.data;
+                if (data.code !== 200) {
+                    lastError = data.msg || data.message || `code=${data.code}`;
+                    continue;
+                }
+
+                const ql = (data.qualityList || []).map(q => ({
+                    label: q.label || "",
+                    url: q.url || "",
+                    type: "mp4"
+                }));
+
+                return ok("video", "melolo", {
+                    dramaId: did,
+                    usedId: currentId,
+                    episode: data.episodeNumber || ep,
+                    number: data.number || ep,
+                    videoUrl: data.videoUrl || "",
+                    locked: data.locked || false,
+                    qualityList: ql,
+                    platform: "melolo"
+                });
+            } catch (e) {
+                lastError = e.message;
+                continue;
+            }
+        }
+
+        return err("video", "melolo", `${lastError} | tried=${JSON.stringify(candidateIds)}`);
+    } catch (e) {
+        return err("video", "melolo", e.message);
+    }
+}
+
+// ============================================================
+// EXPORT (untuk dipakai di Express / file lain)
+// ============================================================
+
+module.exports = {
+    // GoodShort
+    gsHome,
+    gsSearch,
+    gsDetail,
+    gsStream,
+    gsStreamFast,
+    gsUnlockAll,
+
+    // DramaBox
+    dbHome,
+    dbRank,
+    dbSearch,
+    dbDetail,
+    dbEpisodes,
+
+    // Melolo
+    mlHome,
+    mlSearch,
+    mlDetail,
+    mlVideo,
+};
+
