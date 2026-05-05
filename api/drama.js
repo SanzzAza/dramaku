@@ -764,29 +764,113 @@ async function mlVideo(did, ep = 1) {
 }
 
 // ============================================================
-// EXPORT (untuk dipakai di Express / file lain)
+// VERCEL SERVERLESS HANDLER
 // ============================================================
 
-module.exports = {
-    // GoodShort
-    gsHome,
-    gsSearch,
-    gsDetail,
-    gsStream,
-    gsStreamFast,
-    gsUnlockAll,
+async function handler(req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    if (req.method === "OPTIONS") { res.status(200).end(); return; }
 
-    // DramaBox
-    dbHome,
-    dbRank,
-    dbSearch,
-    dbDetail,
-    dbEpisodes,
+    const q      = req.query || {};
+    const source = (q.source || "goodshort").toLowerCase();
+    const action = (q.action || "home").toLowerCase();
 
-    // Melolo
-    mlHome,
-    mlSearch,
-    mlDetail,
-    mlVideo,
-};
+    let result;
 
+    try {
+        // ── GoodShort ──
+        if (source === "goodshort") {
+            const page    = parseInt(q.page)    || 1;
+            const channel = q.channel           || "id";
+            const bid     = q.id || q.bookId    || "";
+            const ep      = parseInt(q.ep)      || 1;
+            const quality = q.quality           || "720p";
+
+            if      (action === "home" || action === "foryou" || action === "trending")
+                result = await gsHome(page, channel);
+            else if (action === "search")
+                result = await gsSearch(q.query || q.q || "", page);
+            else if (action === "detail")
+                result = await gsDetail(bid);
+            else if (action === "stream")
+                result = await gsStream(bid, ep, quality);
+            else if (action === "stream_fast" || action === "episode")
+                result = await gsStreamFast(bid, ep, quality);
+            else if (action === "unlock")
+                result = await gsUnlockAll(bid, quality);
+            else
+                result = err(action, "goodshort", `Unknown action '${action}'`);
+        }
+
+        // ── DramaBox ──
+        else if (source === "dramabox") {
+            const page = parseInt(q.page) || 1;
+            const size = parseInt(q.size) || 10;
+            const lang = q.lang || "in";
+            const did  = q.id || q.bookId || "";
+
+            if      (action === "home" || action === "foryou")
+                result = await dbHome(page, size, lang);
+            else if (action === "rank" || action === "trending")
+                result = await dbRank(lang);
+            else if (action === "search")
+                result = await dbSearch(q.query || q.keyword || "", page, lang);
+            else if (action === "detail")
+                result = await dbDetail(did, q.lang || "en");
+            else if (action === "episodes" || action === "episode")
+                result = await dbEpisodes(did, lang);
+            else
+                result = err(action, "dramabox", `Unknown action '${action}'`);
+        }
+
+        // ── Melolo ──
+        else if (source === "melolo") {
+            const lang   = q.lang   || "id";
+            const offset = parseInt(q.offset) || 0;
+            const did    = q.id     || "";
+            const ep     = parseInt(q.ep) || 1;
+
+            if      (action === "home" || action === "foryou" || action === "trending")
+                result = await mlHome(lang, offset);
+            else if (action === "search")
+                result = await mlSearch(q.query || q.q || "", lang);
+            else if (action === "detail")
+                result = await mlDetail(did, lang);
+            else if (action === "video" || action === "episode")
+                result = await mlVideo(did, ep);
+            else
+                result = err(action, "melolo", `Unknown action '${action}'`);
+        }
+
+        else {
+            result = err(action, source, `Unknown source '${source}'. Use: goodshort | dramabox | melolo`);
+        }
+
+        res.status(result.code || 200).json(result);
+    } catch (e) {
+        res.status(500).json(err(action, source, e.message));
+    }
+}
+
+// ============================================================
+// EXPORT
+// ============================================================
+
+module.exports = handler;
+module.exports.gsHome      = gsHome;
+module.exports.gsSearch    = gsSearch;
+module.exports.gsDetail    = gsDetail;
+module.exports.gsStream    = gsStream;
+module.exports.gsStreamFast = gsStreamFast;
+module.exports.gsUnlockAll = gsUnlockAll;
+module.exports.dbHome      = dbHome;
+module.exports.dbRank      = dbRank;
+module.exports.dbSearch    = dbSearch;
+module.exports.dbDetail    = dbDetail;
+module.exports.dbEpisodes  = dbEpisodes;
+module.exports.mlHome      = mlHome;
+module.exports.mlSearch    = mlSearch;
+module.exports.mlDetail    = mlDetail;
+module.exports.mlVideo     = mlVideo;
