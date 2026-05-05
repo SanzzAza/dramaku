@@ -80,9 +80,17 @@ async function dx(url, params = {}, hdrs = {}) {
             params,
             headers: { ...HEADERS, ...hdrs },
             timeout: 20000,
-            validateStatus: () => true
+            validateStatus: () => true,
+            responseType: 'text'
         });
-        return res.status === 200 ? res.data : null;
+        if (res.status !== 200) return null;
+        const raw = res.data;
+        if (typeof raw === 'object') return raw;
+        try {
+            return JSON.parse(raw);
+        } catch {
+            return null;
+        }
     } catch (e) {
         return null;
     }
@@ -771,6 +779,7 @@ async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.setHeader("Content-Type", "application/json");
     if (req.method === "OPTIONS") { res.status(200).end(); return; }
 
     const q      = req.query || {};
@@ -850,7 +859,7 @@ async function handler(req, res) {
 
         res.status(result.code || 200).json(result);
     } catch (e) {
-        res.status(500).json(err(action, source, e.message));
+        res.status(500).json(err(action, source, `Server error: ${e.message}`));
     }
 }
 
