@@ -1891,10 +1891,13 @@ function openDramaEndpoint(epId) {
       name:`${platform.name} — Rank`, badge:'DRAMA', method:'GET', path:'/api/drama',
       key: epId.replace('-','_'),
       desc:`Ranking drama terpopuler di ${platform.name}.`,
-      params:[
+      params: source === 'dramabox' ? [
         {name:'action', value:'rank', type:'hidden'},
         {name:'source', value:source, type:'hidden'},
-        {name:'lang', label:'Bahasa', placeholder:'in', type:'text'},
+        {name:'lang', label:'Lang', type:'select', options:['in','en','id','zh'], default:'in', req:false, desc:'Bahasa (default: in)'},
+      ] : [
+        {name:'action', value:'rank', type:'hidden'},
+        {name:'source', value:source, type:'hidden'},
       ],
     },
     search: {
@@ -1902,7 +1905,23 @@ function openDramaEndpoint(epId) {
       name:`${platform.name} — Search`, badge:'DRAMA', method:'GET', path:'/api/drama',
       key: epId.replace('-','_'),
       desc:`Cari drama di ${platform.name}.`,
-      params:[
+      params: source === 'goodshort' ? [
+        {name:'action', value:'search', type:'hidden'},
+        {name:'source', value:source, type:'hidden'},
+        {name:'query', label:'Kata Kunci', placeholder:'Contoh: cinta, CEO...', type:'text'},
+        {name:'page', label:'Halaman', placeholder:'1', type:'text', value:'1', req:false, desc:'Halaman (default: 1)'},
+      ] : source === 'dramabox' ? [
+        {name:'action', value:'search', type:'hidden'},
+        {name:'source', value:source, type:'hidden'},
+        {name:'query', label:'Kata Kunci', placeholder:'Contoh: CEO, love...', type:'text'},
+        {name:'page', label:'Halaman', placeholder:'1', type:'text', value:'1', req:false, desc:'Halaman (default: 1)'},
+        {name:'lang', label:'Lang', type:'select', options:['in','en','id','zh'], default:'in', req:false, desc:'Bahasa (default: in)'},
+      ] : source === 'melolo' ? [
+        {name:'action', value:'search', type:'hidden'},
+        {name:'source', value:source, type:'hidden'},
+        {name:'query', label:'Kata Kunci', placeholder:'Contoh: cinta, CEO...', type:'text'},
+        {name:'lang', label:'Lang', type:'select', options:['id','en','zh'], default:'id', req:false, desc:'Bahasa (default: id)'},
+      ] : [
         {name:'action', value:'search', type:'hidden'},
         {name:'source', value:source, type:'hidden'},
         {name:'query', label:'Kata Kunci', placeholder:'Contoh: cinta, CEO...', type:'text'},
@@ -1913,18 +1932,45 @@ function openDramaEndpoint(epId) {
       name:`${platform.name} — Detail`, badge:'DRAMA', method:'GET', path:'/api/drama',
       key: epId.replace('-','_'),
       desc:`Info lengkap drama dari ${platform.name}: sinopsis, poster, genre, episode.`,
-      params:[
+      params: source === 'dramabox' ? [
+        {name:'action', value:'detail', type:'hidden'},
+        {name:'source', value:source, type:'hidden'},
+        {name:'id', label:'ID Drama', type:'drama_id'},
+        {name:'lang', label:'Lang', type:'select', options:['en','in','id','zh'], default:'en', req:false, desc:'Bahasa (default: en)'},
+      ] : source === 'melolo' ? [
+        {name:'action', value:'detail', type:'hidden'},
+        {name:'source', value:source, type:'hidden'},
+        {name:'id', label:'ID Drama', type:'drama_id'},
+        {name:'lang', label:'Lang', type:'select', options:['id','en','zh'], default:'id', req:false, desc:'Bahasa (default: id)'},
+      ] : [
         {name:'action', value:'detail', type:'hidden'},
         {name:'source', value:source, type:'hidden'},
         {name:'id', label:'ID Drama', type:'drama_id'},
       ],
+    },
     },
     episode: {
       icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
       name:`${platform.name} — Episode`, badge:'DRAMA', method:'GET', path:'/api/drama',
       key: epId.replace('-','_'),
       desc:`URL video episode dari ${platform.name}.`,
-      params:[
+      params: source === 'goodshort' ? [
+        {name:'action', value:'episode', type:'hidden'},
+        {name:'source', value:source, type:'hidden'},
+        {name:'id', label:'ID Drama', type:'drama_id'},
+        {name:'ep', label:'Nomor Episode', placeholder:'Contoh: 1', type:'text'},
+        {name:'quality', label:'Kualitas', placeholder:'720p', type:'text', req:false},
+      ] : source === 'dramabox' ? [
+        {name:'action', value:'episode', type:'hidden'},
+        {name:'source', value:source, type:'hidden'},
+        {name:'id', label:'ID Drama', type:'drama_id'},
+        {name:'lang', label:'Lang', type:'select', options:['in','en','id','zh'], default:'in', req:false},
+      ] : source === 'melolo' ? [
+        {name:'action', value:'episode', type:'hidden'},
+        {name:'source', value:source, type:'hidden'},
+        {name:'id', label:'ID Drama', type:'drama_id'},
+        {name:'ep', label:'Nomor Episode', placeholder:'Contoh: 1', type:'text'},
+      ] : [
         {name:'action', value:'episode', type:'hidden'},
         {name:'source', value:source, type:'hidden'},
         {name:'id', label:'ID Drama', type:'drama_id'},
