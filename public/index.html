@@ -1854,10 +1854,26 @@ function openDramaEndpoint(epId) {
       name:`${platform.name} — Home`, badge:'DRAMA', method:'GET', path:'/api/drama',
       key: epId.replace('-','_'),
       desc:`Konten Home / rekomendasi dari ${platform.name}.`,
-      params:[
+      params: source === 'goodshort' ? [
         {name:'action', value:'home', type:'hidden'},
         {name:'source', value:source, type:'hidden'},
-        {name:'page', label:'Halaman', placeholder:'1', type:'text'},
+        {name:'page', label:'Page', placeholder:'1', type:'text', value:'1', req:false, desc:'Halaman (default: 1)'},
+        {name:'channel', label:'Channel', type:'select', options:['id','pt','kr','th'], default:'id', req:false, desc:'Channel bahasa: id / pt / kr / th (default: id)'},
+      ] : source === 'dramabox' ? [
+        {name:'action', value:'home', type:'hidden'},
+        {name:'source', value:source, type:'hidden'},
+        {name:'page', label:'Page', placeholder:'1', type:'text', value:'1', req:false, desc:'Halaman (default: 1)'},
+        {name:'size', label:'Size', placeholder:'10', type:'text', value:'10', req:false, desc:'Jumlah item per halaman (default: 10)'},
+        {name:'lang', label:'Lang', type:'select', options:['in','en','id','zh'], default:'in', req:false, desc:'Bahasa (default: in)'},
+      ] : source === 'melolo' ? [
+        {name:'action', value:'home', type:'hidden'},
+        {name:'source', value:source, type:'hidden'},
+        {name:'lang', label:'Lang', type:'select', options:['id','en','zh'], default:'id', req:false, desc:'Bahasa (default: id)'},
+        {name:'offset', label:'Offset', placeholder:'0', type:'text', value:'0', req:false, desc:'Offset pagination (default: 0)'},
+      ] : [
+        {name:'action', value:'home', type:'hidden'},
+        {name:'source', value:source, type:'hidden'},
+        {name:'page', label:'Page', placeholder:'1', type:'text', value:'1'},
       ],
     },
     trending: {
@@ -2222,7 +2238,7 @@ function buildParamInputs(ep) {
     }
     return `<div style="display:flex;flex-direction:column;gap:4px;width:100%">
       <label style="font-size:12px;color:var(--text2);font-weight:600">${p.label||p.name}</label>
-      <input class="url-input" id="inp-${ep.key}-${p.name}" placeholder="${p.placeholder||''}"
+      <input class="url-input" id="inp-${ep.key}-${p.name}" placeholder="${p.placeholder||''}" value="${p.value||''}"
         oninput="liveUpdateCurl(window._curEpId||'')"
         onkeydown="if(event.key==='Enter')execApi(window._curEpId||'')"/>
     </div>`;
@@ -2394,7 +2410,7 @@ async function execApi(id) {
   if (isMulti) {
     vals = getParamValues(ep);
     // Cek param required yang masih kosong (drama_id dianggap required)
-    const missing = (ep.params||[]).filter(p => p.type !== 'hidden' && p.type !== 'select' && p.type !== 'news_source' && p.type !== 'news_category' && !vals[p.name]);
+    const missing = (ep.params||[]).filter(p => p.type !== 'hidden' && p.type !== 'select' && p.type !== 'news_source' && p.type !== 'news_category' && p.req === true && !vals[p.name]);
     if (missing.length) { alert('Masukkan ' + missing[0].label + ' terlebih dahulu!'); return; }
   } else {
     const paramName = ep.params?.[0]?.name || 'url';
@@ -2429,7 +2445,15 @@ async function execApi(id) {
       if (id === 'youtube') url += `&format=${ytFormat}&quality=${ytQuality}`;
     }
     const resp = await fetch(url);
-    const data = await resp.json();
+    let data;
+    const text = await resp.text();
+    try { data = JSON.parse(text); } catch(e) {
+      rc.textContent = `Error: Server mengembalikan bukan JSON.\n\nResponse:\n${text.slice(0,500)}`;
+      rb.innerHTML = `<span class="badge-err">${resp.status} Error</span>`;
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>Execute';
+      return;
+    }
     rc.innerHTML = hl(JSON.stringify(data, null, 2));
     rb.innerHTML = (resp.ok && data.status)
       ? `<span class="badge-ok">${resp.status} OK</span>`
