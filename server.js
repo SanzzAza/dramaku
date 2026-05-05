@@ -64,7 +64,6 @@ const server = createServer(async (req, res) => {
     "/api/downloader": "./api/downloader.js",
     "/api/tools":      "./api/tools.js",
     "/api/proxy":      "./api/proxy.js",
-    "/api/drama":      "./api/drama.js",
     "/api/news":       "./api/news.js",
   };
 
@@ -72,6 +71,104 @@ const server = createServer(async (req, res) => {
     try {
       const { default: handler } = await import(apiMap[pathname]);
       await handler(mockReq, mockRes);
+    } catch (err) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ status: false, code: 500, message: err.message }));
+    }
+    return;
+  }
+
+  // ── /api/drama router (GoodShort · DramaBox · Melolo) ─────────────────────
+  if (pathname === "/api/drama") {
+    try {
+      const {
+        gsHome, gsSearch, gsDetail, gsStream, gsStreamFast, gsUnlockAll,
+        dbHome, dbRank, dbSearch, dbDetail, dbEpisodes,
+        mlHome, mlSearch, mlDetail, mlVideo,
+      } = await import("./api/drama.js");
+
+      const q      = mockReq.query;
+      const source = (q.source || "goodshort").toLowerCase();
+      const action = (q.action || "home").toLowerCase();
+
+      // ── GoodShort ──────────────────────────────────────────────────────────
+      if (source === "goodshort") {
+        let result;
+        const page    = parseInt(q.page)    || 1;
+        const channel = q.channel           || "id";
+        const bid     = q.id                || q.bookId || "";
+        const ep      = parseInt(q.ep)      || 1;
+        const quality = q.quality           || "720p";
+
+        if      (action === "home"    || action === "foryou" || action === "trending")
+          result = await gsHome(page, channel);
+        else if (action === "search")
+          result = await gsSearch(q.query || q.q || "", page);
+        else if (action === "detail")
+          result = await gsDetail(bid);
+        else if (action === "stream")
+          result = await gsStream(bid, ep, quality);
+        else if (action === "stream_fast" || action === "episode")
+          result = await gsStreamFast(bid, ep, quality);
+        else if (action === "unlock")
+          result = await gsUnlockAll(bid, quality);
+        else
+          result = { status: false, code: 400, message: `Unknown action '${action}' for goodshort` };
+
+        mockRes.json(result);
+        return;
+      }
+
+      // ── DramaBox ───────────────────────────────────────────────────────────
+      if (source === "dramabox") {
+        let result;
+        const page = parseInt(q.page) || 1;
+        const size = parseInt(q.size) || 10;
+        const lang = q.lang || "in";
+        const did  = q.id   || q.bookId || "";
+        const ep   = parseInt(q.ep) || 1;
+
+        if      (action === "home" || action === "foryou")
+          result = await dbHome(page, size, lang);
+        else if (action === "rank" || action === "trending")
+          result = await dbRank(lang);
+        else if (action === "search")
+          result = await dbSearch(q.query || q.keyword || "", page, lang);
+        else if (action === "detail")
+          result = await dbDetail(did, q.lang || "en");
+        else if (action === "episodes" || action === "episode")
+          result = await dbEpisodes(did, lang);
+        else
+          result = { status: false, code: 400, message: `Unknown action '${action}' for dramabox` };
+
+        mockRes.json(result);
+        return;
+      }
+
+      // ── Melolo ─────────────────────────────────────────────────────────────
+      if (source === "melolo") {
+        let result;
+        const lang   = q.lang   || "id";
+        const offset = parseInt(q.offset) || 0;
+        const did    = q.id     || "";
+        const ep     = parseInt(q.ep) || 1;
+
+        if      (action === "home" || action === "foryou" || action === "trending")
+          result = await mlHome(lang, offset);
+        else if (action === "search")
+          result = await mlSearch(q.query || q.q || "", lang);
+        else if (action === "detail")
+          result = await mlDetail(did, lang);
+        else if (action === "video" || action === "episode")
+          result = await mlVideo(did, ep);
+        else
+          result = { status: false, code: 400, message: `Unknown action '${action}' for melolo` };
+
+        mockRes.json(result);
+        return;
+      }
+
+      mockRes.json({ status: false, code: 400, message: `Unknown source '${source}'. Use: goodshort | dramabox | melolo` });
     } catch (err) {
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ status: false, code: 500, message: err.message }));
@@ -124,18 +221,24 @@ server.listen(PORT, () => {
   console.log(`   Bola      → http://localhost:${PORT}/api/tools?tool=bola&action=live`);
   console.log(`   Manga     → http://localhost:${PORT}/api/tools?tool=manga&action=search&query=naruto`);
 
-  console.log(`\n  🎬 DRAMA (Vyreels + Dracinku API)`);
-  console.log(`   ForYou    → http://localhost:${PORT}/api/drama?action=foryou&source=shortmax&page=1`);
-  console.log(`   Trending  → http://localhost:${PORT}/api/drama?action=trending&source=shortmax&page=1`);
-  console.log(`   Search    → http://localhost:${PORT}/api/drama?action=search&source=shortmax&query=cinta&page=1`);
-  console.log(`   Detail    → http://localhost:${PORT}/api/drama?action=detail&source=shortmax&slug=xxxxx`);
-  console.log(`   Episode   → http://localhost:${PORT}/api/drama?action=episode&source=shortmax&slug=xxxxx&ep=1`);
-  console.log(`\n   Vyreels Platforms (Primary):`);
-  console.log(`     shortmax, melolo, flickreels, stardusttv, idrama, netshort, freereels,`);
-  console.log(`     rapidtv, flickshort, dramawave, reelshort`);
-  console.log(`\n   Dracinku Platforms (Fallback):`);
-  console.log(`     goodshort, dramamax, radreels, chill, dramarush, animev2, movie, tv,`);
-  console.log(`     drakor, bjav, microdrama, cubetv, dramadash`);
+  console.log(`\n  🎬 DRAMA (GoodShort · DramaBox · Melolo)`);
+  console.log(`\n   ── GoodShort ──`);
+  console.log(`   Home      → http://localhost:${PORT}/api/drama?action=home&source=goodshort&channel=id`);
+  console.log(`   Search    → http://localhost:${PORT}/api/drama?action=search&source=goodshort&query=cinta`);
+  console.log(`   Detail    → http://localhost:${PORT}/api/drama?action=detail&source=goodshort&id=31001345248`);
+  console.log(`   Stream    → http://localhost:${PORT}/api/drama?action=episode&source=goodshort&id=31001345248&ep=1`);
+  console.log(`   Unlock    → http://localhost:${PORT}/api/drama?action=unlock&source=goodshort&id=31001345248`);
+  console.log(`\n   ── DramaBox ──`);
+  console.log(`   Home      → http://localhost:${PORT}/api/drama?action=home&source=dramabox&lang=in`);
+  console.log(`   Rank      → http://localhost:${PORT}/api/drama?action=rank&source=dramabox&lang=in`);
+  console.log(`   Search    → http://localhost:${PORT}/api/drama?action=search&source=dramabox&query=cinta`);
+  console.log(`   Detail    → http://localhost:${PORT}/api/drama?action=detail&source=dramabox&id=42000002888`);
+  console.log(`   Episodes  → http://localhost:${PORT}/api/drama?action=episode&source=dramabox&id=42000002888`);
+  console.log(`\n   ── Melolo ──`);
+  console.log(`   Home      → http://localhost:${PORT}/api/drama?action=home&source=melolo&lang=id`);
+  console.log(`   Search    → http://localhost:${PORT}/api/drama?action=search&source=melolo&query=cinta`);
+  console.log(`   Detail    → http://localhost:${PORT}/api/drama?action=detail&source=melolo&id=7614440427814390837`);
+  console.log(`   Video     → http://localhost:${PORT}/api/drama?action=episode&source=melolo&id=7614440427814390837&ep=1`);
 
   console.log(`\n  📰 NEWS`);
   console.log(`   Latest    → http://localhost:${PORT}/api/news?source=detik`);
