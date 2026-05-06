@@ -173,6 +173,15 @@ body::after{
   text-align:center;padding:36px 24px 48px;
   position:relative;
 }
+.home-hero::before{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(124,58,237,0.2) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 85% 30%, rgba(99,102,241,0.1) 0%, transparent 50%),
+    radial-gradient(ellipse 35% 25% at 10% 40%, rgba(168,85,247,0.08) 0%, transparent 50%);
+}
+.home-hero>*{position:relative;z-index:1}
+.hero-bg-orb{display:none}
 @media(max-width:600px){
   .page{padding-top:60px}
   .home-hero{padding:16px 16px 28px}
@@ -183,13 +192,6 @@ body::after{
   .hero h1{font-size:clamp(1.8rem,8vw,2.8rem);margin-bottom:14px}
   .hero-sub{margin-bottom:24px;font-size:13px}
 }
-.hero-bg-orb{
-  position:absolute;pointer-events:none;border-radius:50%;filter:blur(70px);z-index:0;
-}
-.hero-bg-orb-1{width:360px;height:260px;background:rgba(124,58,237,0.12);top:0px;left:50%;transform:translateX(-50%)}
-.hero-bg-orb-2{width:200px;height:200px;background:rgba(99,102,241,0.08);top:20px;right:-40px}
-.hero-bg-orb-3{width:180px;height:180px;background:rgba(168,85,247,0.06);top:80px;left:-30px}
-.home-hero>*{position:relative;z-index:1}
 
 .hero-badge{
   display:inline-flex;align-items:center;gap:8px;
@@ -873,10 +875,6 @@ body::after{
 <div id="page-home" class="page active">
   <div class="home-hero">
     <!-- orbs -->
-    <div class="hero-bg-orb hero-bg-orb-1"></div>
-    <div class="hero-bg-orb hero-bg-orb-2"></div>
-    <div class="hero-bg-orb hero-bg-orb-3"></div>
-
     <div class="hero-badge"><span class="hero-badge-dot"></span>THE FUTURE OF REST API</div>
     <div class="hero-avatar"><img src="https://i.ibb.co.com/q4HBSw3/1777719969821.jpg" alt="SanzXD"/></div>
     <h1>API untuk<br><span class="grad"><span class="typewriter-word" id="tw-word">TikTok</span><span class="typewriter-cursor" id="tw-cursor"></span></span></h1>
@@ -3100,6 +3098,13 @@ document.addEventListener('DOMContentLoaded', () => {
 <div id="spotlight"></div>
 
 <script>
+// ── FORCE SCROLL TOP + REMOVE VOID ──
+window.addEventListener('load', function(){
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+});
+
 // ── SPOTLIGHT EFFECT ──
 (function(){
   const el = document.getElementById('spotlight');
