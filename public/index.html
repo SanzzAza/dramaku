@@ -37,13 +37,82 @@
   --sans:'Plus Jakarta Sans',sans-serif;
 }
 html{scroll-behavior:smooth}
-body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);overflow-x:hidden}
 
 body::before{
   content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background:
     radial-gradient(ellipse 80% 50% at 50% -10%, rgba(124,58,237,0.18) 0%, transparent 60%),
     radial-gradient(ellipse 60% 40% at 80% 80%, rgba(109,40,217,0.1) 0%, transparent 50%);
+}
+
+/* ── NOISE TEXTURE ── */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
+  opacity:0.035;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat:repeat;background-size:180px 180px;
+}
+
+/* ── SPOTLIGHT CURSOR ── */
+#spotlight{
+  position:fixed;pointer-events:none;z-index:2;
+  width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(124,58,237,0.12) 0%,rgba(124,58,237,0.04) 40%,transparent 70%);
+  transform:translate(-50%,-50%);
+  transition:opacity 0.3s;
+  opacity:0;
+}
+
+/* ── TYPEWRITER ── */
+.typewriter-word{
+  display:inline;
+}
+.typewriter-cursor{
+  display:inline-block;
+  width:3px;
+  background:linear-gradient(135deg,#a78bfa,#7c3aed);
+  border-radius:2px;
+  margin-left:2px;
+  animation:cursorBlink 0.8s ease-in-out infinite;
+  vertical-align:middle;
+  height:0.85em;
+}
+@keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
+
+.nav-hamburger{
+  display:none;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:8px;border:1px solid var(--border);
+  background:transparent;cursor:pointer;color:var(--text2);
+  transition:all 0.15s;flex-shrink:0;
+}
+.nav-hamburger:hover{background:rgba(255,255,255,0.05);color:var(--text);border-color:var(--border2)}
+.nav-hamburger svg{display:block;transition:transform 0.2s}
+.mobile-menu{
+  display:none;position:fixed;top:60px;left:0;right:0;z-index:99;
+  background:rgba(13,13,26,0.97);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border2);
+  padding:12px 16px 16px;
+  flex-direction:column;gap:4px;
+}
+.mobile-menu.open{display:flex}
+.mobile-menu a{
+  font-size:14px;font-weight:600;color:var(--text2);
+  text-decoration:none;padding:12px 16px;border-radius:10px;
+  transition:all 0.15s;border:1px solid transparent;
+}
+.mobile-menu a:hover,.mobile-menu a.active{
+  color:var(--text);background:rgba(255,255,255,0.05);border-color:var(--border);
+}
+.mobile-menu-footer{
+  margin-top:8px;padding-top:12px;border-top:1px solid var(--border);
+}
+.mobile-menu-footer a{
+  display:block;width:100%;text-align:center;
+  background:var(--primary);color:#fff !important;
+  font-weight:700;font-size:13px;padding:12px !important;
+  border-radius:10px !important;border:none !important;
+  box-shadow:0 0 20px var(--primary-glow);
 }
 
 /* ── NAVBAR ── */
@@ -86,7 +155,7 @@ body::before{
 .nav-btn:hover{background:#6d28d9}
 
 /* ── PAGES ── */
-.page{display:none;position:relative;z-index:1;min-height:100vh;padding-top:60px}
+.page{display:none;position:relative;z-index:1;padding-top:60px}
 .page.active{display:block}
 
 /* ══ HOME ══════════════════════════════════════════ */
@@ -94,21 +163,28 @@ body::before{
 @keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 @keyframes pulseGlow{0%,100%{box-shadow:0 0 32px rgba(124,58,237,0.45),0 0 0 1px rgba(139,92,246,0.3)}50%{box-shadow:0 0 64px rgba(124,58,237,0.7),0 0 0 1px rgba(139,92,246,0.5)}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0.3;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 
 /* ── HERO ── */
 .home-hero{
   display:flex;flex-direction:column;align-items:center;
-  text-align:center;padding:72px 24px 48px;
+  text-align:center;padding:36px 24px 48px;
   position:relative;
+}
+@media(max-width:600px){
+  .home-hero{padding:20px 16px 32px}
+  .hero-avatar{width:60px;height:60px;border-radius:16px;font-size:24px;margin-bottom:20px}
+  .hero-badge{margin-bottom:20px;font-size:10px;padding:5px 14px}
+  .hero-cta{margin-bottom:32px}
+  .hero-stats{margin-bottom:36px}
 }
 .hero-bg-orb{
   position:absolute;pointer-events:none;border-radius:50%;filter:blur(70px);z-index:0;
 }
-.hero-bg-orb-1{width:360px;height:260px;background:rgba(124,58,237,0.12);top:-40px;left:50%;transform:translateX(-50%)}
-.hero-bg-orb-2{width:200px;height:200px;background:rgba(99,102,241,0.08);top:60px;right:-40px}
+.hero-bg-orb-1{width:360px;height:260px;background:rgba(124,58,237,0.12);top:0px;left:50%;transform:translateX(-50%)}
+.hero-bg-orb-2{width:200px;height:200px;background:rgba(99,102,241,0.08);top:20px;right:-40px}
 .hero-bg-orb-3{width:180px;height:180px;background:rgba(168,85,247,0.06);top:80px;left:-30px}
 .home-hero>*{position:relative;z-index:1}
 
@@ -118,7 +194,6 @@ body::before{
   border-radius:100px;padding:7px 18px;
   font-size:11px;font-weight:700;color:#c4b5fd;
   margin-bottom:32px;letter-spacing:0.08em;text-transform:uppercase;
-  animation:fadeUp 0.6s ease both;
 }
 .hero-badge-dot{
   width:6px;height:6px;border-radius:50%;
@@ -131,8 +206,7 @@ body::before{
   background:linear-gradient(135deg,#7c3aed,#a855f7,#6366f1);
   display:flex;align-items:center;justify-content:center;
   font-size:32px;margin-bottom:32px;
-  animation:pulseGlow 3s ease-in-out infinite, floatY 4s ease-in-out infinite, fadeUp 0.6s 0.1s ease both;
-  animation-fill-mode:both;
+  animation:pulseGlow 3s ease-in-out infinite, floatY 4s ease-in-out infinite;
   overflow:hidden;
 }
 .hero-avatar img{width:100%;height:100%;object-fit:cover;border-radius:20px}
@@ -140,7 +214,6 @@ body::before{
 .hero h1{
   font-size:clamp(2.2rem,9vw,3.4rem);font-weight:800;
   letter-spacing:-0.03em;line-height:1.08;margin-bottom:20px;
-  animation:fadeUp 0.6s 0.2s ease both;
 }
 .hero h1 .grad{
   background:linear-gradient(135deg,#a78bfa,#7c3aed,#6366f1,#a855f7);
@@ -151,12 +224,10 @@ body::before{
 .hero-sub{
   font-size:14px;color:var(--text2);line-height:1.75;
   max-width:420px;margin-bottom:36px;
-  animation:fadeUp 0.6s 0.3s ease both;
 }
 .hero-cta{
   display:flex;gap:12px;justify-content:center;flex-wrap:wrap;
   margin-bottom:48px;
-  animation:fadeUp 0.6s 0.4s ease both;
 }
 .btn-primary{
   background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;
@@ -191,7 +262,6 @@ body::before{
   border-radius:16px;overflow:hidden;
   backdrop-filter:blur(16px);
   box-shadow:0 8px 40px rgba(0,0,0,0.4),0 0 0 1px rgba(139,92,246,0.1);
-  animation:fadeUp 0.6s 0.5s ease both;
   text-align:left;
 }
 .snippet-topbar{
@@ -230,7 +300,6 @@ body::before{
   width:100%;max-width:560px;
   background:rgba(255,255,255,0.03);border:1px solid var(--border);
   border-radius:16px;overflow:hidden;margin-bottom:56px;
-  animation:fadeUp 0.6s 0.55s ease both;
 }
 .stat-item{
   flex:1;min-width:120px;padding:20px 16px;text-align:center;
@@ -299,6 +368,64 @@ body::before{
 }
 .feat-card h3{font-size:14px;font-weight:700;margin-bottom:8px}
 .feat-card p{font-size:12px;color:var(--text2);line-height:1.65}
+
+/* ── USE CASES ── */
+.usecase-section{padding:0 24px 64px;max-width:900px;margin:0 auto}
+.usecase-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.uc-card{
+  background:rgba(24,24,48,0.6);
+  border:1px solid var(--border);
+  border-radius:18px;padding:24px 20px;
+  transition:all 0.25s;backdrop-filter:blur(12px);
+  position:relative;overflow:hidden;
+}
+.uc-card::before{
+  content:'';position:absolute;inset:0;border-radius:18px;
+  background:linear-gradient(135deg,rgba(124,58,237,0.08),transparent);
+  opacity:0;transition:opacity 0.25s;
+}
+.uc-card:hover{
+  border-color:rgba(139,92,246,0.35);transform:translateY(-4px);
+  box-shadow:0 8px 32px rgba(124,58,237,0.2),0 0 0 1px rgba(139,92,246,0.1);
+}
+.uc-card:hover::before{opacity:1}
+.uc-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+  padding:4px 10px;border-radius:100px;margin-bottom:16px;
+  position:relative;z-index:1;
+}
+.uc-tag-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.tag-bot{background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.25)}
+.tag-bot .uc-tag-dot{background:#818cf8}
+.tag-dl{background:rgba(124,58,237,0.15);color:#a78bfa;border:1px solid rgba(139,92,246,0.25)}
+.tag-dl .uc-tag-dot{background:#a78bfa}
+.tag-news{background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.25)}
+.tag-news .uc-tag-dot{background:#c084fc}
+.tag-drama{background:rgba(251,146,60,0.1);color:#fb923c;border:1px solid rgba(251,146,60,0.2)}
+.tag-drama .uc-tag-dot{background:#fb923c}
+.tag-tool{background:rgba(52,211,153,0.1);color:#34d399;border:1px solid rgba(52,211,153,0.2)}
+.tag-tool .uc-tag-dot{background:#34d399}
+.tag-ai{background:rgba(56,189,248,0.1);color:#38bdf8;border:1px solid rgba(56,189,248,0.2)}
+.tag-ai .uc-tag-dot{background:#38bdf8}
+.uc-icon{
+  width:48px;height:48px;border-radius:14px;
+  background:rgba(124,58,237,0.15);border:1px solid rgba(139,92,246,0.2);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:16px;position:relative;z-index:1;
+  box-shadow:0 0 20px rgba(124,58,237,0.12);
+}
+.uc-icon svg{width:22px;height:22px;stroke:#a78bfa;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.uc-card h3{font-size:14px;font-weight:700;margin-bottom:8px;color:var(--text);position:relative;z-index:1}
+.uc-card p{font-size:12px;color:var(--text2);line-height:1.65;margin-bottom:16px;position:relative;z-index:1}
+.uc-endpoints{display:flex;flex-wrap:wrap;gap:6px;position:relative;z-index:1}
+.ep-chip{
+  font-size:10px;font-weight:600;font-family:monospace;
+  padding:3px 8px;border-radius:6px;
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+  color:var(--muted);letter-spacing:0.02em;transition:all 0.2s;
+}
+.uc-card:hover .ep-chip{border-color:rgba(139,92,246,0.2);color:var(--text2)}
 
 /* ── HOW IT WORKS ── */
 .how-section{
@@ -694,7 +821,9 @@ body::before{
 
 @media(max-width:640px){
   .nav-links{display:none}
+  .nav-hamburger{display:flex}
   .home-features{grid-template-columns:1fr;max-width:400px}
+  .usecase-grid{grid-template-columns:1fr}
   .how-steps{grid-template-columns:1fr}
   .hero-stats{grid-template-columns:repeat(2,1fr);display:grid}
   .stat-item{border-right:none;border-bottom:1px solid var(--border)}
@@ -721,8 +850,21 @@ body::before{
   </div>
   <div class="nav-right">
     <a class="nav-btn" href="#" onclick="showPage('docs');setNav('docs');return false">GET STARTED</a>
+    <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
+      <svg id="hamburger-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
   </div>
 </nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobile-menu">
+  <a href="#" id="mnav-home" class="active" onclick="showPage('home');setNav('home');closeMobileMenu();return false">Home</a>
+  <a href="#" id="mnav-docs" onclick="showPage('docs');setNav('docs');closeMobileMenu();return false">Docs</a>
+  <a href="#" id="mnav-news" onclick="showPage('news');setNav('news');closeMobileMenu();return false">News</a>
+  <div class="mobile-menu-footer">
+    <a href="#" onclick="showPage('docs');setNav('docs');closeMobileMenu();return false">Get Started</a>
+  </div>
+</div>
 
 <!-- ═══════════ HOME ═══════════ -->
 <div id="page-home" class="page active">
@@ -734,7 +876,7 @@ body::before{
 
     <div class="hero-badge"><span class="hero-badge-dot"></span>THE FUTURE OF REST API</div>
     <div class="hero-avatar"><img src="https://i.ibb.co.com/q4HBSw3/1777719969821.jpg" alt="SanzXD"/></div>
-    <h1>Powerful API for<br><span class="grad">Modern Developers</span></h1>
+    <h1>API untuk<br><span class="grad"><span class="typewriter-word" id="tw-word">TikTok</span><span class="typewriter-cursor" id="tw-cursor"></span></span></h1>
     <p class="hero-sub">Akses endpoint <strong>Downloader</strong>, <strong>Drama</strong>, <strong>Berita</strong>, dan banyak tools lainnya dalam satu platform yang cepat, aman, dan mudah digunakan.</p>
     <div class="hero-cta">
       <a class="btn-primary" href="#" onclick="showPage('docs');setNav('docs');return false">
@@ -793,34 +935,139 @@ body::before{
   <!-- Feature Cards -->
   <div class="home-features">
     <div class="feat-card">
-      <div class="feat-icon">⚡</div>
+      <div class="feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
       <h3>Ultra Fast</h3>
       <p>Response cepat dengan auto-retry untuk hasil yang konsisten setiap saat.</p>
     </div>
     <div class="feat-card">
-      <div class="feat-icon">🔓</div>
+      <div class="feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+      </div>
       <h3>No Auth Needed</h3>
       <p>Tidak perlu API key atau registrasi. Langsung hit endpoint dan pakai.</p>
     </div>
     <div class="feat-card">
-      <div class="feat-icon">🌐</div>
+      <div class="feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </div>
       <h3>CORS Ready</h3>
       <p>CORS sudah aktif untuk semua origin. Cocok untuk web & mobile apps.</p>
     </div>
     <div class="feat-card">
-      <div class="feat-icon">📰</div>
+      <div class="feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v2H4zM4 10h10M4 14h10M4 18h6"/><rect x="14" y="10" width="6" height="8" rx="1"/></svg>
+      </div>
       <h3>12 News Sources</h3>
       <p>Agregasi berita dari 12 portal Indonesia via RSS. Real-time, tanpa API key.</p>
     </div>
     <div class="feat-card">
-      <div class="feat-icon">🎬</div>
+      <div class="feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M10 9l5 3-5 3V9z"/><path d="M7 20h10"/></svg>
+      </div>
       <h3>5 Drama Platforms</h3>
       <p>GoodShort, DramaBox, Melolo, DramaBite, dan DramaNova — semua dalam satu API.</p>
     </div>
     <div class="feat-card">
-      <div class="feat-icon">🛠️</div>
+      <div class="feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3-3a8 8 0 0 1-10.4 10.4L6 21a2 2 0 0 1-3-3l4.7-4.3A8 8 0 0 1 17.7 3.3z"/></svg>
+      </div>
       <h3>Multi Tools</h3>
       <p>QR Code, Cuaca, Kurs, TTS, Screenshot, Short URL, dan AI Image dalam satu API.</p>
+    </div>
+  </div>
+
+  <!-- Use Cases -->
+  <div class="usecase-section">
+    <div class="section-label">Use Cases</div>
+    <div class="section-title">Dipakai buat apa aja?</div>
+    <div class="section-sub">Dari bot Telegram sampai aplikasi mobile — SanzXD API bisa jadi backbone untuk berbagai kebutuhan developer.</div>
+    <div class="usecase-grid">
+
+      <div class="uc-card">
+        <div class="uc-tag tag-bot"><span class="uc-tag-dot"></span>Bot &amp; Automation</div>
+        <div class="uc-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 11V7"/><circle cx="12" cy="5" r="2"/><path d="M8 15h.01M12 15h.01M16 15h.01"/></svg>
+        </div>
+        <h3>Bot Telegram / WhatsApp</h3>
+        <p>Bikin bot yang bisa download video TikTok, Instagram, atau YouTube langsung dari chat. Tanpa login, tanpa watermark.</p>
+        <div class="uc-endpoints">
+          <span class="ep-chip">/tiktok</span>
+          <span class="ep-chip">/instagram</span>
+          <span class="ep-chip">/youtube</span>
+        </div>
+      </div>
+
+      <div class="uc-card">
+        <div class="uc-tag tag-dl"><span class="uc-tag-dot"></span>Downloader App</div>
+        <div class="uc-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 3v13M7 11l5 5 5-5"/><path d="M5 21h14"/></svg>
+        </div>
+        <h3>Aplikasi Downloader</h3>
+        <p>Bangun web app atau mobile app downloader multi-platform. Satu API untuk TikTok, IG, YouTube, Facebook, dan Pinterest.</p>
+        <div class="uc-endpoints">
+          <span class="ep-chip">/facebook</span>
+          <span class="ep-chip">/pinterest</span>
+          <span class="ep-chip">/twitter</span>
+        </div>
+      </div>
+
+      <div class="uc-card">
+        <div class="uc-tag tag-news"><span class="uc-tag-dot"></span>Media &amp; Agregasi</div>
+        <div class="uc-icon">
+          <svg viewBox="0 0 24 24"><path d="M4 4h16v2H4zM4 10h10M4 14h10M4 18h6"/><rect x="14" y="10" width="6" height="8" rx="1"/></svg>
+        </div>
+        <h3>Portal Berita Otomatis</h3>
+        <p>Agregasi berita dari 12 portal Indonesia secara real-time. Cocok buat dashboard berita, newsletter, atau notif harian.</p>
+        <div class="uc-endpoints">
+          <span class="ep-chip">/news</span>
+          <span class="ep-chip">/news?source=</span>
+        </div>
+      </div>
+
+      <div class="uc-card">
+        <div class="uc-tag tag-drama"><span class="uc-tag-dot"></span>Drama Streaming</div>
+        <div class="uc-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M10 9l5 3-5 3V9z"/><path d="M7 20h10"/></svg>
+        </div>
+        <h3>Aplikasi Drama &amp; Series</h3>
+        <p>Akses konten dari GoodShort, DramaBox, DramaBite, dan 2 platform lainnya. Bangun app nonton drama tanpa scraping manual.</p>
+        <div class="uc-endpoints">
+          <span class="ep-chip">/drama/search</span>
+          <span class="ep-chip">/drama/episode</span>
+        </div>
+      </div>
+
+      <div class="uc-card">
+        <div class="uc-tag tag-tool"><span class="uc-tag-dot"></span>Tools &amp; Utilities</div>
+        <div class="uc-icon">
+          <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3-3a8 8 0 0 1-10.4 10.4L6 21a2 2 0 0 1-3-3l4.7-4.3A8 8 0 0 1 17.7 3.3z"/></svg>
+        </div>
+        <h3>Dashboard Internal / SaaS</h3>
+        <p>Tambahkan fitur QR generator, cek cuaca, kurs mata uang, TTS, dan short URL ke dashboard atau SaaS kamu — satu API.</p>
+        <div class="uc-endpoints">
+          <span class="ep-chip">/qrcode</span>
+          <span class="ep-chip">/cuaca</span>
+          <span class="ep-chip">/kurs</span>
+          <span class="ep-chip">/shorturl</span>
+        </div>
+      </div>
+
+      <div class="uc-card">
+        <div class="uc-tag tag-ai"><span class="uc-tag-dot"></span>AI Features</div>
+        <div class="uc-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4"/><path d="M3 18a9 9 0 0 1 18 0"/><path d="M12 14v4M9 18h6"/></svg>
+        </div>
+        <h3>Fitur AI di Aplikasimu</h3>
+        <p>Tambahkan AI Image generation dan Text-to-Speech ke aplikasi kamu tanpa bayar API AI yang mahal. Gratis, langsung pakai.</p>
+        <div class="uc-endpoints">
+          <span class="ep-chip">/aiimage</span>
+          <span class="ep-chip">/tts</span>
+          <span class="ep-chip">/screenshot</span>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -833,7 +1080,7 @@ body::before{
       <div class="how-step">
         <div class="how-num">1</div>
         <h4>Pilih Endpoint</h4>
-        <p>Browse docs dan pilih endpoint yang sesuai kebutuhanmu dari 30+ endpoint tersedia.</p>
+        <p>Browse docs dan pilih endpoint yang sesuai kebutuhanmu dari 54 endpoint tersedia.</p>
       </div>
       <div class="how-step">
         <div class="how-num">2</div>
@@ -1225,6 +1472,9 @@ function setNav(active) {
   document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
   const el = document.getElementById('nav-' + active);
   if (el) el.classList.add('active');
+  document.querySelectorAll('.mobile-menu a[id^="mnav-"]').forEach(a => a.classList.remove('active'));
+  const mel = document.getElementById('mnav-' + active);
+  if (mel) mel.classList.add('active');
 }
 
 function toggleFaq(el) { el.classList.toggle('open'); }
@@ -2639,6 +2889,29 @@ function copyNicCurl(id) {
 
 // Init NIC url bars on DOM ready
 
+// ── HAMBURGER MENU ──
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobile-menu');
+  const icon = document.getElementById('hamburger-icon');
+  const isOpen = menu.classList.toggle('open');
+  icon.innerHTML = isOpen
+    ? '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'
+    : '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>';
+}
+function closeMobileMenu() {
+  const menu = document.getElementById('mobile-menu');
+  const icon = document.getElementById('hamburger-icon');
+  menu.classList.remove('open');
+  icon.innerHTML = '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>';
+}
+// Sync mobile nav active state
+const _origSetNav = typeof setNav === 'function' ? setNav : null;
+function setNavMobile(page) {
+  document.querySelectorAll('.mobile-menu a[id^="mnav-"]').forEach(a => a.classList.remove('active'));
+  const active = document.getElementById('mnav-' + page);
+  if (active) active.classList.add('active');
+}
+
 // ── SNIPPET DATA ──
 const SNIPPETS = {
   tiktok: {
@@ -2818,6 +3091,47 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => initStats(), 500);
 });
 
+</script>
+
+<!-- SPOTLIGHT -->
+<div id="spotlight"></div>
+
+<script>
+// ── SPOTLIGHT EFFECT ──
+(function(){
+  const el = document.getElementById('spotlight');
+  let visible = false;
+  document.addEventListener('mousemove', e => {
+    el.style.left = e.clientX + 'px';
+    el.style.top = e.clientY + 'px';
+    if(!visible){ el.style.opacity='1'; visible=true; }
+  });
+  document.addEventListener('mouseleave', () => { el.style.opacity='0'; visible=false; });
+})();
+
+// ── TYPEWRITER EFFECT ──
+(function(){
+  const words = ['TikTok','YouTube','Instagram','Drama','Berita','Facebook','Pinterest'];
+  const el = document.getElementById('tw-word');
+  if(!el) return;
+  let wi = 0, ci = words[0].length, deleting = false;
+  const speed = { type: 80, delete: 45, pause: 1800 };
+  function tick(){
+    const word = words[wi];
+    if(!deleting){
+      ci++;
+      el.textContent = word.slice(0, ci);
+      if(ci === word.length){ deleting = true; setTimeout(tick, speed.pause); return; }
+      setTimeout(tick, speed.type);
+    } else {
+      ci--;
+      el.textContent = word.slice(0, ci);
+      if(ci === 0){ deleting = false; wi = (wi + 1) % words.length; setTimeout(tick, 200); return; }
+      setTimeout(tick, speed.delete);
+    }
+  }
+  setTimeout(tick, speed.pause);
+})();
 </script>
 </body>
 </html>
