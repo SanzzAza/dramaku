@@ -174,11 +174,14 @@ body::after{
   position:relative;
 }
 @media(max-width:600px){
-  .home-hero{padding:20px 16px 32px}
-  .hero-avatar{width:60px;height:60px;border-radius:16px;font-size:24px;margin-bottom:20px}
-  .hero-badge{margin-bottom:20px;font-size:10px;padding:5px 14px}
-  .hero-cta{margin-bottom:32px}
-  .hero-stats{margin-bottom:36px}
+  .page{padding-top:60px}
+  .home-hero{padding:16px 16px 28px}
+  .hero-avatar{width:60px;height:60px;border-radius:16px;font-size:24px;margin-bottom:16px}
+  .hero-badge{margin-bottom:16px;font-size:10px;padding:5px 14px}
+  .hero-cta{margin-bottom:28px}
+  .hero-stats{margin-bottom:28px}
+  .hero h1{font-size:clamp(1.8rem,8vw,2.8rem);margin-bottom:14px}
+  .hero-sub{margin-bottom:24px;font-size:13px}
 }
 .hero-bg-orb{
   position:absolute;pointer-events:none;border-radius:50%;filter:blur(70px);z-index:0;
@@ -3114,23 +3117,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const words = ['TikTok','YouTube','Instagram','Drama','Berita','Facebook','Pinterest'];
   const el = document.getElementById('tw-word');
   if(!el) return;
-  let wi = 0, ci = words[0].length, deleting = false;
-  const speed = { type: 80, delete: 45, pause: 1800 };
+  let wi = 0, ci = 0, deleting = false;
+  el.textContent = '';
+  const speed = { type: 90, delete: 50, pause: 2000, pauseEmpty: 300 };
   function tick(){
     const word = words[wi];
     if(!deleting){
       ci++;
       el.textContent = word.slice(0, ci);
-      if(ci === word.length){ deleting = true; setTimeout(tick, speed.pause); return; }
+      if(ci === word.length){
+        deleting = true;
+        setTimeout(tick, speed.pause);
+        return;
+      }
       setTimeout(tick, speed.type);
     } else {
       ci--;
       el.textContent = word.slice(0, ci);
-      if(ci === 0){ deleting = false; wi = (wi + 1) % words.length; setTimeout(tick, 200); return; }
+      if(ci === 0){
+        deleting = false;
+        wi = (wi + 1) % words.length;
+        setTimeout(tick, speed.pauseEmpty);
+        return;
+      }
       setTimeout(tick, speed.delete);
     }
   }
-  setTimeout(tick, speed.pause);
+  setTimeout(tick, 600);
 })();
 </script>
 </body>
