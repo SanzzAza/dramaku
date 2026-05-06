@@ -838,9 +838,240 @@ body::after{
 @media(max-width:380px){
   .footer{grid-template-columns:1fr}
 }
+
+/* ── LIGHT MODE ── */
+body.light{
+  --bg:#f5f3ff;--bg2:#ede9fe;--surface:#ffffff;--surface2:#f0ebff;
+  --border:rgba(0,0,0,0.08);--border2:rgba(124,58,237,0.3);
+  --text:#1e0a3c;--text2:#4c3d72;--muted:#9b8fc2;
+  --primary-glow:rgba(124,58,237,0.15);
+}
+body.light body::before{background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(124,58,237,0.08) 0%,transparent 60%)}
+body.light .navbar{background:rgba(245,243,255,0.9)}
+body.light .hero-snippet{background:rgba(255,255,255,0.9);box-shadow:0 8px 40px rgba(124,58,237,0.1)}
+body.light .feat-card,body.light .uc-card,body.light .how-step{background:rgba(255,255,255,0.8)}
+body.light .api-item{background:#fff}
+body.light .api-item:hover{background:#f5f3ff}
+body.light .detail-header,body.light .detail-card,.light .faq-item{background:#fff}
+body.light .s-dim{color:#9b8fc2}
+body.light .res-code,body.light .curl-box{background:rgba(0,0,0,0.04)}
+
+/* ── SCROLL PROGRESS ── */
+#scroll-progress{
+  position:fixed;top:0;left:0;z-index:200;
+  height:3px;width:0%;
+  background:linear-gradient(90deg,#7c3aed,#a855f7,#6366f1);
+  transition:width 0.05s;
+  box-shadow:0 0 8px rgba(124,58,237,0.6);
+}
+
+/* ── THEME TOGGLE BTN ── */
+.theme-toggle{
+  width:34px;height:34px;border-radius:9px;
+  border:1px solid var(--border);background:transparent;
+  cursor:pointer;color:var(--text2);
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;flex-shrink:0;
+}
+.theme-toggle:hover{background:rgba(124,58,237,0.1);border-color:var(--border2);color:var(--text)}
+.theme-toggle svg{display:block;transition:transform 0.4s}
+
+/* ── TOAST ── */
+#toast-container{
+  position:fixed;bottom:24px;right:24px;z-index:9999;
+  display:flex;flex-direction:column;gap:10px;pointer-events:none;
+}
+.toast{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:12px;padding:12px 18px;
+  font-size:13px;font-weight:600;color:var(--text);
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+  pointer-events:all;
+  animation:toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+  max-width:280px;
+}
+.toast.removing{animation:toastOut 0.25s ease both}
+.toast-icon{font-size:15px;flex-shrink:0}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px) scale(0.95)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateX(20px) scale(0.95)}}
+
+/* ── PARTICLES ── */
+#hero-canvas{
+  position:absolute;inset:0;pointer-events:none;z-index:0;opacity:0.5;
+}
+
+
+/* ── STATUS BADGE ── */
+.status-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:700;
+  background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);
+  color:#34d399;padding:4px 12px;border-radius:100px;
+  cursor:default;
+}
+.status-badge-dot{
+  width:6px;height:6px;border-radius:50%;background:#34d399;
+  animation:blink 2s infinite;
+}
+
+/* ── ENDPOINT COPY URL ── */
+.copy-url-bar{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(0,0,0,0.25);border:1px solid var(--border);
+  border-radius:10px;padding:10px 14px;margin:0 0 14px;overflow:hidden;
+}
+.copy-url-text{
+  flex:1;font-family:monospace;font-size:12px;color:var(--text2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.copy-url-btn{
+  font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;
+  cursor:pointer;color:var(--muted);background:rgba(255,255,255,0.06);
+  border:1px solid var(--border);font-family:var(--sans);transition:all 0.15s;
+  flex-shrink:0;
+}
+.copy-url-btn:hover{color:var(--text);border-color:var(--border2)}
+
+/* ── DARK scrollbar ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+
+/* ── RELATED ENDPOINTS ── */
+.related-section{margin-top:14px}
+.related-label{
+  font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:0.12em;
+  margin-bottom:12px;display:flex;align-items:center;gap:10px;
+}
+.related-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.related-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:12px 14px;cursor:pointer;
+  transition:all 0.18s;display:flex;flex-direction:column;gap:6px;
+  text-decoration:none;
+}
+.related-card:hover{
+  border-color:var(--border2);background:var(--surface2);
+  transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(124,58,237,0.15);
+}
+.related-card-icon{
+  width:32px;height:32px;border-radius:8px;
+  background:rgba(124,58,237,0.12);border:1px solid rgba(139,92,246,0.2);
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+}
+.related-card-name{font-size:12px;font-weight:700;color:var(--text);line-height:1.3}
+.related-card-badge{
+  font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;
+  background:rgba(124,58,237,0.12);color:#a78bfa;
+  border:1px solid rgba(139,92,246,0.2);width:fit-content;letter-spacing:0.04em;
+}
+
+
+/* ── PAGE TRANSITION ── */
+.page-transition-overlay{
+  position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:linear-gradient(135deg,#7c3aed,#6366f1);
+  transform:scaleY(0);transform-origin:bottom;
+  transition:transform 0.35s cubic-bezier(0.7,0,0.3,1);
+}
+.page-transition-overlay.entering{transform:scaleY(1);transform-origin:bottom;transition:transform 0.35s cubic-bezier(0.7,0,0.3,1)}
+.page-transition-overlay.leaving{transform:scaleY(0);transform-origin:top;transition:transform 0.35s cubic-bezier(0.7,0,0.3,1)}
+.page{opacity:0;transform:translateY(10px);transition:opacity 0.3s ease,transform 0.3s ease}
+.page.active{opacity:1;transform:translateY(0)}
+
+/* ── TERMINAL INTRO ── */
+#terminal-intro{
+  position:fixed;inset:0;z-index:10000;
+  background:#0d0d1a;
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity 0.5s ease;
+}
+#terminal-intro.fade-out{opacity:0;pointer-events:none}
+.terminal-box{
+  width:min(520px,90vw);
+  background:#12122b;
+  border:1px solid rgba(139,92,246,0.35);
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 0 80px rgba(124,58,237,0.3),0 0 0 1px rgba(139,92,246,0.1);
+}
+.terminal-topbar{
+  display:flex;align-items:center;gap:8px;
+  padding:12px 16px;
+  background:rgba(255,255,255,0.03);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.t-dot{width:10px;height:10px;border-radius:50%}
+.t-dot-r{background:#ff5f57}
+.t-dot-y{background:#febc2e}
+.t-dot-g{background:#28c840}
+.terminal-title{flex:1;text-align:center;font-size:11px;font-weight:600;color:#5a5680;font-family:monospace}
+.terminal-body{
+  padding:20px 24px 24px;
+  font-family:monospace;font-size:13px;line-height:2;
+  min-height:180px;
+}
+.t-line{display:flex;align-items:baseline;gap:8px;opacity:0;transform:translateY(4px);transition:opacity 0.2s,transform 0.2s}
+.t-line.visible{opacity:1;transform:none}
+.t-prompt{color:#7c3aed;font-weight:700;flex-shrink:0}
+.t-text{color:#a09cc0}
+.t-text .t-green{color:#34d399}
+.t-text .t-purple{color:#a78bfa}
+.t-text .t-yellow{color:#fbbf24}
+.t-cursor-blink{
+  display:inline-block;width:8px;height:13px;
+  background:#7c3aed;border-radius:1px;margin-left:2px;
+  animation:cursorBlink 0.7s infinite;vertical-align:middle;
+}
+.terminal-skip{
+  display:block;width:100%;margin-top:4px;
+  background:none;border:none;cursor:pointer;
+  font-family:monospace;font-size:11px;color:#5a5680;
+  padding:8px 0 0;text-align:center;transition:color 0.15s;
+}
+.terminal-skip:hover{color:#a09cc0}
+
+/* ── PING DOT ── */
+.ping-dot{
+  width:7px;height:7px;border-radius:50%;flex-shrink:0;
+  background:#5a5680;transition:background 0.4s;
+  position:relative;
+}
+.ping-dot.online{background:#34d399}
+.ping-dot.online::after{
+  content:'';position:absolute;inset:-3px;border-radius:50%;
+  border:1px solid #34d399;opacity:0;
+  animation:pingRipple 1.8s ease infinite;
+}
+.ping-dot.offline{background:#f87171}
+.ping-dot.checking{background:#fbbf24;animation:pingPulse 0.8s ease infinite}
+@keyframes pingRipple{0%{opacity:0.6;transform:scale(0.8)}100%{opacity:0;transform:scale(2.2)}}
+@keyframes pingPulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
 </style>
 </head>
 <body>
+<div id="scroll-progress"></div>
+<!-- TERMINAL INTRO -->
+<div id="terminal-intro">
+  <div class="terminal-box">
+    <div class="terminal-topbar">
+      <div class="t-dot t-dot-r"></div>
+      <div class="t-dot t-dot-y"></div>
+      <div class="t-dot t-dot-g"></div>
+      <span class="terminal-title">sanzxd-api — bash</span>
+    </div>
+    <div class="terminal-body" id="terminal-body"></div>
+  </div>
+</div>
+<!-- PAGE TRANSITION OVERLAY -->
+<div class="page-transition-overlay" id="page-transition-overlay"></div>
+
+<div id="toast-container"></div>
 
 <!-- NAVBAR -->
 <nav class="navbar">
@@ -854,7 +1085,16 @@ body::after{
     <a href="#" id="nav-news" onclick="showPage('news');setNav('news');return false">NEWS</a>
   </div>
   <div class="nav-right">
+    <span class="status-badge"><span class="status-badge-dot"></span>ALL SYSTEMS OK</span>
     <a class="nav-btn" href="#" onclick="showPage('docs');setNav('docs');return false">GET STARTED</a>
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+      <svg id="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+    </button>
     <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
       <svg id="hamburger-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
@@ -874,6 +1114,7 @@ body::after{
 <!-- ═══════════ HOME ═══════════ -->
 <div id="page-home" class="page active">
   <div class="home-hero">
+    <canvas id="hero-canvas"></canvas>
     <!-- orbs -->
     <div class="hero-badge"><span class="hero-badge-dot"></span>THE FUTURE OF REST API</div>
     <div class="hero-avatar"><img src="https://i.ibb.co.com/q4HBSw3/1777719969821.jpg" alt="SanzXD"/></div>
@@ -1167,7 +1408,7 @@ body::after{
           </div>
           <div class="api-desc">Download TikTok videos without watermark.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-tiktok" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Instagram DL" data-desc="Download Instagram media." data-cat="downloader" onclick="openEndpoint('instagram')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="ig1" cx="30%" cy="107%" r="150%"><stop offset="0%" stop-color="#ffd600"/><stop offset="50%" stop-color="#ff6a00"/><stop offset="100%" stop-color="#c92bb7"/></radialGradient><radialGradient id="ig2" cx="70%" cy="0%" r="100%"><stop offset="0%" stop-color="#4fc3f7"/><stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/></radialGradient></defs><rect x="2" y="2" width="20" height="20" rx="6" fill="url(#ig1)"/><rect x="2" y="2" width="20" height="20" rx="6" fill="url(#ig2)"/><rect x="7" y="7" width="10" height="10" rx="3" stroke="#fff" stroke-width="1.8" fill="none"/><circle cx="12" cy="12" r="2.5" stroke="#fff" stroke-width="1.8" fill="none"/><circle cx="16.5" cy="7.5" r="1" fill="#fff"/></svg></div>
@@ -1178,7 +1419,7 @@ body::after{
           </div>
           <div class="api-desc">Download Instagram media.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-instagram" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="YouTube DL" data-desc="Download YouTube videos to MP3/MP4." data-cat="downloader" onclick="openEndpoint('youtube')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="22" height="16" rx="5" fill="#FF0000"/><polygon points="10,8.5 10,15.5 16,12" fill="#fff"/></svg></div>
@@ -1189,7 +1430,7 @@ body::after{
           </div>
           <div class="api-desc">Download YouTube videos to MP3/MP4.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-youtube" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Facebook DL" data-desc="Download video Facebook dan Reels." data-cat="downloader" onclick="openEndpoint('facebook')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="22" height="22" rx="6" fill="#1877F2"/><path d="M13.5 21V13.5H15.75L16.125 11H13.5V9.5C13.5 8.81 13.86 8.25 14.75 8.25H16.25V6.1C16.25 6.1 14.85 5.88 13.73 5.88C11.57 5.88 10.25 7.13 10.25 9.25V11H8V13.5H10.25V21H13.5Z" fill="#fff"/></svg></div>
@@ -1200,7 +1441,7 @@ body::after{
           </div>
           <div class="api-desc">Download video Facebook dan Reels.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-facebook" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Pinterest DL" data-desc="Download gambar dan video dari Pinterest." data-cat="downloader" onclick="openEndpoint('pinterest')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="#E60023"/><path d="M12 2C6.48 2 2 6.48 2 12c0 4.24 2.65 7.86 6.39 9.29-.09-.78-.17-1.98.03-2.83.18-.78 1.18-5 1.18-5s-.3-.6-.3-1.49c0-1.4.81-2.44 1.82-2.44.86 0 1.27.64 1.27 1.41 0 .86-.55 2.15-.83 3.34-.24 1 .5 1.81 1.48 1.81 1.77 0 3.14-1.87 3.14-4.57 0-2.39-1.72-4.06-4.17-4.06-2.84 0-4.51 2.13-4.51 4.33 0 .86.33 1.78.74 2.28.08.1.09.19.07.29-.08.31-.24 1-.28 1.13-.04.18-.14.22-.34.13-1.25-.58-2.03-2.41-2.03-3.88 0-3.15 2.29-6.05 6.61-6.05 3.47 0 6.16 2.47 6.16 5.78 0 3.45-2.17 6.22-5.19 6.22-1.01 0-1.97-.53-2.29-1.15l-.62 2.38c-.23.87-.84 1.96-1.24 2.62.93.29 1.93.45 2.96.45 5.52 0 10-4.48 10-10S17.52 2 12 2z" fill="#fff"/></svg></div>
@@ -1211,7 +1452,7 @@ body::after{
           </div>
           <div class="api-desc">Download gambar dan video dari Pinterest.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-pinterest" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
 
       <div class="api-item" data-name="Twitter/X DL" data-desc="Download video dari Twitter atau X." data-cat="downloader" onclick="openEndpoint('twitter')">
@@ -1223,7 +1464,7 @@ body::after{
           </div>
           <div class="api-desc">Download video dari Twitter atau X.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-twitter" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Threads DL" data-desc="Download video atau gambar dari Threads." data-cat="downloader" onclick="openEndpoint('threads')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#000"/><path d="M12.17 4C9.0 4 6.5 6.01 6.5 9.25c0 1.56.6 2.83 1.66 3.72-.17.5-.27 1.03-.27 1.58 0 2.67 2.13 4.45 5.03 4.45 1.48 0 2.74-.48 3.67-1.31.1.28.15.58.15.9 0 1.54-1.26 2.41-3.24 2.41-1.18 0-2.22-.32-3.02-.88l-.96 1.54C10.6 22.54 11.9 23 13.5 23c3.04 0 5.0-1.65 5.0-4.1 0-.72-.17-1.38-.47-1.95.58-.88.91-1.97.91-3.2C18.94 10.0 17.17 4 12.17 4zm.08 1.8c3.5 0 4.89 4.4 4.89 7.95 0 2.22-.97 3.5-2.48 3.5-1.06 0-1.97-.63-2.29-1.57l-.19-.59-.58.24c-.43.18-.88.27-1.35.27-1.58 0-2.63-.97-2.63-2.45 0-.37.07-.72.2-1.04.57.27 1.2.42 1.88.42 2.1 0 3.55-1.3 3.55-3.17 0-1.55-1.08-2.56-2.74-2.56-.66 0-1.26.18-1.76.5-.22-.5-.34-1.06-.34-1.65 0-2.2 1.66-3.85 3.84-3.85zm-.41 3.7c.85 0 1.44.55 1.44 1.36 0 .96-.71 1.57-1.85 1.57-.47 0-.9-.1-1.28-.28.15-.98.86-2.65 1.69-2.65z" fill="#fff"/></svg></div>
@@ -1234,7 +1475,7 @@ body::after{
           </div>
           <div class="api-desc">Download video atau gambar dari Threads.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-threads" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Terabox DL" data-desc="Download file dari Terabox (1024terabox, teraboxapp, dll)." data-cat="downloader" onclick="openEndpoint('terabox')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#1677ff"/><path d="M12 5L5 8.5v7L12 19l7-3.5v-7L12 5z" fill="none" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path d="M5 8.5l7 3.5 7-3.5M12 12v7" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
@@ -1245,7 +1486,7 @@ body::after{
           </div>
           <div class="api-desc">Download file dari Terabox (1024terabox, teraboxapp, dll).</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-terabox" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
     </div>
 
@@ -1257,7 +1498,7 @@ body::after{
           <div class="api-name-row"><span class="api-name">QR Code Generator</span><span class="api-badge">TOOLS</span></div>
           <div class="api-desc">Generate QR Code dari teks atau URL.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-qrcode" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Short URL" data-desc="Persingkat URL panjang jadi pendek." data-cat="tools" onclick="openEndpoint('shorturl')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
@@ -1265,7 +1506,7 @@ body::after{
           <div class="api-name-row"><span class="api-name">Short URL</span><span class="api-badge">TOOLS</span></div>
           <div class="api-desc">Persingkat URL panjang jadi pendek.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-shorturl" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Cuaca" data-desc="Info cuaca real-time berdasarkan nama kota." data-cat="tools" onclick="openEndpoint('cuaca')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/></svg></div>
@@ -1273,7 +1514,7 @@ body::after{
           <div class="api-name-row"><span class="api-name">Cuaca</span><span class="api-badge">TOOLS</span></div>
           <div class="api-desc">Info cuaca real-time berdasarkan nama kota.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-cuaca" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Cek Nomor HP" data-desc="Deteksi operator dari nomor HP Indonesia." data-cat="tools" onclick="openEndpoint('cekno')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg></div>
@@ -1281,7 +1522,7 @@ body::after{
           <div class="api-name-row"><span class="api-name">Cek Nomor HP</span><span class="api-badge">TOOLS</span></div>
           <div class="api-desc">Deteksi operator dari nomor HP Indonesia.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-cekno" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Konversi Mata Uang" data-desc="Konversi kurs mata uang real-time." data-cat="tools" onclick="openEndpoint('kurs')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
@@ -1289,7 +1530,7 @@ body::after{
           <div class="api-name-row"><span class="api-name">Konversi Mata Uang</span><span class="api-badge">TOOLS</span></div>
           <div class="api-desc">Konversi kurs mata uang real-time.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-kurs" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Screenshot Web" data-desc="Ambil screenshot halaman web dari URL." data-cat="tools" onclick="openEndpoint('screenshot')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
@@ -1297,7 +1538,7 @@ body::after{
           <div class="api-name-row"><span class="api-name">Screenshot Web</span><span class="api-badge">TOOLS</span></div>
           <div class="api-desc">Ambil screenshot halaman web dari URL.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-screenshot" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Text to Speech" data-desc="Konversi teks ke audio suara." data-cat="tools" onclick="openEndpoint('tts')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></div>
@@ -1305,7 +1546,7 @@ body::after{
           <div class="api-name-row"><span class="api-name">Text to Speech</span><span class="api-badge">TOOLS</span></div>
           <div class="api-desc">Konversi teks ke audio suara.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-tts" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Lirik Lagu" data-desc="Cari dan ambil lirik lagu dari berbagai artis." data-cat="tools" onclick="openEndpoint('lirik')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
@@ -1313,7 +1554,7 @@ body::after{
           <div class="api-name-row"><span class="api-name">Lirik Lagu</span><span class="api-badge">TOOLS</span></div>
           <div class="api-desc">Cari dan ambil lirik lagu dari berbagai artis.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-lirik" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Info Film & Series" data-desc="Cari info film dan series lengkap via TMDB." data-cat="tools" onclick="openEndpoint('film')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M17 7h5M2 17h5M17 17h5"/></svg></div>
@@ -1321,7 +1562,7 @@ body::after{
           <div class="api-name-row"><span class="api-name">Info Film &amp; Series</span><span class="api-badge">TOOLS</span></div>
           <div class="api-desc">Cari info film dan series lengkap via TMDB.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-film" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Jadwal Sholat" data-desc="Jadwal sholat harian by nama kota." data-cat="tools" onclick="openEndpoint('sholat')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></div>
@@ -1329,7 +1570,7 @@ body::after{
           <div class="api-name-row"><span class="api-name">Jadwal Sholat</span><span class="api-badge">TOOLS</span></div>
           <div class="api-desc">Jadwal sholat harian by nama kota.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-sholat" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Cek Nomor Resi" data-desc="Lacak paket JNE, J&T, SiCepat dan kurir lainnya." data-cat="tools" onclick="openEndpoint('resi')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12H19M12 5l7 7-7 7"/></svg></div>
@@ -1337,7 +1578,7 @@ body::after{
           <div class="api-name-row"><span class="api-name">Cek Nomor Resi</span><span class="api-badge">TOOLS</span></div>
           <div class="api-desc">Lacak paket JNE, J&amp;T, SiCepat dan kurir lainnya.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-resi" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Jadwal & Skor Bola" data-desc="Live score, jadwal, dan hasil pertandingan sepak bola." data-cat="tools" onclick="openEndpoint('bola')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></div>
@@ -1345,7 +1586,7 @@ body::after{
           <div class="api-name-row"><span class="api-name">Jadwal &amp; Skor Bola</span><span class="api-badge">TOOLS</span></div>
           <div class="api-desc">Live score, jadwal, dan hasil pertandingan sepak bola.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-bola" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Baca Manga" data-desc="Search, detail, dan baca chapter manga via MangaDex." data-cat="tools" onclick="openEndpoint('manga')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
@@ -1353,7 +1594,7 @@ body::after{
           <div class="api-name-row"><span class="api-name">Baca Manga</span><span class="api-badge">TOOLS</span></div>
           <div class="api-desc">Search, detail, dan baca chapter manga via MangaDex.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-manga" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
     </div>
 
@@ -1365,7 +1606,7 @@ body::after{
           <div class="api-name-row"><span class="api-name">Random Quote</span><span class="api-badge">FUN</span></div>
           <div class="api-desc">Ambil kutipan motivasi secara acak.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-quote" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
       <div class="api-item" data-name="Random Anime Image" data-desc="Ambil gambar anime random via waifu.pics." data-cat="fun" onclick="openEndpoint('anime')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/><path d="M9 11.5c0 1 .5 2 1.5 2.5M15 11.5c0 1-.5 2-1.5 2.5"/></svg></div>
@@ -1373,7 +1614,7 @@ body::after{
           <div class="api-name-row"><span class="api-name">Random Anime Image</span><span class="api-badge">FUN</span></div>
           <div class="api-desc">Ambil gambar anime random via waifu.pics.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-anime" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
     </div>
 
@@ -1385,7 +1626,7 @@ body::after{
           <div class="api-name-row"><span class="api-name">AI Image Generator</span><span class="api-badge">AI</span></div>
           <div class="api-desc">Generate gambar dari teks prompt via Pollinations AI.</div>
         </div>
-        <span class="api-chevron">›</span>
+        <span class="ping-dot checking" id="ping-aiimage" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
     </div>
 
@@ -1462,7 +1703,7 @@ const base = window.location.origin;
 let ytFormat = 'mp3', ytQuality = '128';
 
 let _newsInited = false;
-function showPage(name) {
+function _doShowPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   if(name === 'news' && !_newsInited){ _newsInited=true; initNewsPage(); loadNews(); }
@@ -2566,7 +2807,9 @@ function openEndpoint(id) {
           <div class="res-code" id="code-${ep.key}"></div>
         </div>
       </div>
-    </div>`;
+    </div>
+    ${renderRelated(id)}
+    `;
 
   showPage('detail');
   window._curEpId = id;
@@ -2689,6 +2932,7 @@ function hl(json) {
 
 function copyEl(id, btn) {
   navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+    showToast('✅ Disalin ke clipboard!');
     const o = btn.textContent; btn.textContent = '✓ COPIED';
     setTimeout(() => btn.textContent = o, 1500);
   });
@@ -3150,6 +3394,282 @@ window.addEventListener('load', function(){
   }
   setTimeout(tick, 600);
 })();
+
+// ── SCROLL PROGRESS ──
+(function(){
+  const bar = document.getElementById('scroll-progress');
+  window.addEventListener('scroll',()=>{
+    const doc = document.documentElement;
+    const scrolled = doc.scrollTop/(doc.scrollHeight-doc.clientHeight)*100;
+    bar.style.width = Math.min(scrolled,100)+'%';
+  });
+})();
+
+// ── THEME TOGGLE ──
+function toggleTheme(){
+  const isLight = document.body.classList.toggle('light');
+  localStorage.setItem('sanzxd-theme', isLight ? 'light' : 'dark');
+  showToast(isLight ? '☀️ Light mode aktif' : '🌙 Dark mode aktif');
+}
+(function(){
+  if(localStorage.getItem('sanzxd-theme')==='light') document.body.classList.add('light');
+})();
+
+// ── TOAST ──
+function showToast(msg, duration=2500){
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className='toast';
+  el.innerHTML = msg;
+  container.appendChild(el);
+  setTimeout(()=>{
+    el.classList.add('removing');
+    setTimeout(()=>el.remove(),250);
+  }, duration);
+}
+
+// ── Override copy functions to use toast ──
+const _origCopySnippet = copySnippet;
+function copySnippet(){
+  const s = SNIPPETS[_curSnippet];
+  if(!s) return;
+  const text = s.lines.map(l=>l.v).join('\n');
+  navigator.clipboard.writeText(text).then(()=>{
+    showToast('✅ Code snippet disalin!');
+  });
+}
+
+// ── PARTICLES ──
+(function(){
+  const canvas = document.getElementById('hero-canvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  function resize(){
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+  function initParticles(){
+    particles = Array.from({length:40},()=>({
+      x: Math.random()*canvas.width,
+      y: Math.random()*canvas.height,
+      r: Math.random()*2+0.5,
+      vx: (Math.random()-0.5)*0.3,
+      vy: (Math.random()-0.5)*0.3,
+      alpha: Math.random()*0.5+0.1
+    }));
+  }
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{
+      p.x += p.vx; p.y += p.vy;
+      if(p.x<0)p.x=canvas.width; if(p.x>canvas.width)p.x=0;
+      if(p.y<0)p.y=canvas.height; if(p.y>canvas.height)p.y=0;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(167,139,250,${p.alpha})`;
+      ctx.fill();
+    });
+    // draw connections
+    particles.forEach((a,i)=>{
+      particles.slice(i+1).forEach(b=>{
+        const dx=a.x-b.x, dy=a.y-b.y;
+        const dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<80){
+          ctx.beginPath();
+          ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+          ctx.strokeStyle=`rgba(124,58,237,${0.12*(1-dist/80)})`;
+          ctx.lineWidth=0.8;
+          ctx.stroke();
+        }
+      });
+    });
+    requestAnimationFrame(draw);
+  }
+  new ResizeObserver(()=>{resize();initParticles();}).observe(canvas);
+  resize(); initParticles(); draw();
+})();
+
+
+
+// ── RELATED ENDPOINTS ──
+const RELATED_MAP = {
+  tiktok:    ['instagram','youtube','facebook','twitter','threads','terabox'],
+  instagram: ['tiktok','youtube','facebook','pinterest','twitter','threads'],
+  youtube:   ['tiktok','instagram','facebook','terabox'],
+  facebook:  ['tiktok','instagram','twitter','threads','terabox'],
+  twitter:   ['tiktok','instagram','facebook','threads'],
+  threads:   ['tiktok','instagram','twitter','facebook'],
+  pinterest: ['instagram','tiktok','anime'],
+  terabox:   ['tiktok','youtube','facebook'],
+  qrcode:    ['shorturl','screenshot','tts'],
+  shorturl:  ['qrcode','screenshot'],
+  screenshot:['qrcode','shorturl','lirik'],
+  aiimage:   ['anime','tts','screenshot'],
+  tts:       ['aiimage','lirik','qrcode'],
+  lirik:     ['tts','film','bola'],
+  cuaca:     ['sholat','kurs','cekno'],
+  kurs:      ['cuaca','cekno','resi'],
+  cekno:     ['kurs','resi','cuaca'],
+  resi:      ['cekno','kurs','bola'],
+  quote:     ['anime','lirik','film'],
+  anime:     ['aiimage','quote','manga'],
+  manga:     ['anime','film','quote'],
+  film:      ['lirik','manga','bola'],
+  sholat:    ['cuaca','resi','bola'],
+  bola:      ['sholat','film','lirik'],
+};
+
+function renderRelated(epId) {
+  const related = RELATED_MAP[epId];
+  if (!related || !related.length) return '';
+  const cards = related.slice(0,4).map(key => {
+    const ep = EP[key];
+    if (!ep) return '';
+    const iconSmall = ep.icon ? ep.icon.replace(/width="28"/g,'width="18"').replace(/height="28"/g,'height="18"') : '📦';
+    return `<div class="related-card" onclick="openEndpoint('${key}')">
+      <div class="related-card-icon">${iconSmall}</div>
+      <div class="related-card-name">${ep.name}</div>
+      <span class="related-card-badge">${ep.badge}</span>
+    </div>`;
+  }).join('');
+  return `<div class="related-section">
+    <div class="related-label">Mungkin kamu juga butuh</div>
+    <div class="related-grid">${cards}</div>
+  </div>`;
+}
+
+
+// ══ TERMINAL INTRO ══
+(function(){
+  const lines = [
+    {prompt:'$', html:'<span class="t-green">initializing</span> SanzXD API v2.0...'},
+    {prompt:'>', html:'loading <span class="t-purple">54 endpoints</span>...........  <span class="t-green">OK</span>'},
+    {prompt:'>', html:'connecting to <span class="t-yellow">dramafeed.vercel.app</span>'},
+    {prompt:'>', html:'status: <span class="t-green">● ALL SYSTEMS ONLINE</span>'},
+    {prompt:'$', html:'<span class="t-green">welcome, developer.</span> 🚀'},
+  ];
+  const body = document.getElementById('terminal-body');
+  const intro = document.getElementById('terminal-intro');
+  if(!body||!intro) return;
+
+  // build line elements
+  lines.forEach((l,i)=>{
+    const div = document.createElement('div');
+    div.className = 't-line';
+    div.innerHTML = `<span class="t-prompt">${l.prompt}</span><span class="t-text">${l.html}</span>`;
+    if(i === lines.length-1){
+      div.innerHTML += '<span class="t-cursor-blink"></span>';
+    }
+    body.appendChild(div);
+  });
+
+  // skip button
+  const skip = document.createElement('button');
+  skip.className = 'terminal-skip';
+  skip.textContent = 'press any key to skip →';
+  body.appendChild(skip);
+
+  let dismissed = false;
+  function dismiss(){
+    if(dismissed) return;
+    dismissed = true;
+    intro.classList.add('fade-out');
+    setTimeout(()=>{ intro.style.display='none'; }, 500);
+  }
+  skip.addEventListener('click', dismiss);
+  document.addEventListener('keydown', dismiss, {once:true});
+
+  // stagger line reveal
+  let delay = 300;
+  body.querySelectorAll('.t-line').forEach((el,i)=>{
+    setTimeout(()=>el.classList.add('visible'), delay);
+    delay += i < lines.length-1 ? 420 : 600;
+  });
+  // auto dismiss after all lines shown + pause
+  setTimeout(dismiss, delay + 1200);
+})();
+
+// ══ PAGE TRANSITION ══
+function showPage(name){
+  const overlay = document.getElementById('page-transition-overlay');
+  if(!overlay){ _doShowPage(name); return; }
+  overlay.classList.remove('leaving');
+  overlay.classList.add('entering');
+  setTimeout(()=>{
+    _doShowPage(name);
+    overlay.classList.remove('entering');
+    overlay.classList.add('leaving');
+    setTimeout(()=> overlay.classList.remove('leaving'), 380);
+  }, 320);
+}
+
+// ══ ENDPOINT PING REALTIME ══
+(function(){
+  const BASE = 'https://dramafeed.vercel.app';
+  const PING_ENDPOINTS = {
+    tiktok:    '/api/downloader',
+    instagram: '/api/downloader',
+    youtube:   '/api/downloader',
+    facebook:  '/api/downloader',
+    pinterest: '/api/downloader',
+    twitter:   '/api/downloader',
+    threads:   '/api/downloader',
+    terabox:   '/api/downloader',
+    qrcode:    '/api/tools',
+    shorturl:  '/api/tools',
+    cuaca:     '/api/tools',
+    cekno:     '/api/tools',
+    kurs:      '/api/tools',
+    screenshot:'/api/tools',
+    tts:       '/api/tools',
+    lirik:     '/api/tools',
+    film:      '/api/tools',
+    sholat:    '/api/tools',
+    resi:      '/api/tools',
+    bola:      '/api/tools',
+    manga:     '/api/tools',
+    quote:     '/api/tools',
+    anime:     '/api/tools',
+    aiimage:   '/api/tools',
+  };
+
+  // group by path to minimize requests
+  const pathGroups = {};
+  Object.entries(PING_ENDPOINTS).forEach(([id, path])=>{
+    if(!pathGroups[path]) pathGroups[path] = [];
+    pathGroups[path].push(id);
+  });
+
+  function setDot(id, status){
+    const dot = document.getElementById('ping-' + id);
+    if(!dot) return;
+    dot.className = 'ping-dot ' + status;
+    dot.title = status === 'online' ? '● Online' : status === 'offline' ? '● Offline' : '● Checking...';
+  }
+
+  async function pingPath(path, ids){
+    const start = Date.now();
+    try {
+      const res = await fetch(BASE + path + '?_ping=1', {method:'GET', signal: AbortSignal.timeout(5000)});
+      const ok = res.status < 500;
+      ids.forEach(id => setDot(id, ok ? 'online' : 'offline'));
+    } catch(e) {
+      ids.forEach(id => setDot(id, 'offline'));
+    }
+  }
+
+  // run on page load with stagger
+  let delay = 2000; // wait for terminal intro to finish
+  Object.entries(pathGroups).forEach(([path, ids])=>{
+    setTimeout(()=> pingPath(path, ids), delay);
+    delay += 400;
+  });
+
+  // re-ping every 2 minutes
+  setInterval(()=>{
+    Object.entries(pathGroups).forEach(([path, ids])=> pingPath(path, ids));
+  }, 120000);
+})();
+
 </script>
-</body>
-</html>
