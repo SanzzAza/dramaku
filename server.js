@@ -85,6 +85,8 @@ const server = createServer(async (req, res) => {
         gsHome, gsSearch, gsDetail, gsStream, gsStreamFast, gsUnlockAll,
         dbHome, dbRank, dbSearch, dbDetail, dbEpisodes,
         mlHome, mlSearch, mlDetail, mlVideo,
+        dbtDramas, dbtForyou, dbtHot, dbtRecommend, dbtSearch, dbtDetail, dbtLikes, dbtEpisode,
+        dnvDramas, dnvDetail, dnvVideo, dnvSearch, dnvModules, dnvRecommend,
       } = await import("./api/drama.js");
 
       const q      = mockReq.query;
@@ -168,7 +170,70 @@ const server = createServer(async (req, res) => {
         return;
       }
 
-      mockRes.json({ status: false, code: 400, message: `Unknown source '${source}'. Use: goodshort | dramabox | melolo` });
+      // ── DramaBite ──────────────────────────────────────────────────────────
+      if (source === "dramabite") {
+        let result;
+        const lang    = q.lang    || "id";
+        const page    = parseInt(q.page) || 0;
+        const did     = q.id      || "";
+        const ep      = parseInt(q.ep) || 1;
+        const limit   = parseInt(q.limit) || 20;
+        const quality = q.quality || "default";
+
+        if      (action === "dramas" || action === "home")
+          result = await dbtDramas(lang, page);
+        else if (action === "foryou")
+          result = await dbtForyou(lang, page);
+        else if (action === "hot" || action === "trending")
+          result = await dbtHot(lang);
+        else if (action === "recommend")
+          result = await dbtRecommend(lang, page);
+        else if (action === "search")
+          result = await dbtSearch(q.query || q.q || "", lang, limit);
+        else if (action === "detail")
+          result = await dbtDetail(did, lang);
+        else if (action === "likes")
+          result = await dbtLikes(did, lang);
+        else if (action === "episode" || action === "video")
+          result = await dbtEpisode(did, ep, lang, quality);
+        else
+          result = { status: false, code: 400, message: `Unknown action '${action}' for dramabite` };
+
+        mockRes.json(result);
+        return;
+      }
+
+      // ── DramaNova ──────────────────────────────────────────────────────────
+      if (source === "dramanova") {
+        let result;
+        const lang        = q.lang        || "in";
+        const page        = parseInt(q.page) || 1;
+        const size        = parseInt(q.size) || 20;
+        const did         = q.id          || "";
+        const ep          = parseInt(q.ep) || 1;
+        const categoryKey = q.categoryKey || q.category || "dramanova_hot";
+        const limit       = parseInt(q.limit) || 6;
+
+        if      (action === "dramas" || action === "home")
+          result = await dnvDramas(lang, page, size);
+        else if (action === "detail")
+          result = await dnvDetail(did, lang);
+        else if (action === "video" || action === "episode" || action === "stream")
+          result = await dnvVideo(did, ep, lang);
+        else if (action === "search")
+          result = await dnvSearch(q.query || q.q || "", lang);
+        else if (action === "modules" || action === "categories")
+          result = await dnvModules(lang);
+        else if (action === "recommend")
+          result = await dnvRecommend(lang, categoryKey, page, size, limit);
+        else
+          result = { status: false, code: 400, message: `Unknown action '${action}' for dramanova` };
+
+        mockRes.json(result);
+        return;
+      }
+
+      mockRes.json({ status: false, code: 400, message: `Unknown source '${source}'. Use: goodshort | dramabox | melolo | dramabite | dramanova` });
     } catch (err) {
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ status: false, code: 500, message: err.message }));
@@ -221,7 +286,7 @@ server.listen(PORT, () => {
   console.log(`   Bola      → http://localhost:${PORT}/api/tools?tool=bola&action=live`);
   console.log(`   Manga     → http://localhost:${PORT}/api/tools?tool=manga&action=search&query=naruto`);
 
-  console.log(`\n  🎬 DRAMA (GoodShort · DramaBox · Melolo)`);
+  console.log(`\n  🎬 DRAMA (GoodShort · DramaBox · Melolo · DramaBite · DramaNova)`);
   console.log(`\n   ── GoodShort ──`);
   console.log(`   Home      → http://localhost:${PORT}/api/drama?action=home&source=goodshort&channel=id`);
   console.log(`   Search    → http://localhost:${PORT}/api/drama?action=search&source=goodshort&query=cinta`);
@@ -239,6 +304,24 @@ server.listen(PORT, () => {
   console.log(`   Search    → http://localhost:${PORT}/api/drama?action=search&source=melolo&query=cinta`);
   console.log(`   Detail    → http://localhost:${PORT}/api/drama?action=detail&source=melolo&id=7614440427814390837`);
   console.log(`   Video     → http://localhost:${PORT}/api/drama?action=episode&source=melolo&id=7614440427814390837&ep=1`);
+
+  console.log(`\n   ── DramaBite ──`);
+  console.log(`   Home      → http://localhost:${PORT}/api/drama?action=home&source=dramabite&lang=id`);
+  console.log(`   For You   → http://localhost:${PORT}/api/drama?action=foryou&source=dramabite&lang=id`);
+  console.log(`   Trending  → http://localhost:${PORT}/api/drama?action=hot&source=dramabite&lang=id`);
+  console.log(`   Recommend → http://localhost:${PORT}/api/drama?action=recommend&source=dramabite&lang=id`);
+  console.log(`   Search    → http://localhost:${PORT}/api/drama?action=search&source=dramabite&q=cinta`);
+  console.log(`   Detail    → http://localhost:${PORT}/api/drama?action=detail&source=dramabite&id=DRAMA_ID`);
+  console.log(`   Likes     → http://localhost:${PORT}/api/drama?action=likes&source=dramabite&id=DRAMA_ID`);
+  console.log(`   Episode   → http://localhost:${PORT}/api/drama?action=episode&source=dramabite&id=DRAMA_ID&ep=1`);
+
+  console.log(`\n   ── DramaNova ──`);
+  console.log(`   Home      → http://localhost:${PORT}/api/drama?action=home&source=dramanova&lang=in`);
+  console.log(`   Search    → http://localhost:${PORT}/api/drama?action=search&source=dramanova&q=cinta`);
+  console.log(`   Detail    → http://localhost:${PORT}/api/drama?action=detail&source=dramanova&id=DRAMA_ID`);
+  console.log(`   Video     → http://localhost:${PORT}/api/drama?action=video&source=dramanova&id=DRAMA_ID&ep=1`);
+  console.log(`   Modules   → http://localhost:${PORT}/api/drama?action=modules&source=dramanova&lang=in`);
+  console.log(`   Recommend → http://localhost:${PORT}/api/drama?action=recommend&source=dramanova&lang=in`);
 
   console.log(`\n  📰 NEWS`);
   console.log(`   Latest    → http://localhost:${PORT}/api/news?source=detik`);
