@@ -1407,7 +1407,7 @@ const EP = {
     desc:'Dapatkan rekomendasi drama trending untuk kamu berdasarkan platform pilihan.',
     params:[
       {name:'action', value:'foryou', type:'hidden'},
-      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramabox','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
+      {name:'source', label:'Source Platform', type:'select', options:['melolo','goodshort','dramabox'], default:'shortmax'},
       {name:'page', label:'Halaman', placeholder:'1', type:'text', value:'1'},
       {name:'lang', label:'Bahasa (DramaBox/Melolo)', type:'select', options:['in','en','id','zh'], default:'in'},
       {name:'channel', label:'Channel (GoodShort)', type:'select', options:['id','pt','kr','th'], default:'id'},
@@ -1420,7 +1420,7 @@ const EP = {
     desc:'Cari drama dari berbagai platform short drama. Vyreels untuk pencarian lebih lengkap, Dracinku sebagai fallback.',
     params:[
       {name:'action', value:'search', type:'hidden'},
-      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramabox','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
+      {name:'source', label:'Source Platform', type:'select', options:['melolo','goodshort','dramabox'], default:'shortmax'},
       {name:'query', label:'Kata Kunci', placeholder:'Contoh: cinta, CEO, balas dendam...', type:'text'},
       {name:'page', label:'Halaman', placeholder:'1', type:'text', value:'1'},
     ],
@@ -1431,7 +1431,7 @@ const EP = {
     desc:'Drama yang sedang trending di platform pilihan.',
     params:[
       {name:'action', value:'trending', type:'hidden'},
-      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramabox','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
+      {name:'source', label:'Source Platform', type:'select', options:['melolo','goodshort','dramabox'], default:'shortmax'},
       {name:'page', label:'Halaman', placeholder:'1', type:'text', value:'1'},
     ],
   },
@@ -1441,7 +1441,7 @@ const EP = {
     desc:'Info lengkap drama: sinopsis, poster, genre, total episode, dan list episode. Gunakan slug untuk Vyreels, id untuk Dracinku.',
     params:[
       {name:'action', value:'detail', type:'hidden'},
-      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramabox','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
+      {name:'source', label:'Source Platform', type:'select', options:['melolo','goodshort','dramabox'], default:'shortmax'},
       {name:'id', label:'Drama ID', placeholder:'Contoh: 42000002888 (DramaBox), 31001345248 (GoodShort)', type:'text'},
       {name:'lang', label:'Bahasa', type:'select', options:['in','en','id','zh'], default:'in'},
     ],
@@ -1452,7 +1452,7 @@ const EP = {
     desc:'Dapatkan URL video episode (.mp4/.m3u8) yang bisa langsung diputar. Gunakan slug untuk Vyreels, id untuk Dracinku.',
     params:[
       {name:'action', value:'episode', type:'hidden'},
-      {name:'source', label:'Source Platform', type:'select', options:['shortmax','melolo','flickreels','stardusttv','idrama','netshort','freereels','rapidtv','flickshort','dramawave','reelshort','goodshort','dramabox','dramamax','radreels','chill','dramarush','animev2','movie','tv','drakor','bjav','microdrama','cubetv','dramadash'], default:'shortmax'},
+      {name:'source', label:'Source Platform', type:'select', options:['melolo','goodshort','dramabox'], default:'shortmax'},
       {name:'id', label:'Drama ID', placeholder:'Contoh: 42000002888 (DramaBox), 31001345248 (GoodShort)', type:'text'},
       {name:'ep', label:'Nomor Episode', placeholder:'Contoh: 1', type:'text'},
       {name:'lang', label:'Bahasa (DramaBox)', type:'select', options:['in','en','id','zh'], default:'in'},
@@ -1590,166 +1590,6 @@ const DRAMA_PLATFORMS = [
     ]
   },
   {
-    id: 'netshort', name: 'NetShort', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
-    endpoints: [
-      { epId: 'ns-foryou',   path: '/api/drama?action=foryou&source=netshort',   desc: 'For You / Rekomendasi' },
-      { epId: 'ns-trending', path: '/api/drama?action=trending&source=netshort', desc: 'Trending drama' },
-      { epId: 'ns-search',   path: '/api/drama?action=search&source=netshort',   desc: 'Search drama' },
-      { epId: 'ns-detail',   path: '/api/drama?action=detail&source=netshort',   desc: 'Detail drama' },
-      { epId: 'ns-episode',  path: '/api/drama?action=episode&source=netshort',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'freereels', name: 'FreeReels', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polygon points="10 8.5 16 12 10 15.5 10 8.5"/></svg>',
-    endpoints: [
-      { epId: 'fr-foryou',   path: '/api/drama?action=foryou&source=freereels',   desc: 'For You / Rekomendasi' },
-      { epId: 'fr-trending', path: '/api/drama?action=trending&source=freereels', desc: 'Trending drama' },
-      { epId: 'fr-search',   path: '/api/drama?action=search&source=freereels',   desc: 'Search drama' },
-      { epId: 'fr-detail',   path: '/api/drama?action=detail&source=freereels',   desc: 'Detail drama' },
-      { epId: 'fr-episode',  path: '/api/drama?action=episode&source=freereels',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'dramamax', name: 'DramaMax', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/></svg>',
-    endpoints: [
-      { epId: 'dm-foryou',   path: '/api/drama?action=foryou&source=dramamax',   desc: 'For You / Rekomendasi' },
-      { epId: 'dm-trending', path: '/api/drama?action=trending&source=dramamax', desc: 'Trending drama' },
-      { epId: 'dm-search',   path: '/api/drama?action=search&source=dramamax',   desc: 'Search drama' },
-      { epId: 'dm-detail',   path: '/api/drama?action=detail&source=dramamax',   desc: 'Detail drama' },
-      { epId: 'dm-episode',  path: '/api/drama?action=episode&source=dramamax',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'radreels', name: 'RadReels', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>',
-    endpoints: [
-      { epId: 'rr-foryou',   path: '/api/drama?action=foryou&source=radreels',   desc: 'For You / Rekomendasi' },
-      { epId: 'rr-trending', path: '/api/drama?action=trending&source=radreels', desc: 'Trending drama' },
-      { epId: 'rr-search',   path: '/api/drama?action=search&source=radreels',   desc: 'Search drama' },
-      { epId: 'rr-detail',   path: '/api/drama?action=detail&source=radreels',   desc: 'Detail drama' },
-      { epId: 'rr-episode',  path: '/api/drama?action=episode&source=radreels',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'chill', name: 'Chill', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 8v4l3 3"/><path d="M18 2v6h6"/></svg>',
-    endpoints: [
-      { epId: 'ch-foryou',   path: '/api/drama?action=foryou&source=chill',   desc: 'For You / Rekomendasi' },
-      { epId: 'ch-trending', path: '/api/drama?action=trending&source=chill', desc: 'Trending drama' },
-      { epId: 'ch-search',   path: '/api/drama?action=search&source=chill',   desc: 'Search drama' },
-      { epId: 'ch-detail',   path: '/api/drama?action=detail&source=chill',   desc: 'Detail drama' },
-      { epId: 'ch-episode',  path: '/api/drama?action=episode&source=chill',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'dramarush', name: 'DramaRush', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
-    endpoints: [
-      { epId: 'dr-foryou',   path: '/api/drama?action=foryou&source=dramarush',   desc: 'For You / Rekomendasi' },
-      { epId: 'dr-trending', path: '/api/drama?action=trending&source=dramarush', desc: 'Trending drama' },
-      { epId: 'dr-search',   path: '/api/drama?action=search&source=dramarush',   desc: 'Search drama' },
-      { epId: 'dr-detail',   path: '/api/drama?action=detail&source=dramarush',   desc: 'Detail drama' },
-      { epId: 'dr-episode',  path: '/api/drama?action=episode&source=dramarush',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'animev2', name: 'AnimeV2', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><path d="M8 8s-.5 2 1 3"/><path d="M16 8s.5 2-1 3"/></svg>',
-    endpoints: [
-      { epId: 'av-foryou',   path: '/api/drama?action=foryou&source=animev2',   desc: 'For You / Rekomendasi' },
-      { epId: 'av-trending', path: '/api/drama?action=trending&source=animev2', desc: 'Trending' },
-      { epId: 'av-search',   path: '/api/drama?action=search&source=animev2',   desc: 'Search anime' },
-      { epId: 'av-detail',   path: '/api/drama?action=detail&source=animev2',   desc: 'Detail anime' },
-      { epId: 'av-episode',  path: '/api/drama?action=episode&source=animev2',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'movie', name: 'Movie', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>',
-    endpoints: [
-      { epId: 'mv-foryou',   path: '/api/drama?action=foryou&source=movie',   desc: 'For You / Rekomendasi' },
-      { epId: 'mv-trending', path: '/api/drama?action=trending&source=movie', desc: 'Trending movie' },
-      { epId: 'mv-search',   path: '/api/drama?action=search&source=movie',   desc: 'Search movie' },
-      { epId: 'mv-detail',   path: '/api/drama?action=detail&source=movie',   desc: 'Detail movie' },
-      { epId: 'mv-episode',  path: '/api/drama?action=episode&source=movie',  desc: 'Get video' },
-    ]
-  },
-  {
-    id: 'tv', name: 'TV', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>',
-    endpoints: [
-      { epId: 'tv-foryou',   path: '/api/drama?action=foryou&source=tv',   desc: 'For You / Rekomendasi' },
-      { epId: 'tv-trending', path: '/api/drama?action=trending&source=tv', desc: 'Trending TV' },
-      { epId: 'tv-search',   path: '/api/drama?action=search&source=tv',   desc: 'Search TV series' },
-      { epId: 'tv-detail',   path: '/api/drama?action=detail&source=tv',   desc: 'Detail TV series' },
-      { epId: 'tv-episode',  path: '/api/drama?action=episode&source=tv',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'drakor', name: 'Drakor', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
-    endpoints: [
-      { epId: 'dk-foryou',   path: '/api/drama?action=foryou&source=drakor',   desc: 'For You / Rekomendasi' },
-      { epId: 'dk-trending', path: '/api/drama?action=trending&source=drakor', desc: 'Trending drakor' },
-      { epId: 'dk-search',   path: '/api/drama?action=search&source=drakor',   desc: 'Search drakor' },
-      { epId: 'dk-detail',   path: '/api/drama?action=detail&source=drakor',   desc: 'Detail drakor' },
-      { epId: 'dk-episode',  path: '/api/drama?action=episode&source=drakor',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'bjav', name: 'BJAV', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
-    endpoints: [
-      { epId: 'bj-foryou',   path: '/api/drama?action=foryou&source=bjav',   desc: 'For You / Rekomendasi' },
-      { epId: 'bj-trending', path: '/api/drama?action=trending&source=bjav', desc: 'Trending' },
-      { epId: 'bj-search',   path: '/api/drama?action=search&source=bjav',   desc: 'Search drama' },
-      { epId: 'bj-detail',   path: '/api/drama?action=detail&source=bjav',   desc: 'Detail drama' },
-      { epId: 'bj-episode',  path: '/api/drama?action=episode&source=bjav',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'microdrama', name: 'MicroDrama', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>',
-    endpoints: [
-      { epId: 'md-foryou',   path: '/api/drama?action=foryou&source=microdrama',   desc: 'For You / Rekomendasi' },
-      { epId: 'md-trending', path: '/api/drama?action=trending&source=microdrama', desc: 'Trending' },
-      { epId: 'md-search',   path: '/api/drama?action=search&source=microdrama',   desc: 'Search drama' },
-      { epId: 'md-detail',   path: '/api/drama?action=detail&source=microdrama',   desc: 'Detail drama' },
-      { epId: 'md-episode',  path: '/api/drama?action=episode&source=microdrama',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'rapidtv', name: 'RapidTV', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>',
-    endpoints: [
-      { epId: 'rt-foryou',   path: '/api/drama?action=foryou&source=rapidtv',   desc: 'For You / Rekomendasi' },
-      { epId: 'rt-trending', path: '/api/drama?action=trending&source=rapidtv', desc: 'Trending' },
-      { epId: 'rt-search',   path: '/api/drama?action=search&source=rapidtv',   desc: 'Search' },
-      { epId: 'rt-detail',   path: '/api/drama?action=detail&source=rapidtv',   desc: 'Detail' },
-      { epId: 'rt-episode',  path: '/api/drama?action=episode&source=rapidtv',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'cubetv', name: 'CubeTV', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
-    endpoints: [
-      { epId: 'ct-foryou',   path: '/api/drama?action=foryou&source=cubetv',   desc: 'For You / Rekomendasi' },
-      { epId: 'ct-trending', path: '/api/drama?action=trending&source=cubetv', desc: 'Trending' },
-      { epId: 'ct-search',   path: '/api/drama?action=search&source=cubetv',   desc: 'Search' },
-      { epId: 'ct-detail',   path: '/api/drama?action=detail&source=cubetv',   desc: 'Detail' },
-      { epId: 'ct-episode',  path: '/api/drama?action=episode&source=cubetv',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'dramadash', name: 'DramaDash', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
-    endpoints: [
-      { epId: 'dd-foryou',   path: '/api/drama?action=foryou&source=dramadash',   desc: 'For You / Rekomendasi' },
-      { epId: 'dd-trending', path: '/api/drama?action=trending&source=dramadash', desc: 'Trending' },
-      { epId: 'dd-search',   path: '/api/drama?action=search&source=dramadash',   desc: 'Search' },
-      { epId: 'dd-detail',   path: '/api/drama?action=detail&source=dramadash',   desc: 'Detail' },
-      { epId: 'dd-episode',  path: '/api/drama?action=episode&source=dramadash',  desc: 'Get video episode' },
-    ]
-  },
-  {
-    id: 'shortmax', name: 'ShortMax', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>',
-    endpoints: [
-      { epId: 'sm-foryou',   path: '/api/drama?action=foryou&source=shortmax',   desc: 'For You / Rekomendasi' },
-      { epId: 'sm-trending', path: '/api/drama?action=trending&source=shortmax', desc: 'Trending' },
-      { epId: 'sm-search',   path: '/api/drama?action=search&source=shortmax',   desc: 'Search' },
-      { epId: 'sm-detail',   path: '/api/drama?action=detail&source=shortmax',   desc: 'Detail' },
-      { epId: 'sm-episode',  path: '/api/drama?action=episode&source=shortmax',  desc: 'Get video episode' },
-    ]
-  },
-  {
     id: 'melolo', name: 'Melolo', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>',
     endpoints: [
       { epId: 'ml-home',   path: '/api/drama?action=home&source=melolo',   desc: 'Home / Rekomendasi' },
@@ -1757,68 +1597,7 @@ const DRAMA_PLATFORMS = [
       { epId: 'ml-detail', path: '/api/drama?action=detail&source=melolo', desc: 'Detail drama' },
       { epId: 'ml-video',  path: '/api/drama?action=video&source=melolo',  desc: 'Get video episode' },
     ]
-  },
-  {
-    id: 'flickreels', name: 'FlickReels', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/></svg>',
-    endpoints: [
-      { epId: 'fr-foryou',   path: '/api/drama?action=foryou&source=flickreels',   desc: 'For You' },
-      { epId: 'fr-trending', path: '/api/drama?action=trending&source=flickreels', desc: 'Trending' },
-      { epId: 'fr-search',   path: '/api/drama?action=search&source=flickreels',   desc: 'Search' },
-      { epId: 'fr-detail',   path: '/api/drama?action=detail&source=flickreels',   desc: 'Detail' },
-      { epId: 'fr-episode',  path: '/api/drama?action=episode&source=flickreels',  desc: 'Episode' },
-    ]
-  },
-  {
-    id: 'stardusttv', name: 'StardustTV', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><path d="M12 2v4m0 8v4M2 12h4m8 0h4"/></svg>',
-    endpoints: [
-      { epId: 'st-foryou',   path: '/api/drama?action=foryou&source=stardusttv',   desc: 'For You' },
-      { epId: 'st-trending', path: '/api/drama?action=trending&source=stardusttv', desc: 'Trending' },
-      { epId: 'st-search',   path: '/api/drama?action=search&source=stardusttv',   desc: 'Search' },
-      { epId: 'st-detail',   path: '/api/drama?action=detail&source=stardusttv',   desc: 'Detail' },
-      { epId: 'st-episode',  path: '/api/drama?action=episode&source=stardusttv',  desc: 'Episode' },
-    ]
-  },
-  {
-    id: 'idrama', name: 'IDrama', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
-    endpoints: [
-      { epId: 'id-foryou',   path: '/api/drama?action=foryou&source=idrama',   desc: 'For You' },
-      { epId: 'id-trending', path: '/api/drama?action=trending&source=idrama', desc: 'Trending' },
-      { epId: 'id-search',   path: '/api/drama?action=search&source=idrama',   desc: 'Search' },
-      { epId: 'id-detail',   path: '/api/drama?action=detail&source=idrama',   desc: 'Detail' },
-      { epId: 'id-episode',  path: '/api/drama?action=episode&source=idrama',  desc: 'Episode' },
-    ]
-  },
-  {
-    id: 'dramawave', name: 'DramaWave', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/><polyline points="1 12 8 5 15 12"/></svg>',
-    endpoints: [
-      { epId: 'dw-foryou',   path: '/api/drama?action=foryou&source=dramawave',   desc: 'For You' },
-      { epId: 'dw-trending', path: '/api/drama?action=trending&source=dramawave', desc: 'Trending' },
-      { epId: 'dw-search',   path: '/api/drama?action=search&source=dramawave',   desc: 'Search' },
-      { epId: 'dw-detail',   path: '/api/drama?action=detail&source=dramawave',   desc: 'Detail' },
-      { epId: 'dw-episode',  path: '/api/drama?action=episode&source=dramawave',  desc: 'Episode' },
-    ]
-  },
-  {
-    id: 'flickshort', name: 'FlickShort', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3m0-18v18m8-18h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3m0-18v18"/></svg>',
-    endpoints: [
-      { epId: 'fs-foryou',   path: '/api/drama?action=foryou&source=flickshort',   desc: 'For You' },
-      { epId: 'fs-trending', path: '/api/drama?action=trending&source=flickshort', desc: 'Trending' },
-      { epId: 'fs-search',   path: '/api/drama?action=search&source=flickshort',   desc: 'Search' },
-      { epId: 'fs-detail',   path: '/api/drama?action=detail&source=flickshort',   desc: 'Detail' },
-      { epId: 'fs-episode',  path: '/api/drama?action=episode&source=flickshort',  desc: 'Episode' },
-    ]
-  },
-  {
-    id: 'reelshort', name: 'ReelShort', emoji: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
-    endpoints: [
-      { epId: 'rs-foryou',   path: '/api/drama?action=foryou&source=reelshort',   desc: 'For You' },
-      { epId: 'rs-trending', path: '/api/drama?action=trending&source=reelshort', desc: 'Trending' },
-      { epId: 'rs-search',   path: '/api/drama?action=search&source=reelshort',   desc: 'Search' },
-      { epId: 'rs-detail',   path: '/api/drama?action=detail&source=reelshort',   desc: 'Detail' },
-      { epId: 'rs-episode',  path: '/api/drama?action=episode&source=reelshort',  desc: 'Episode' },
-    ]
-  },
-];
+  },];
 
 // Map epId → action + source untuk openEndpoint
 const DRAMA_EP_MAP = {};
@@ -2146,55 +1925,9 @@ const DRAMA_PRESETS = {
   dramabox:   [
     {id:'42000002888', title:'Dewa Judi (Sulih Suara)'},
   ],
-  reelshort:  [
-    {id:'20001111222', title:'Fated to My Forbidden Alpha'},
-    {id:'20001222333', title:'The Rejected Luna\'s Prince'},
-    {id:'20001333444', title:'From Omega to Luna Queen'},
-    {id:'20001444555', title:'His Purchased Wife'},
-    {id:'20001555666', title:'The CEO\'s Contractual Bride'},
-  ],
-  shortmax:   [
-    {id:'40001001001', title:'Love in the Air'},
-    {id:'40001002002', title:'Midnight CEO'},
-    {id:'40001003003', title:'Billionaire\'s Secret Wife'},
-    {id:'40001004004', title:'My Alpha\'s Return'},
-    {id:'40001005005', title:'The Forbidden Heir'},
-  ],
-  netshort:   [
-    {id:'50001100100', title:'Trapped with the CEO'},
-    {id:'50001200200', title:'The Alpha\'s Obsession'},
-    {id:'50001300300', title:'Claimed by the Lycan King'},
-    {id:'50001400400', title:'Her Second Chance'},
-    {id:'50001500500', title:'Love Me Like That'},
-  ],
-  dramawave:  [
-    {id:'60001010101', title:'When the Stars Lead to You'},
-    {id:'60001020202', title:'My Perfect Stranger'},
-    {id:'60001030303', title:'The Forbidden Marriage'},
-    {id:'60001040404', title:'Behind Your Touch'},
-    {id:'60001050505', title:'See You in My 19th Life'},
-  ],
-  freereels:  [
-    {id:'ToWdWLePx4', title:'FreeReels Drama'},
-  ],
   melolo:     [
     {id:'7614440427814390837', title:'Melolo Drama'},
-  ],
-  idrama:     [
-    {id:'90001010101', title:'Cinta di Ujung Senja'},
-    {id:'90001020202', title:'Bos yang Dingin'},
-    {id:'90001030303', title:'Dinikahi Diam-Diam'},
-    {id:'90001040404', title:'Suami Palsu'},
-    {id:'90001050505', title:'Cinta Tak Terduga'},
-  ],
-  dramanova:  [
-    {id:'11001010101', title:'Love After Divorce'},
-    {id:'11001020202', title:'The Blind Billionaire'},
-    {id:'11001030303', title:'My Arrogant Husband'},
-    {id:'11001040404', title:'Return of the Fallen Queen'},
-    {id:'11001050505', title:'CEO\'s Revenge Bride'},
-  ],
-};
+  ],};
 
 function getDramaPresetOptions(epKey) {
   // Ambil source yang sedang dipilih
