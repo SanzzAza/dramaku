@@ -3,7 +3,20 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SanzXD API</title>
+<title>SanzXD API — Free Downloader, Drama & News API</title>
+<meta name="description" content="Platform REST API gratis untuk download TikTok, YouTube, Instagram, akses drama dari GoodShort, DramaBox, DramaBite, DramaNova, dan berita dari 12 portal Indonesia. Tanpa API key, tanpa watermark."/>
+<meta name="keywords" content="API gratis, downloader TikTok, download YouTube, drama API, GoodShort, DramaBox, DramaBite, DramaNova, berita API, SanzXD"/>
+<meta name="author" content="SanzXD"/>
+<meta property="og:type" content="website"/>
+<meta property="og:title" content="SanzXD API — Free Downloader, Drama & News API"/>
+<meta property="og:description" content="Platform REST API gratis untuk download TikTok, YouTube, Instagram, akses drama dari 5 platform, dan berita dari 12 portal Indonesia."/>
+<meta property="og:image" content="https://i.ibb.co.com/q4HBSw3/1777719969821.jpg"/>
+<meta property="og:url" content="https://dramafeed.vercel.app"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="SanzXD API — Free Downloader, Drama & News API"/>
+<meta name="twitter:description" content="Platform REST API gratis untuk download TikTok, YouTube, Instagram, drama, dan berita Indonesia."/>
+<meta name="twitter:image" content="https://i.ibb.co.com/q4HBSw3/1777719969821.jpg"/>
+<link rel="icon" type="image/jpeg" href="https://i.ibb.co.com/q4HBSw3/1777719969821.jpg"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
@@ -728,21 +741,21 @@ body::before{
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         EXPLORE API
       </a>
-      <a class="btn-outline" href="#" onclick="showPage('docs');setNav('docs');return false">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        VIEW DOCS
+      <a class="btn-outline" href="#" onclick="document.querySelector('.home-features')?.scrollIntoView({behavior:'smooth'});return false">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        LEARN MORE
       </a>
     </div>
 
     <!-- Stats -->
     <div class="hero-stats">
       <div class="stat-item">
-        <span class="stat-num" data-target="30">0</span>
+        <span class="stat-num" data-target="54">0</span>
         <span class="stat-label">Endpoints</span>
       </div>
       <div class="stat-item">
-        <span class="stat-num" data-target="15">0</span>
-        <span class="stat-label">Platforms</span>
+        <span class="stat-num" data-target="5">0</span>
+        <span class="stat-label">Drama Platforms</span>
       </div>
       <div class="stat-item">
         <span class="stat-num" data-target="12">0</span>
@@ -885,7 +898,7 @@ body::before{
       <a href="#">@SanzXD</a>
     </div>
   </div>
-  <div class="footer-bottom">© 2025 SANZXD API. All rights reserved. Author @SanzXD</div>
+  <div class="footer-bottom">© 2026 SANZXD API. All rights reserved. Author @SanzXD</div>
 </div>
 
 <!-- ═══════════ DOCS ═══════════ -->
@@ -2691,18 +2704,20 @@ const SNIPPETS = {
   },
   drama: {
     lines: [
-      {t:'dim', v:'# Drama trending dari GoodShort'},
+      {t:'dim', v:'# Drama trending dari DramaBite'},
       {t:'method', v:'GET '},
       {t:'url', v:'https://dramafeed.vercel.app/api/drama'},
       {t:'dim', v:'  ?action='},
-      {t:'val', v:'trending'},
+      {t:'val', v:'foryou'},
       {t:'dim', v:'  &source='},
-      {t:'val', v:'goodshort'},
+      {t:'val', v:'dramabite'},
+      {t:'dim', v:'  &lang='},
+      {t:'val', v:'id'},
       {t:'dim', v:''},
       {t:'key', v:'result.items[0].title'},
       {t:'dim', v:': '},
       {t:'str', v:'"Drama Title..."'},
-      {t:'key', v:'result.items[0].totalEpisodes'},
+      {t:'key', v:'result.items[0].episodes'},
       {t:'dim', v:': '},
       {t:'val', v:'48'},
     ]
@@ -2763,10 +2778,11 @@ function initStats() {
 function initMarquee() {
   const items = [
     'TikTok DL','YouTube DL','Instagram DL','Facebook DL','Pinterest DL',
-    'Twitter/X DL','Threads DL','Terabox DL','DramaBox','FreeReels',
-    'Melolo','GoodShort','Reelshort','Berita Latest','QR Code',
-    'Short URL','Cuaca','Kurs','Text to Speech','Screenshot Web',
-    'AI Image','Random Quote','Anime Image','Cek Nomor HP'
+    'Twitter/X DL','Threads DL','Terabox DL',
+    'GoodShort','DramaBox','Melolo','DramaBite','DramaNova',
+    'Berita Latest','QR Code','Short URL','Cuaca','Kurs Mata Uang',
+    'Text to Speech','Screenshot Web','AI Image','Anime Image',
+    'Cek Nomor HP','Random Quote','Jadwal Sholat','Cek Resi',
   ];
   const doubled = [...items, ...items];
   const track = document.getElementById('marquee-track');
