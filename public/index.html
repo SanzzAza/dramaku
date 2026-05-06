@@ -2024,41 +2024,69 @@ function buildCurl(ep, val, vals) {
 }
 
 // ── Preset ID drama populer per source ──────────────────────────────────────
-const DRAMA_PRESETS = {
-  goodshort:  [
-    {id:'31001345248', title:'My Bossy CEO Husband'},
-    {id:'31001267890', title:'The Substitute Wife'},
-    {id:'31001198765', title:'Forced to Marry the Billionaire'},
-    {id:'31001312345', title:'Hidden Love'},
-    {id:'31001400001', title:'The Broken Ring'},
-  ],
-  dramabox:   [
-    {id:'42000002888', title:'Dewa Judi (Sulih Suara)'},
-  ],
-  melolo:     [
-    {id:'7614440427814390837', title:'Melolo Drama'},
-  ],
-  dramabite:  [
-    {id:'105', title:'My CEO Husband'},
-    {id:'112', title:'The Substitute Bride'},
-    {id:'98',  title:'Hidden Marriage'},
-    {id:'203', title:'Revenge of the Luna'},
-    {id:'156', title:'Billionaire\'s Secret Wife'},
-  ],
-  dramanova:  [
-    {id:'1',   title:'The CEO\'s Substitute Wife'},
-    {id:'2',   title:'Forced Into Marriage'},
-    {id:'5',   title:'My Billionaire Ex-Husband'},
-    {id:'10',  title:'The Broken Contract'},
-    {id:'15',  title:'Luna\'s Revenge'},
-  ],};
+// Cache hasil fetch per-source supaya ga bolak-balik request
+const DRAMA_PRESETS_CACHE = {};
 
-function getDramaPresetOptions(epKey) {
-  // Ambil source yang sedang dipilih
-  const sourceEl = document.getElementById('inp-' + epKey + '-source');
-  const source = sourceEl ? sourceEl.value : 'goodshort';
-  const presets = DRAMA_PRESETS[source] || [];
-  return presets;
+// Fallback kalau fetch gagal
+const DRAMA_PRESETS_FALLBACK = {
+  goodshort: [{id:'31001345248', title:'My Bossy CEO Husband'}],
+  dramabox:  [{id:'42000002888', title:'Dewa Judi (Sulih Suara)'}],
+  melolo:    [{id:'7614440427814390837', title:'Melolo Drama'}],
+  dramabite: [],
+  dramanova: [],
+};
+
+// Ekstrak items dari response JSON berbagai platform
+function extractDramaItems(source, json) {
+  const result = json?.result || {};
+  let items = [];
+  if (source === 'goodshort') {
+    items = result.items || [];
+    return items.slice(0, 8).map(x => ({ id: String(x.id || ''), title: x.title || '' })).filter(x => x.id);
+  }
+  if (source === 'dramabox') {
+    items = result.items || [];
+    return items.slice(0, 8).map(x => ({ id: String(x.id || ''), title: x.title || '' })).filter(x => x.id);
+  }
+  if (source === 'melolo') {
+    items = result.items || [];
+    return items.slice(0, 8).map(x => ({ id: String(x.id || ''), title: x.title || '' })).filter(x => x.id);
+  }
+  if (source === 'dramabite') {
+    items = result.items || [];
+    return items.slice(0, 8).map(x => ({ id: String(x.id || ''), title: x.title || '' })).filter(x => x.id);
+  }
+  if (source === 'dramanova') {
+    items = result.items || [];
+    return items.slice(0, 8).map(x => ({ id: String(x.id || ''), title: x.title || '' })).filter(x => x.id);
+  }
+  return [];
+}
+
+async function fetchDramaPresets(source) {
+  if (DRAMA_PRESETS_CACHE[source]) return DRAMA_PRESETS_CACHE[source];
+  // Tentukan action & params terbaik per platform
+  const actionMap = {
+    goodshort: 'foryou&channel=id',
+    dramabox:  'foryou&lang=in',
+    melolo:    'foryou&lang=id',
+    dramabite: 'foryou&lang=id',
+    dramanova: 'dramas&lang=in',
+  };
+  const action = actionMap[source] || 'foryou';
+  try {
+    const res = await fetch(`/api/drama?action=${action}&source=${source}`);
+    const json = await res.json();
+    const items = extractDramaItems(source, json);
+    if (items.length) {
+      DRAMA_PRESETS_CACHE[source] = items;
+      return items;
+    }
+  } catch(e) {}
+  // Fallback
+  const fb = DRAMA_PRESETS_FALLBACK[source] || [];
+  DRAMA_PRESETS_CACHE[source] = fb;
+  return fb;
 }
 
 function onDramaPresetChange(epKey) {
@@ -2070,10 +2098,13 @@ function onDramaPresetChange(epKey) {
   }
 }
 
-function refreshDramaPresets(epKey) {
+async function refreshDramaPresets(epKey) {
   const sel = document.getElementById('preset-' + epKey);
   if (!sel) return;
-  const presets = getDramaPresetOptions(epKey);
+  const sourceEl = document.getElementById('inp-' + epKey + '-source');
+  const source = sourceEl ? sourceEl.value : 'goodshort';
+  sel.innerHTML = `<option value="">⏳ Memuat drama...</option>`;
+  const presets = await fetchDramaPresets(source);
   sel.innerHTML = `<option value="">— Pilih drama contoh —</option>` +
     presets.map(p => `<option value="${p.id}">${p.title} (${p.id})</option>`).join('');
   // Reset input id juga
@@ -2119,22 +2150,36 @@ function buildParamInputs(ep) {
       // Cari source dari hidden param
       const srcParam = ep.params.find(x => x.name === 'source');
       const src = srcParam?.value || 'dramabox';
-      const presets = DRAMA_PRESETS[src] || [];
-      const firstId = presets[0]?.id || '';
-      const presetOpts = `<option value="">— Pilih drama contoh —</option>` +
-        presets.map(pr => `<option value="${pr.id}" ${pr.id===firstId?'selected':''}>${pr.title} (${pr.id})</option>`).join('');
+      // Render dulu dengan loading state, lalu fetch async
+      const uniq = ep.key;
+      // Schedule fetch setelah DOM render
+      setTimeout(() => {
+        const sel = document.getElementById('preset-' + uniq);
+        if (!sel) return;
+        sel.innerHTML = `<option value="">⏳ Memuat drama dari ${src}...</option>`;
+        fetchDramaPresets(src).then(presets => {
+          sel.innerHTML = `<option value="">— Pilih drama contoh —</option>` +
+            presets.map(pr => `<option value="${pr.id}">${pr.title} (${pr.id})</option>`).join('');
+          // Auto-pilih dan isi input dengan drama pertama
+          if (presets.length) {
+            sel.value = presets[0].id;
+            const inp = document.getElementById('inp-' + uniq + '-id');
+            if (inp) { inp.value = presets[0].id; liveUpdateCurl(window._curEpId || ''); }
+          }
+        });
+      }, 50);
       return `<div style="display:flex;flex-direction:column;gap:6px;width:100%">
         <label style="font-size:12px;color:var(--text2);font-weight:600">${p.label||p.name}</label>
-        <select class="url-input" id="preset-${ep.key}" onchange="onDramaPresetChange('${ep.key}')" style="cursor:pointer;background:var(--surface2)">
-          ${presetOpts}
+        <select class="url-input" id="preset-${uniq}" onchange="onDramaPresetChange('${uniq}')" style="cursor:pointer;background:var(--surface2)">
+          <option value="">⏳ Memuat drama dari ${src}...</option>
         </select>
         <div style="display:flex;align-items:center;gap:8px">
           <div style="flex:1;height:1px;background:var(--border)"></div>
           <span style="font-size:11px;color:var(--muted);white-space:nowrap">atau ketik manual</span>
           <div style="flex:1;height:1px;background:var(--border)"></div>
         </div>
-        <input class="url-input" id="inp-${ep.key}-${p.name}" value="${firstId}"
-          oninput="liveUpdateCurl(window._curEpId||'');document.getElementById('preset-${ep.key}').value=''"
+        <input class="url-input" id="inp-${uniq}-${p.name}" value=""
+          oninput="liveUpdateCurl(window._curEpId||'');document.getElementById('preset-${uniq}').value=''"
           onkeydown="if(event.key==='Enter')execApi(window._curEpId||'')" style="font-family:monospace"/>
       </div>`;
     }
@@ -2154,11 +2199,11 @@ function getParamValues(ep) {
     const el = document.getElementById('inp-' + ep.key + '-' + p.name);
     if (!el) return;
     let v = el.value.trim();
-    // Untuk drama_id: kalau kosong, ambil preset pertama sesuai source
+    // Untuk drama_id: kalau kosong, ambil preset pertama sesuai source dari cache
     if (!v && p.type === 'drama_id') {
       const sourceEl = document.getElementById('inp-' + ep.key + '-source');
       const src = sourceEl ? sourceEl.value : (ep.params.find(x=>x.name==='source')?.value || 'dramabox');
-      const firstPreset = (DRAMA_PRESETS[src] || [])[0];
+      const firstPreset = (DRAMA_PRESETS_CACHE[src] || DRAMA_PRESETS_FALLBACK[src] || [])[0];
       v = firstPreset ? firstPreset.id : '';
     }
     vals[p.name] = v;
