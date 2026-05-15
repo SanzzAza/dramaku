@@ -1052,6 +1052,21 @@ body.light .res-code,body.light .curl-box{background:rgba(0,0,0,0.04)}
 @keyframes pingRipple{0%{opacity:0.6;transform:scale(0.8)}100%{opacity:0;transform:scale(2.2)}}
 @keyframes pingPulse{0%,100%{opacity:1}50%{opacity:0.3}}
 
+
+/* ── AI QUICK PROMPTS ── */
+.quick-prompts-wrap{margin-bottom:8px;display:flex;flex-direction:column;gap:8px;width:100%}
+.quick-prompts-label{font-size:12px;color:var(--text2);font-weight:600}
+.quick-prompts-grid{display:flex;flex-wrap:wrap;gap:6px}
+.qp-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(124,58,237,0.1);border:1px solid rgba(139,92,246,0.25);
+  border-radius:100px;padding:6px 13px;
+  font-size:12px;font-weight:600;color:#c4b5fd;
+  cursor:pointer;transition:all 0.15s;white-space:nowrap;
+  font-family:var(--sans);
+}
+.qp-chip:hover{background:rgba(124,58,237,0.22);border-color:rgba(139,92,246,0.5);color:#e9d5ff;transform:translateY(-1px)}
+.qp-chip:active{transform:translateY(0)}
 </style>
 </head>
 <body>
@@ -1815,6 +1830,16 @@ const EP = {
     icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>', name:'AI Chat & Code', badge:'AI', method:'GET', path:'/api/ai', tool:'chat', key:'aichat',
     desc:'Chat atau generate kode dengan SanzAI — multi-provider (Groq + OpenRouter). Pilih dari 5 model: llama3, deepseek, qwen, phi4, llama4. Tool <code>chat</code> untuk percakapan, tool <code>code</code> untuk generate kode siap pakai. Dukung multi-turn conversation via POST dengan history.',
     placeholder:'Siapa presiden Indonesia?',
+    quickPrompts:[
+      {label:'\ud83d\udcac Halo SanzAI', prompt:'Halo! Siapa kamu dan apa yang bisa kamu bantu?'},
+      {label:'\ud83c\udf0d Terjemahkan', prompt:'Terjemahkan ke Inggris: Selamat datang di platform API terbaik Indonesia'},
+      {label:'\u270d\ufe0f Tulis Email', prompt:'Buatkan email profesional untuk melamar pekerjaan sebagai web developer'},
+      {label:'\ud83e\udde0 Jelaskan AI', prompt:'Jelaskan apa itu Artificial Intelligence dengan bahasa yang mudah dipahami'},
+      {label:'\ud83d\ude02 Cerita Lucu', prompt:'Ceritakan lelucon singkat yang lucu dan tidak menyinggung siapapun'},
+      {label:'\ud83d\udccb Buat Resume', prompt:'Buatkan template resume singkat untuk fresh graduate jurusan informatika'},
+      {label:'\ud83d\udd25 Deepseek', prompt:'Apa keunggulan model DeepSeek dibanding model AI lainnya?', model:'deepseek'},
+      {label:'\u26a1 Qwen', prompt:'Ceritakan sesuatu yang menarik tentang budaya Indonesia dalam bahasa Indonesia', model:'qwen'},
+    ],
     params:[
       {name:'prompt',type:'string',req:true,desc:'Pertanyaan atau perintah untuk AI'},
       {name:'tool',type:'string',req:false,desc:'chat (default) atau code — pilih mode AI'},
@@ -2637,6 +2662,30 @@ async function refreshDramaPresets(epKey) {
   if (inp) { inp.value = ''; liveUpdateCurl(window._curEpId || ''); }
 }
 
+function buildQuickPrompts(ep) {
+  if (!ep.quickPrompts || !ep.quickPrompts.length) return '';
+  const chips = ep.quickPrompts.map(qp => {
+    const modelAttr = qp.model ? ` data-model="${qp.model}"` : '';
+    const safePrompt = qp.prompt.replace(/'/g, "\'").replace(/"/g, '&quot;');
+    return `<button class="qp-chip" onclick="applyQuickPrompt('${ep.key}','${safePrompt}'${qp.model ? `,'${qp.model}'` : ''})"${modelAttr}>${qp.label}</button>`;
+  }).join('');
+  return `<div class="quick-prompts-wrap">
+    <div class="quick-prompts-label">✨ Coba prompt ini</div>
+    <div class="quick-prompts-grid">${chips}</div>
+  </div>`;
+}
+
+function applyQuickPrompt(epKey, prompt, model) {
+  const promptEl = document.getElementById('inp-' + epKey + '-prompt');
+  if (promptEl) { promptEl.value = prompt; }
+  if (model) {
+    const modelEl = document.getElementById('inp-' + epKey + '-model');
+    if (modelEl) { modelEl.value = model; }
+  }
+  liveUpdateCurl(window._curEpId || '');
+  execApi(window._curEpId || '');
+}
+
 function buildParamInputs(ep) {
   return (ep.params || []).filter(p => p.type !== 'hidden').map(p => {
     if (p.type === 'news_source') {
@@ -2811,6 +2860,7 @@ function openEndpoint(id) {
       ${ytOpts}
       <div class="try-body">
         <div class="try-row" style="flex-direction:column;gap:8px">
+          ${ep.quickPrompts ? buildQuickPrompts(ep) : ''}
           ${buildParamInputs(ep)}
           <button class="btn-exec" id="btn-${ep.key}" onclick="execApi('${id}')" style="width:100%">
             <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z"/></svg>
