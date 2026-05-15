@@ -107,9 +107,9 @@ export default async function handler(req, res) {
 
   const q       = req.query || {};
   const body    = req.body  || {};
-  const tool    = (q.tool   || body.tool   || "chat").toLowerCase().trim();
-  const prompt  =  q.prompt || body.prompt || "";
-  const history =  body.history || [];
+  const tool    = String(q.tool   || body.tool   || "chat").toLowerCase().trim();
+  const prompt  = String(q.prompt || body.prompt || "");
+  const history = body.history || [];
 
   if (!GEMINI_API_KEY) {
     return res.status(500).json(fail(tool, "GEMINI_API_KEY belum di-set di environment variable.", 500));
