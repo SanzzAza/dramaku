@@ -1827,7 +1827,7 @@ const EP = {
     ]
   },
   aichat: {
-    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>', name:'AI Chat & Code', badge:'AI', method:'GET', path:'/api/ai', tool:'chat', key:'aichat',
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>', name:'AI Chat & Code', badge:'AI', method:'GET', path:'/api/ai', key:'aichat',
     desc:'Chat atau generate kode dengan SanzAI — multi-provider (Groq + OpenRouter). Pilih dari 5 model: llama3, deepseek, qwen, phi4, llama4. Tool <code>chat</code> untuk percakapan, tool <code>code</code> untuk generate kode siap pakai. Dukung multi-turn conversation via POST dengan history.',
     placeholder:'Siapa presiden Indonesia?',
     quickPrompts:[
@@ -1842,8 +1842,8 @@ const EP = {
     ],
     params:[
       {name:'prompt',type:'string',req:true,desc:'Pertanyaan atau perintah untuk AI'},
-      {name:'tool',type:'string',req:false,desc:'chat (default) atau code — pilih mode AI'},
-      {name:'model',type:'string',req:false,desc:'llama3 (default chat) / deepseek (default code) / qwen / phi4 / llama4'},
+      {name:'tool',label:'Mode AI',type:'select',options:['chat','code'],default:'chat',req:false,desc:'chat untuk percakapan, code untuk generate kode siap pakai'},
+      {name:'model',label:'Model AI',type:'select',options:['llama3','deepseek','qwen','phi4','llama4'],default:'llama3',req:false,desc:'Pilih model AI yang diinginkan'},
       {name:'lang',type:'string',req:false,desc:'Bahasa pemrograman untuk tool=code, misal: javascript, python (opsional)'},
     ]
   },
@@ -3744,4 +3744,4 @@ function showPage(name){
   }, 120000);
 })();
 
-</script>
+</script>.
