@@ -1,18 +1,18 @@
 /**
- * AI API — Powered by Google Gemini
+ * AI API — Powered by Groq (LLaMA)
  *
  * GET  /api/ai?tool=chat&prompt=Halo siapa kamu
  * POST /api/ai  { "tool": "chat", "prompt": "...", "history": [...] }
  */
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
-const GEMINI_MODEL   = "gemini-2.0-flash-lite";
-const GEMINI_URL     = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
+const GROQ_MODEL   = "llama-3.3-70b-versatile";
+const GROQ_URL     = "https://api.groq.com/openai/v1/chat/completions";
 
 const SYSTEM_PROMPT = `Kamu adalah asisten AI yang cerdas, ramah, dan serba bisa.
 Kamu menjawab dalam bahasa yang sama dengan pertanyaan pengguna (Indonesia atau Inggris).
 Jawaban kamu singkat, jelas, dan mudah dipahami.
-Jangan sebut dirimu sebagai Google atau Gemini — kamu adalah SanzAI.`;
+Nama kamu adalah SanzAI.`;
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin":  "*",
@@ -29,61 +29,51 @@ function fail(tool, message, code = 400) {
   return { creator: "SanzzXD", status: false, code, tool, message };
 }
 
-async function geminiChat(prompt, history = []) {
-  const contents = [];
+async function groqChat(prompt, history = []) {
+  const messages = [{ role: "system", content: SYSTEM_PROMPT }];
 
   const recentHistory = Array.isArray(history) ? history.slice(-20) : [];
   for (const msg of recentHistory) {
     if (!msg.role || !msg.text) continue;
-    const role = msg.role === "model" || msg.role === "assistant" ? "model" : "user";
-    contents.push({ role, parts: [{ text: String(msg.text) }] });
+    const role = msg.role === "model" || msg.role === "assistant" ? "assistant" : "user";
+    messages.push({ role, content: String(msg.text) });
   }
 
-  contents.push({ role: "user", parts: [{ text: String(prompt).trim() }] });
+  messages.push({ role: "user", content: String(prompt).trim() });
 
-  const payload = {
-    system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-    contents,
-    generationConfig: {
-      temperature: 0.8, topP: 0.95, topK: 40, maxOutputTokens: 2048,
-    },
-    safetySettings: [
-      { category: "HARM_CATEGORY_HARASSMENT",        threshold: "BLOCK_MEDIUM_AND_ABOVE" },
-      { category: "HARM_CATEGORY_HATE_SPEECH",       threshold: "BLOCK_MEDIUM_AND_ABOVE" },
-      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
-      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
-    ],
-  };
-
-  const res = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
+  const res = await fetch(GROQ_URL, {
     method:  "POST",
-    headers: { "Content-Type": "application/json" },
-    body:    JSON.stringify(payload),
-    signal:  AbortSignal.timeout(30000),
+    headers: {
+      "Content-Type":  "application/json",
+      "Authorization": `Bearer ${GROQ_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model:       GROQ_MODEL,
+      messages,
+      temperature: 0.8,
+      max_tokens:  2048,
+    }),
+    signal: AbortSignal.timeout(30000),
   });
 
   if (!res.ok) {
     const errData = await res.json().catch(() => ({}));
-    throw new Error(errData?.error?.message || `Gemini error ${res.status}`);
+    throw new Error(errData?.error?.message || `Groq error ${res.status}`);
   }
 
-  const data      = await res.json();
-  const candidate = data?.candidates?.[0];
-  if (!candidate) throw new Error("Tidak ada response dari Gemini.");
-  if (candidate.finishReason === "SAFETY") throw new Error("Pertanyaan diblokir safety filter.");
+  const data = await res.json();
+  const text = data?.choices?.[0]?.message?.content?.trim();
+  if (!text) throw new Error("Response Groq kosong.");
 
-  const text = candidate.content?.parts?.map(p => p.text || "").join("").trim();
-  if (!text) throw new Error("Response Gemini kosong.");
-
-  const usage = data?.usageMetadata || null;
+  const usage = data?.usage || null;
 
   return {
     answer: text,
-    model:  GEMINI_MODEL,
+    model:  GROQ_MODEL,
     usage:  usage ? {
-      prompt_tokens:   usage.promptTokenCount     || 0,
-      response_tokens: usage.candidatesTokenCount || 0,
-      total_tokens:    usage.totalTokenCount       || 0,
+      prompt_tokens:   usage.prompt_tokens     || 0,
+      response_tokens: usage.completion_tokens || 0,
+      total_tokens:    usage.total_tokens       || 0,
     } : null,
     history: [
       ...recentHistory,
@@ -111,20 +101,20 @@ export default async function handler(req, res) {
   const prompt  = String(q.prompt || body.prompt || "");
   const history = body.history || [];
 
-  if (!GEMINI_API_KEY) {
-    return res.status(500).json(fail(tool, "GEMINI_API_KEY belum di-set di environment variable.", 500));
+  if (!GROQ_API_KEY) {
+    return res.status(500).json(fail(tool, "GROQ_API_KEY belum di-set di environment variable.", 500));
   }
 
   if (tool !== "chat") {
     return res.status(400).json(fail(tool, `Tool '${tool}' tidak tersedia. Gunakan: chat`, 400));
   }
 
-  if (!prompt || !String(prompt).trim()) {
+  if (!prompt || !prompt.trim()) {
     return res.status(400).json(fail(tool, "Parameter 'prompt' wajib diisi.", 400));
   }
 
   try {
-    const result = await geminiChat(String(prompt), history);
+    const result = await groqChat(prompt, history);
     return res.status(200).json(ok("chat", result));
   } catch (err) {
     return res.status(500).json(fail(tool, err.message || "Terjadi kesalahan pada server.", 500));
