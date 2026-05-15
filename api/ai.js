@@ -2,21 +2,24 @@
  * AI API — Multi-Provider (Groq + OpenRouter)
  *
  * Tools  : chat, code
- * Models : llama3, deepseek, qwen, phi4, llama4
+ * Models : llama3, deepseek, qwen, gemma, llama4, nemotron, glm, minimax
  *
  * GET  /api/ai?tool=chat&prompt=Halo siapa kamu
  * GET  /api/ai?tool=chat&prompt=Halo&model=deepseek
  * GET  /api/ai?tool=code&prompt=Buatkan fungsi sorting di Python
- * GET  /api/ai?tool=code&prompt=REST API&lang=javascript&model=phi4
- * POST /api/ai  { "tool": "chat", "prompt": "...", "model": "qwen", "history": [...] }
+ * GET  /api/ai?tool=code&prompt=REST API&lang=javascript&model=qwen
+ * POST /api/ai  { "tool": "chat", "prompt": "...", "model": "gemma", "history": [...] }
  * POST /api/ai  { "tool": "code", "prompt": "...", "lang": "python" }
  *
  * Available models (value untuk param ?model=):
- *   llama3    → groq      : llama-3.3-70b-versatile        (default chat)
- *   deepseek  → openrouter: deepseek/deepseek-r1-0528:free      (reasoning & code)
- *   qwen      → openrouter: qwen/qwen3-235b-a22b:free      (multilingual, cepat)
- *   phi4      → openrouter: microsoft/phi-4:free            (ringan, code)
- *   llama4    → openrouter: meta-llama/llama-4-scout:free  (terbaru dari Meta)
+ *   llama3    → groq      : llama-3.3-70b-versatile             (default chat, cepat)
+ *   deepseek  → openrouter: deepseek/deepseek-v4-0324:free      (reasoning & code)
+ *   qwen      → openrouter: qwen/qwen3-coder-480b-a35b:free     (coding, multilingual)
+ *   gemma     → openrouter: google/gemma-4-31b-it:free          (Google, general)
+ *   llama4    → openrouter: meta-llama/llama-3.3-70b-instruct:free (Meta, general)
+ *   nemotron  → openrouter: nvidia/nemotron-3-nano-30b-a3b:free (NVIDIA, ringan)
+ *   glm       → openrouter: z-ai/glm-4.5-air:free               (ringan, cepat)
+ *   minimax   → openrouter: minimax/minimax-m2.5:free           (SOTA, general)
  */
 
 // ─── ENV ──────────────────────────────────────────────────────────────────────
@@ -47,15 +50,22 @@ const PROVIDERS = {
 
 // ─── MODEL REGISTRY ───────────────────────────────────────────────────────────
 const MODELS = {
-  llama3  : { provider: "groq",       id: "llama-3.3-70b-versatile",        label: "LLaMA 3.3 70B (Groq)"       },
-  deepseek: { provider: "openrouter", id: "deepseek/deepseek-r1-0528:free",       label: "DeepSeek R1 0528 (OpenRouter)"   },
-  qwen    : { provider: "openrouter", id: "qwen/qwen3-235b-a22b:free",       label: "Qwen3 235B (OpenRouter)"    },
-  phi4    : { provider: "openrouter", id: "microsoft/phi-4:free",            label: "Phi-4 (OpenRouter)"         },
-  llama4  : { provider: "openrouter", id: "meta-llama/llama-4-scout:free",   label: "LLaMA 4 Scout (OpenRouter)" },
+  llama3   : { provider: "groq",       id: "llama-3.3-70b-versatile",               label: "LLaMA 3.3 70B (Groq)"            },
+  deepseek : { provider: "openrouter", id: "deepseek/deepseek-v4-0324:free",         label: "DeepSeek V4 Flash (OpenRouter)"  },
+  qwen     : { provider: "openrouter", id: "qwen/qwen3-coder-480b-a35b:free",        label: "Qwen3 Coder 480B (OpenRouter)"   },
+  gemma    : { provider: "openrouter", id: "google/gemma-4-31b-it:free",             label: "Gemma 4 31B (OpenRouter)"        },
+  llama4   : { provider: "openrouter", id: "meta-llama/llama-3.3-70b-instruct:free", label: "LLaMA 3.3 70B (OpenRouter)"      },
+  nemotron : { provider: "openrouter", id: "nvidia/nemotron-3-nano-30b-a3b:free",    label: "Nemotron 3 Nano 30B (OpenRouter)"},
+  glm      : { provider: "openrouter", id: "z-ai/glm-4.5-air:free",                 label: "GLM 4.5 Air (OpenRouter)"        },
+  minimax  : { provider: "openrouter", id: "minimax/minimax-m2.5:free",              label: "MiniMax M2.5 (OpenRouter)"       },
 };
 
 const DEFAULT_CHAT_MODEL = "llama3";
-const DEFAULT_CODE_MODEL = "deepseek";
+const DEFAULT_CODE_MODEL = "qwen";
+
+// Urutan fallback kalau model utama gagal
+const CHAT_FALLBACKS = ["gemma", "llama4", "glm", "minimax", "nemotron"];
+const CODE_FALLBACKS = ["deepseek", "gemma", "llama4", "llama3"];
 
 // ─── SYSTEM PROMPTS ───────────────────────────────────────────────────────────
 const SYSTEM_CHAT = `Kamu adalah asisten AI yang cerdas, ramah, dan serba bisa bernama SanzAI.
@@ -128,6 +138,26 @@ async function callAI(model, systemPrompt, messages) {
   };
 }
 
+// ─── FALLBACK COMPLETION ──────────────────────────────────────────────────────
+async function callAIWithFallback(primaryModel, systemPrompt, messages, fallbackKeys = []) {
+  try {
+    return await callAI(primaryModel, systemPrompt, messages);
+  } catch (primaryErr) {
+    for (const key of fallbackKeys) {
+      const fallback = MODELS[key];
+      if (!fallback || fallback.id === primaryModel.id) continue;
+      try {
+        const result = await callAI(fallback, systemPrompt, messages);
+        result.modelLabel = `${result.modelLabel} [auto-fallback]`;
+        return result;
+      } catch (_) {
+        // coba model fallback berikutnya
+      }
+    }
+    throw primaryErr;
+  }
+}
+
 // ─── TOOL: CHAT ───────────────────────────────────────────────────────────────
 async function toolChat(prompt, history = [], modelKey) {
   const model = resolveModel(modelKey, DEFAULT_CHAT_MODEL);
@@ -141,7 +171,7 @@ async function toolChat(prompt, history = [], modelKey) {
     }));
   messages.push({ role: "user", content: String(prompt).trim() });
 
-  const { text, modelLabel, usage } = await callAI(model, SYSTEM_CHAT, messages);
+  const { text, modelLabel, usage } = await callAIWithFallback(model, SYSTEM_CHAT, messages, CHAT_FALLBACKS);
 
   return {
     answer : text,
@@ -160,7 +190,7 @@ async function toolCode(prompt, lang = "", modelKey) {
   const model    = resolveModel(modelKey, DEFAULT_CODE_MODEL);
   const messages = [{ role: "user", content: String(prompt).trim() }];
 
-  const { text, modelLabel, usage } = await callAI(model, buildSystemCode(lang), messages);
+  const { text, modelLabel, usage } = await callAIWithFallback(model, buildSystemCode(lang), messages, CODE_FALLBACKS);
 
   // Ekstrak code block jika ada
   const codeMatch    = text.match(/```[\w]*\n?([\s\S]*?)```/);
@@ -209,9 +239,9 @@ export default async function handler(req, res) {
       })),
       examples: [
         "GET /api/ai?tool=chat&prompt=Halo siapa kamu",
-        "GET /api/ai?tool=chat&prompt=Halo&model=deepseek",
+        "GET /api/ai?tool=chat&prompt=Halo&model=gemma",
         "GET /api/ai?tool=code&prompt=Buatkan REST API Express.js&lang=javascript",
-        "GET /api/ai?tool=code&prompt=Sorting algorithm&model=phi4",
+        "GET /api/ai?tool=code&prompt=Sorting algorithm&model=deepseek",
       ],
     });
   }
