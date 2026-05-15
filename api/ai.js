@@ -107,7 +107,7 @@ export default async function handler(req, res) {
 
   const q       = req.query || {};
   const body    = req.body  || {};
-  const tool    = String(q.tool   || body.tool   || "chat").toLowerCase().trim();
+  const tool    = String(q.tool   || body.tool   || "chat").split(",")[0].toLowerCase().trim();
   const prompt  = String(q.prompt || body.prompt || "");
   const history = body.history || [];
 
