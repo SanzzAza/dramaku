@@ -1,80 +1,152 @@
 /**
- * AI API — Powered by Groq (LLaMA)
+ * AI API — Multi-Provider (Groq + OpenRouter)
+ *
+ * Tools  : chat, code
+ * Models : llama3, deepseek, qwen, phi4, llama4
  *
  * GET  /api/ai?tool=chat&prompt=Halo siapa kamu
- * POST /api/ai  { "tool": "chat", "prompt": "...", "history": [...] }
+ * GET  /api/ai?tool=chat&prompt=Halo&model=deepseek
+ * GET  /api/ai?tool=code&prompt=Buatkan fungsi sorting di Python
+ * GET  /api/ai?tool=code&prompt=REST API&lang=javascript&model=phi4
+ * POST /api/ai  { "tool": "chat", "prompt": "...", "model": "qwen", "history": [...] }
+ * POST /api/ai  { "tool": "code", "prompt": "...", "lang": "python" }
+ *
+ * Available models (value untuk param ?model=):
+ *   llama3    → groq      : llama-3.3-70b-versatile        (default chat)
+ *   deepseek  → openrouter: deepseek/deepseek-r1:free      (reasoning & code)
+ *   qwen      → openrouter: qwen/qwen3-235b-a22b:free      (multilingual, cepat)
+ *   phi4      → openrouter: microsoft/phi-4:free            (ringan, code)
+ *   llama4    → openrouter: meta-llama/llama-4-scout:free  (terbaru dari Meta)
  */
 
-const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
-const GROQ_MODEL   = "llama-3.3-70b-versatile";
-const GROQ_URL     = "https://api.groq.com/openai/v1/chat/completions";
+// ─── ENV ──────────────────────────────────────────────────────────────────────
+const GROQ_API_KEY       = process.env.GROQ_API_KEY       || "";
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
 
-const SYSTEM_PROMPT = `Kamu adalah asisten AI yang cerdas, ramah, dan serba bisa.
-Kamu menjawab dalam bahasa yang sama dengan pertanyaan pengguna (Indonesia atau Inggris).
-Jawaban kamu singkat, jelas, dan mudah dipahami.
-Nama kamu adalah SanzAI.`;
-
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-  "Content-Type":                 "application/json",
+// ─── PROVIDER CONFIG ──────────────────────────────────────────────────────────
+const PROVIDERS = {
+  groq: {
+    url    : "https://api.groq.com/openai/v1/chat/completions",
+    apiKey : () => GROQ_API_KEY,
+    headers: (key) => ({
+      "Content-Type" : "application/json",
+      "Authorization": `Bearer ${key}`,
+    }),
+  },
+  openrouter: {
+    url    : "https://openrouter.ai/api/v1/chat/completions",
+    apiKey : () => OPENROUTER_API_KEY,
+    headers: (key) => ({
+      "Content-Type" : "application/json",
+      "Authorization": `Bearer ${key}`,
+      "HTTP-Referer" : "https://dramafeed.vercel.app",
+      "X-Title"      : "SanzXD API",
+    }),
+  },
 };
 
-function ok(tool, result) {
-  return { creator: "SanzzXD", status: true, code: 200, tool, result };
+// ─── MODEL REGISTRY ───────────────────────────────────────────────────────────
+const MODELS = {
+  llama3  : { provider: "groq",       id: "llama-3.3-70b-versatile",        label: "LLaMA 3.3 70B (Groq)"       },
+  deepseek: { provider: "openrouter", id: "deepseek/deepseek-r1:free",       label: "DeepSeek R1 (OpenRouter)"   },
+  qwen    : { provider: "openrouter", id: "qwen/qwen3-235b-a22b:free",       label: "Qwen3 235B (OpenRouter)"    },
+  phi4    : { provider: "openrouter", id: "microsoft/phi-4:free",            label: "Phi-4 (OpenRouter)"         },
+  llama4  : { provider: "openrouter", id: "meta-llama/llama-4-scout:free",   label: "LLaMA 4 Scout (OpenRouter)" },
+};
+
+const DEFAULT_CHAT_MODEL = "llama3";
+const DEFAULT_CODE_MODEL = "deepseek";
+
+// ─── SYSTEM PROMPTS ───────────────────────────────────────────────────────────
+const SYSTEM_CHAT = `Kamu adalah asisten AI yang cerdas, ramah, dan serba bisa bernama SanzAI.
+Kamu menjawab dalam bahasa yang sama dengan pertanyaan pengguna (Indonesia atau Inggris).
+Jawaban kamu singkat, jelas, dan mudah dipahami.`;
+
+const buildSystemCode = (lang) =>
+  `Kamu adalah expert programmer bernama SanzCode.
+Tugas kamu hanya menghasilkan kode yang bersih, efisien, dan siap pakai.
+${lang ? `Gunakan bahasa pemrograman: ${lang}.` : "Pilih bahasa yang paling tepat untuk tugas ini."}
+Format respons:
+1. Kode lengkap dalam code block (\`\`\`bahasa ... \`\`\`)
+2. Penjelasan singkat (maks 3 kalimat) setelah kode
+Jangan tambahkan basa-basi atau intro panjang.`;
+
+// ─── CORS ─────────────────────────────────────────────────────────────────────
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin" : "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Content-Type"                : "application/json",
+};
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function ok(tool, result)               { return { creator: "SanzzXD", status: true,  code: 200, tool, result  }; }
+function fail(tool, message, code = 400){ return { creator: "SanzzXD", status: false, code,      tool, message }; }
+
+function resolveModel(modelKey, defaultKey) {
+  const key = (modelKey || "").toLowerCase().trim();
+  return MODELS[key] || MODELS[defaultKey];
 }
 
-function fail(tool, message, code = 400) {
-  return { creator: "SanzzXD", status: false, code, tool, message };
-}
+// ─── CORE COMPLETION ──────────────────────────────────────────────────────────
+async function callAI(model, systemPrompt, messages) {
+  const prov   = PROVIDERS[model.provider];
+  const apiKey = prov.apiKey();
 
-async function groqChat(prompt, history = []) {
-  const messages = [{ role: "system", content: SYSTEM_PROMPT }];
+  if (!apiKey) throw new Error(`API key untuk provider '${model.provider}' belum di-set di environment variable.`);
 
-  const recentHistory = Array.isArray(history) ? history.slice(-20) : [];
-  for (const msg of recentHistory) {
-    if (!msg.role || !msg.text) continue;
-    const role = msg.role === "model" || msg.role === "assistant" ? "assistant" : "user";
-    messages.push({ role, content: String(msg.text) });
-  }
-
-  messages.push({ role: "user", content: String(prompt).trim() });
-
-  const res = await fetch(GROQ_URL, {
-    method:  "POST",
-    headers: {
-      "Content-Type":  "application/json",
-      "Authorization": `Bearer ${GROQ_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model:       GROQ_MODEL,
-      messages,
-      temperature: 0.8,
-      max_tokens:  2048,
+  const res = await fetch(prov.url, {
+    method : "POST",
+    headers: prov.headers(apiKey),
+    body   : JSON.stringify({
+      model      : model.id,
+      messages   : [{ role: "system", content: systemPrompt }, ...messages],
+      temperature: 0.7,
+      max_tokens : 2048,
     }),
-    signal: AbortSignal.timeout(30000),
+    signal: AbortSignal.timeout(60000),
   });
 
   if (!res.ok) {
-    const errData = await res.json().catch(() => ({}));
-    throw new Error(errData?.error?.message || `Groq error ${res.status}`);
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `${model.provider} error ${res.status}`);
   }
 
   const data = await res.json();
   const text = data?.choices?.[0]?.message?.content?.trim();
-  if (!text) throw new Error("Response Groq kosong.");
+  if (!text) throw new Error("Respons AI kosong.");
 
   const usage = data?.usage || null;
+  return {
+    text,
+    modelLabel: model.label,
+    usage: usage ? {
+      prompt_tokens  : usage.prompt_tokens     || 0,
+      response_tokens: usage.completion_tokens || 0,
+      total_tokens   : usage.total_tokens      || 0,
+    } : null,
+  };
+}
+
+// ─── TOOL: CHAT ───────────────────────────────────────────────────────────────
+async function toolChat(prompt, history = [], modelKey) {
+  const model = resolveModel(modelKey, DEFAULT_CHAT_MODEL);
+
+  const recentHistory = Array.isArray(history) ? history.slice(-20) : [];
+  const messages = recentHistory
+    .filter(m => m.role && m.text)
+    .map(m => ({
+      role   : (m.role === "model" || m.role === "assistant") ? "assistant" : "user",
+      content: String(m.text),
+    }));
+  messages.push({ role: "user", content: String(prompt).trim() });
+
+  const { text, modelLabel, usage } = await callAI(model, SYSTEM_CHAT, messages);
 
   return {
-    answer: text,
-    model:  GROQ_MODEL,
-    usage:  usage ? {
-      prompt_tokens:   usage.prompt_tokens     || 0,
-      response_tokens: usage.completion_tokens || 0,
-      total_tokens:    usage.total_tokens       || 0,
-    } : null,
+    answer : text,
+    model  : modelLabel,
+    usage,
     history: [
       ...recentHistory,
       { role: "user",  text: String(prompt).trim() },
@@ -83,6 +155,29 @@ async function groqChat(prompt, history = []) {
   };
 }
 
+// ─── TOOL: CODE ───────────────────────────────────────────────────────────────
+async function toolCode(prompt, lang = "", modelKey) {
+  const model    = resolveModel(modelKey, DEFAULT_CODE_MODEL);
+  const messages = [{ role: "user", content: String(prompt).trim() }];
+
+  const { text, modelLabel, usage } = await callAI(model, buildSystemCode(lang), messages);
+
+  // Ekstrak code block jika ada
+  const codeMatch    = text.match(/```[\w]*\n?([\s\S]*?)```/);
+  const langMatch    = text.match(/```(\w+)/);
+  const code         = codeMatch ? codeMatch[1].trim() : null;
+  const detectedLang = lang || (langMatch ? langMatch[1] : "unknown");
+
+  return {
+    answer  : text,
+    code,
+    language: detectedLang,
+    model   : modelLabel,
+    usage,
+  };
+}
+
+// ─── MAIN HANDLER ─────────────────────────────────────────────────────────────
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
     res.writeHead(200, CORS_HEADERS);
@@ -95,27 +190,48 @@ export default async function handler(req, res) {
     return res.status(405).json(fail("ai", "Method Not Allowed.", 405));
   }
 
-  const q       = req.query || {};
-  const body    = req.body  || {};
-  const tool    = String(q.tool   || body.tool   || "chat").split(",")[0].toLowerCase().trim();
-  const prompt  = String(q.prompt || body.prompt || "");
-  const history = body.history || [];
+  const q        = req.query || {};
+  const body     = req.body  || {};
+  const tool     = String(q.tool   || body.tool   || "chat").toLowerCase().trim();
+  const prompt   = String(q.prompt || body.prompt || "").trim();
+  const modelKey = String(q.model  || body.model  || "").toLowerCase().trim();
+  const history  = body.history || [];
+  const lang     = String(q.lang   || body.lang   || "").trim();
 
-  if (!GROQ_API_KEY) {
-    return res.status(500).json(fail(tool, "GROQ_API_KEY belum di-set di environment variable.", 500));
-  }
-
-  if (tool !== "chat") {
-    return res.status(400).json(fail(tool, `Tool '${tool}' tidak tersedia. Gunakan: chat`, 400));
-  }
-
-  if (!prompt || !prompt.trim()) {
-    return res.status(400).json(fail(tool, "Parameter 'prompt' wajib diisi.", 400));
+  if (!prompt) {
+    return res.status(400).json({
+      ...fail(tool, "Parameter 'prompt' wajib diisi."),
+      available_tools : ["chat", "code"],
+      available_models: Object.entries(MODELS).map(([k, v]) => ({
+        key     : k,
+        label   : v.label,
+        provider: v.provider,
+      })),
+      examples: [
+        "GET /api/ai?tool=chat&prompt=Halo siapa kamu",
+        "GET /api/ai?tool=chat&prompt=Halo&model=deepseek",
+        "GET /api/ai?tool=code&prompt=Buatkan REST API Express.js&lang=javascript",
+        "GET /api/ai?tool=code&prompt=Sorting algorithm&model=phi4",
+      ],
+    });
   }
 
   try {
-    const result = await groqChat(prompt, history);
-    return res.status(200).json(ok("chat", result));
+    switch (tool) {
+      case "chat": {
+        const result = await toolChat(prompt, history, modelKey);
+        return res.status(200).json(ok("chat", result));
+      }
+      case "code": {
+        const result = await toolCode(prompt, lang, modelKey);
+        return res.status(200).json(ok("code", result));
+      }
+      default:
+        return res.status(400).json({
+          ...fail(tool, `Tool '${tool}' tidak tersedia.`),
+          available_tools: ["chat", "code"],
+        });
+    }
   } catch (err) {
     return res.status(500).json(fail(tool, err.message || "Terjadi kesalahan pada server.", 500));
   }
