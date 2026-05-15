@@ -18,7 +18,7 @@
  *   gemma     → openrouter: google/gemma-4-31b-it:free                (Google, general)
  *   llama4    → cerebras  : llama3.1-8b                               (ringan, super cepat)
  *   nemotron  → openrouter: nvidia/nemotron-3-nano-30b-a3b:free       (NVIDIA, ringan)
- *   glm       → cerebras  : zai/glm-4.7                               (coding & reasoning, cepat)
+ *   glm       → cerebras  : zai-glm-4.7                               (coding & reasoning, cepat)
  *   minimax   → openrouter: minimax/minimax-m2.5:free                 (SOTA, general)
  */
 
@@ -65,7 +65,7 @@ const MODELS = {
   gemma    : { provider: "openrouter", id: "google/gemma-4-31b-it:free",             label: "Gemma 4 31B (OpenRouter)"        },
   llama4   : { provider: "cerebras",   id: "llama3.1-8b",                   label: "LLaMA 3.1 8B (Cerebras)"         },
   nemotron : { provider: "openrouter", id: "nvidia/nemotron-3-nano-30b-a3b:free",    label: "Nemotron 3 Nano 30B (OpenRouter)"},
-  glm      : { provider: "cerebras",   id: "zai/glm-4.7",                   label: "GLM 4.7 (Cerebras)"              },
+  glm      : { provider: "cerebras",   id: "zai-glm-4.7",                   label: "GLM 4.7 (Cerebras)"              },
   minimax  : { provider: "openrouter", id: "minimax/minimax-m2.5:free",              label: "MiniMax M2.5 (OpenRouter)"       },
 };
 
