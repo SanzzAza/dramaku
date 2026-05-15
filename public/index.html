@@ -1621,11 +1621,11 @@ body.light .res-code,body.light .curl-box{background:rgba(0,0,0,0.04)}
 
     <div class="cat-label">AI</div>
     <div class="api-list">
-      <div class="api-item" data-name="AI Chat" data-desc="Chat dengan SanzAI powered by Gemini. Support multi-turn conversation." data-cat="ai" onclick="openEndpoint('aichat')">
+      <div class="api-item" data-name="AI Chat &amp; Code" data-desc="Chat atau generate kode dengan SanzAI. Multi-provider: llama3, deepseek, qwen, phi4, llama4." data-cat="ai" onclick="openEndpoint('aichat')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
         <div class="api-info">
-          <div class="api-name-row"><span class="api-name">AI Chat</span><span class="api-badge">AI</span></div>
-          <div class="api-desc">Chat dengan SanzAI powered by Gemini. Support multi-turn conversation.</div>
+          <div class="api-name-row"><span class="api-name">AI Chat & Code</span><span class="api-badge">AI</span></div>
+          <div class="api-desc">Chat atau generate kode dengan SanzAI. Multi-provider: llama3, deepseek, qwen, phi4, llama4.</div>
         </div>
         <span class="ping-dot checking" id="ping-aichat" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
@@ -1812,11 +1812,14 @@ const EP = {
     ]
   },
   aichat: {
-    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>', name:'AI Chat', badge:'AI', method:'GET', path:'/api/ai', tool:'chat', key:'aichat',
-    desc:'Chat dengan SanzAI yang cerdas dan ramah, powered by Google Gemini 2.0 Flash. Dukung percakapan multi-turn via POST dengan history. Jawab pertanyaan, bantu nulis konten, terjemahkan, dan banyak lagi.',
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>', name:'AI Chat & Code', badge:'AI', method:'GET', path:'/api/ai', tool:'chat', key:'aichat',
+    desc:'Chat atau generate kode dengan SanzAI — multi-provider (Groq + OpenRouter). Pilih dari 5 model: llama3, deepseek, qwen, phi4, llama4. Tool <code>chat</code> untuk percakapan, tool <code>code</code> untuk generate kode siap pakai. Dukung multi-turn conversation via POST dengan history.',
     placeholder:'Siapa presiden Indonesia?',
     params:[
       {name:'prompt',type:'string',req:true,desc:'Pertanyaan atau perintah untuk AI'},
+      {name:'tool',type:'string',req:false,desc:'chat (default) atau code — pilih mode AI'},
+      {name:'model',type:'string',req:false,desc:'llama3 (default chat) / deepseek (default code) / qwen / phi4 / llama4'},
+      {name:'lang',type:'string',req:false,desc:'Bahasa pemrograman untuk tool=code, misal: javascript, python (opsional)'},
     ]
   },
   aiimage: {
