@@ -1636,11 +1636,11 @@ body.light .res-code,body.light .curl-box{background:rgba(0,0,0,0.04)}
 
     <div class="cat-label">AI</div>
     <div class="api-list">
-      <div class="api-item" data-name="AI Chat &amp; Code" data-desc="Chat atau generate kode dengan SanzAI. Multi-provider: llama3, deepseek, qwen, phi4, llama4." data-cat="ai" onclick="openEndpoint('aichat')">
+      <div class="api-item" data-name="AI Chat &amp; Code" data-desc="Chat atau generate kode dengan SanzAI. Multi-provider: llama3, deepseek, qwen, gemma, llama4, nemotron, glm, minimax." data-cat="ai" onclick="openEndpoint('aichat')">
         <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
         <div class="api-info">
           <div class="api-name-row"><span class="api-name">AI Chat & Code</span><span class="api-badge">AI</span></div>
-          <div class="api-desc">Chat atau generate kode dengan SanzAI. Multi-provider: llama3, deepseek, qwen, phi4, llama4.</div>
+          <div class="api-desc">Chat atau generate kode dengan SanzAI. Multi-provider: llama3, deepseek, qwen, gemma, llama4, nemotron, glm, minimax.</div>
         </div>
         <span class="ping-dot checking" id="ping-aichat" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
@@ -1828,7 +1828,7 @@ const EP = {
   },
   aichat: {
     icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>', name:'AI Chat & Code', badge:'AI', method:'GET', path:'/api/ai', key:'aichat',
-    desc:'Chat atau generate kode dengan SanzAI — multi-provider (Groq + OpenRouter). Pilih dari 5 model: llama3, deepseek, qwen, phi4, llama4. Tool <code>chat</code> untuk percakapan, tool <code>code</code> untuk generate kode siap pakai. Dukung multi-turn conversation via POST dengan history.',
+    desc:'Chat atau generate kode dengan SanzAI — multi-provider (Groq + OpenRouter). Pilih dari 8 model: llama3, deepseek, qwen, gemma, llama4, nemotron, glm, minimax. Tool <code>chat</code> untuk percakapan, tool <code>code</code> untuk generate kode siap pakai. Dukung multi-turn conversation via POST dengan history.',
     placeholder:'Siapa presiden Indonesia?',
     quickPrompts:[
       {label:'\ud83d\udcac Halo SanzAI', prompt:'Halo! Siapa kamu dan apa yang bisa kamu bantu?'},
@@ -1837,13 +1837,15 @@ const EP = {
       {label:'\ud83e\udde0 Jelaskan AI', prompt:'Jelaskan apa itu Artificial Intelligence dengan bahasa yang mudah dipahami'},
       {label:'\ud83d\ude02 Cerita Lucu', prompt:'Ceritakan lelucon singkat yang lucu dan tidak menyinggung siapapun'},
       {label:'\ud83d\udccb Buat Resume', prompt:'Buatkan template resume singkat untuk fresh graduate jurusan informatika'},
-      {label:'\ud83d\udd25 Deepseek', prompt:'Apa keunggulan model DeepSeek dibanding model AI lainnya?', model:'deepseek'},
-      {label:'\u26a1 Qwen', prompt:'Ceritakan sesuatu yang menarik tentang budaya Indonesia dalam bahasa Indonesia', model:'qwen'},
+      {label:'🔥 Deepseek', prompt:'Apa keunggulan model DeepSeek dibanding model AI lainnya?', model:'deepseek'},
+      {label:'⚡ Qwen', prompt:'Ceritakan sesuatu yang menarik tentang budaya Indonesia dalam bahasa Indonesia', model:'qwen'},
+      {label:'💎 Gemma', prompt:'Apa itu machine learning? Jelaskan dengan analogi sederhana', model:'gemma'},
+      {label:'🌟 MiniMax', prompt:'Berikan tips produktivitas untuk seorang developer', model:'minimax'},
     ],
     params:[
       {name:'prompt',type:'string',req:true,desc:'Pertanyaan atau perintah untuk AI'},
       {name:'tool',label:'Mode AI',type:'select',options:['chat','code'],default:'chat',req:false,desc:'chat untuk percakapan, code untuk generate kode siap pakai'},
-      {name:'model',label:'Model AI',type:'select',options:['llama3','deepseek','qwen','phi4','llama4'],default:'llama3',req:false,desc:'Pilih model AI yang diinginkan'},
+      {name:'model',label:'Model AI',type:'select',options:['llama3','deepseek','qwen','gemma','llama4','nemotron','glm','minimax'],default:'llama3',req:false,desc:'Pilih model AI yang diinginkan'},
       {name:'lang',type:'string',req:false,desc:'Bahasa pemrograman untuk tool=code, misal: javascript, python (opsional)'},
     ]
   },
