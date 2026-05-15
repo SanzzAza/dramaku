@@ -1,5 +1,5 @@
 /**
- * AI API — Multi-Provider (Groq + OpenRouter)
+ * AI API — Multi-Provider (Groq + OpenRouter + Cerebras)
  *
  * Tools  : chat, code
  * Models : llama3, deepseek, qwen, gemma, llama4, nemotron, glm, minimax
@@ -12,19 +12,20 @@
  * POST /api/ai  { "tool": "code", "prompt": "...", "lang": "python" }
  *
  * Available models (value untuk param ?model=):
- *   llama3    → groq      : llama-3.3-70b-versatile             (default chat, cepat)
- *   deepseek  → openrouter: deepseek/deepseek-v4-0324:free      (reasoning & code)
- *   qwen      → openrouter: qwen/qwen3-coder-480b-a35b:free     (coding, multilingual)
- *   gemma     → openrouter: google/gemma-4-31b-it:free          (Google, general)
- *   llama4    → openrouter: meta-llama/llama-3.3-70b-instruct:free (Meta, general)
- *   nemotron  → openrouter: nvidia/nemotron-3-nano-30b-a3b:free (NVIDIA, ringan)
- *   glm       → openrouter: z-ai/glm-4.5-air:free               (ringan, cepat)
- *   minimax   → openrouter: minimax/minimax-m2.5:free           (SOTA, general)
+ *   llama3    → groq      : llama-3.3-70b-versatile                  (default chat, cepat)
+ *   deepseek  → openrouter: deepseek/deepseek-v4-flash:free           (reasoning & code)
+ *   qwen      → cerebras  : gpt-oss-120b                              (coding, powerful — default code)
+ *   gemma     → openrouter: google/gemma-4-31b-it:free                (Google, general)
+ *   llama4    → cerebras  : llama3.1-8b                               (ringan, super cepat)
+ *   nemotron  → openrouter: nvidia/nemotron-3-nano-30b-a3b:free       (NVIDIA, ringan)
+ *   glm       → cerebras  : zai/glm-4.7                               (coding & reasoning, cepat)
+ *   minimax   → openrouter: minimax/minimax-m2.5:free                 (SOTA, general)
  */
 
 // ─── ENV ──────────────────────────────────────────────────────────────────────
 const GROQ_API_KEY       = process.env.GROQ_API_KEY       || "";
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
+const CEREBRAS_API_KEY   = process.env.CEREBRAS_API_KEY   || "";
 
 // ─── PROVIDER CONFIG ──────────────────────────────────────────────────────────
 const PROVIDERS = {
@@ -46,17 +47,25 @@ const PROVIDERS = {
       "X-Title"      : "SanzXD API",
     }),
   },
+  cerebras: {
+    url    : "https://api.cerebras.ai/v1/chat/completions",
+    apiKey : () => CEREBRAS_API_KEY,
+    headers: (key) => ({
+      "Content-Type" : "application/json",
+      "Authorization": `Bearer ${key}`,
+    }),
+  },
 };
 
 // ─── MODEL REGISTRY ───────────────────────────────────────────────────────────
 const MODELS = {
   llama3   : { provider: "groq",       id: "llama-3.3-70b-versatile",               label: "LLaMA 3.3 70B (Groq)"            },
   deepseek : { provider: "openrouter", id: "deepseek/deepseek-v4-flash:free",         label: "DeepSeek V4 Flash (OpenRouter)"  },
-  qwen     : { provider: "openrouter", id: "qwen/qwen3-coder:free",        label: "Qwen3 Coder 480B (OpenRouter)"   },
+  qwen     : { provider: "cerebras",   id: "gpt-oss-120b",                  label: "GPT-OSS 120B (Cerebras)"         },
   gemma    : { provider: "openrouter", id: "google/gemma-4-31b-it:free",             label: "Gemma 4 31B (OpenRouter)"        },
-  llama4   : { provider: "openrouter", id: "meta-llama/llama-3.3-70b-instruct:free", label: "LLaMA 3.3 70B (OpenRouter)"      },
+  llama4   : { provider: "cerebras",   id: "llama3.1-8b",                   label: "LLaMA 3.1 8B (Cerebras)"         },
   nemotron : { provider: "openrouter", id: "nvidia/nemotron-3-nano-30b-a3b:free",    label: "Nemotron 3 Nano 30B (OpenRouter)"},
-  glm      : { provider: "openrouter", id: "z-ai/glm-4.5-air:free",                 label: "GLM 4.5 Air (OpenRouter)"        },
+  glm      : { provider: "cerebras",   id: "zai/glm-4.7",                   label: "GLM 4.7 (Cerebras)"              },
   minimax  : { provider: "openrouter", id: "minimax/minimax-m2.5:free",              label: "MiniMax M2.5 (OpenRouter)"       },
 };
 
