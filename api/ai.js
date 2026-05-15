@@ -52,7 +52,7 @@ const PROVIDERS = {
 const MODELS = {
   llama3   : { provider: "groq",       id: "llama-3.3-70b-versatile",               label: "LLaMA 3.3 70B (Groq)"            },
   deepseek : { provider: "openrouter", id: "deepseek/deepseek-v4-flash:free",         label: "DeepSeek V4 Flash (OpenRouter)"  },
-  qwen     : { provider: "openrouter", id: "qwen/qwen3-coder-480b-a35b:free",        label: "Qwen3 Coder 480B (OpenRouter)"   },
+  qwen     : { provider: "openrouter", id: "qwen/qwen3-coder:free",        label: "Qwen3 Coder 480B (OpenRouter)"   },
   gemma    : { provider: "openrouter", id: "google/gemma-4-31b-it:free",             label: "Gemma 4 31B (OpenRouter)"        },
   llama4   : { provider: "openrouter", id: "meta-llama/llama-3.3-70b-instruct:free", label: "LLaMA 3.3 70B (OpenRouter)"      },
   nemotron : { provider: "openrouter", id: "nvidia/nemotron-3-nano-30b-a3b:free",    label: "Nemotron 3 Nano 30B (OpenRouter)"},
