@@ -63,10 +63,6 @@ const MODELS = {
 const DEFAULT_CHAT_MODEL = "llama3";
 const DEFAULT_CODE_MODEL = "qwen";
 
-// Urutan fallback kalau model utama gagal
-const CHAT_FALLBACKS = ["gemma", "llama4", "glm", "minimax", "nemotron"];
-const CODE_FALLBACKS = ["deepseek", "gemma", "llama4", "llama3"];
-
 // ─── SYSTEM PROMPTS ───────────────────────────────────────────────────────────
 const SYSTEM_CHAT = `Kamu adalah asisten AI yang cerdas, ramah, dan serba bisa bernama SanzAI.
 Kamu menjawab dalam bahasa yang sama dengan pertanyaan pengguna (Indonesia atau Inggris).
@@ -138,26 +134,6 @@ async function callAI(model, systemPrompt, messages) {
   };
 }
 
-// ─── FALLBACK COMPLETION ──────────────────────────────────────────────────────
-async function callAIWithFallback(primaryModel, systemPrompt, messages, fallbackKeys = []) {
-  try {
-    return await callAI(primaryModel, systemPrompt, messages);
-  } catch (primaryErr) {
-    for (const key of fallbackKeys) {
-      const fallback = MODELS[key];
-      if (!fallback || fallback.id === primaryModel.id) continue;
-      try {
-        const result = await callAI(fallback, systemPrompt, messages);
-        result.modelLabel = `${result.modelLabel} [auto-fallback]`;
-        return result;
-      } catch (_) {
-        // coba model fallback berikutnya
-      }
-    }
-    throw primaryErr;
-  }
-}
-
 // ─── TOOL: CHAT ───────────────────────────────────────────────────────────────
 async function toolChat(prompt, history = [], modelKey) {
   const model = resolveModel(modelKey, DEFAULT_CHAT_MODEL);
@@ -171,7 +147,7 @@ async function toolChat(prompt, history = [], modelKey) {
     }));
   messages.push({ role: "user", content: String(prompt).trim() });
 
-  const { text, modelLabel, usage } = await callAIWithFallback(model, SYSTEM_CHAT, messages, CHAT_FALLBACKS);
+  const { text, modelLabel, usage } = await callAI(model, SYSTEM_CHAT, messages);
 
   return {
     answer : text,
@@ -190,7 +166,7 @@ async function toolCode(prompt, lang = "", modelKey) {
   const model    = resolveModel(modelKey, DEFAULT_CODE_MODEL);
   const messages = [{ role: "user", content: String(prompt).trim() }];
 
-  const { text, modelLabel, usage } = await callAIWithFallback(model, buildSystemCode(lang), messages, CODE_FALLBACKS);
+  const { text, modelLabel, usage } = await callAI(model, buildSystemCode(lang), messages);
 
   // Ekstrak code block jika ada
   const codeMatch    = text.match(/```[\w]*\n?([\s\S]*?)```/);
