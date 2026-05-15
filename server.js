@@ -65,6 +65,7 @@ const server = createServer(async (req, res) => {
     "/api/tools":      "./api/tools.js",
     "/api/proxy":      "./api/proxy.js",
     "/api/news":       "./api/news.js",
+    "/api/ai":         "./api/ai.js",
   };
 
   if (apiMap[pathname]) {
@@ -257,6 +258,10 @@ const server = createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`\n🚀 Server running at http://localhost:${PORT}`);
+
+  console.log(`\n  🤖 AI`);
+  console.log(`   Chat      → http://localhost:${PORT}/api/ai?tool=chat&prompt=Halo siapa kamu`);
+  console.log(`   Multi-turn→ POST /api/ai { tool, prompt, history: [...] }`);
 
   console.log(`\n  📥 DOWNLOADER`);
   console.log(`   YouTube   → http://localhost:${PORT}/api/downloader?platform=youtube&url=...`);
