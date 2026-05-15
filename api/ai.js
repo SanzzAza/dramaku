@@ -13,8 +13,8 @@
  *
  * Available models (value untuk param ?model=):
  *   llama3    → groq      : llama-3.3-70b-versatile        (default chat)
- *   deepseek  → openrouter: deepseek/deepseek-r1:free      (reasoning & code)
- *   qwen      → openrouter: qwen/qwen3-235b-a22b:free      (multilingual, cepat)
+ *   deepseek  → openrouter: deepseek/deepseek-chat-v3-0324:free      (reasoning & code)
+ *   qwen      → openrouter: qwen/qwen3-30b-a3b:free      (multilingual, cepat)
  *   phi4      → openrouter: microsoft/phi-4:free            (ringan, code)
  *   llama4    → openrouter: meta-llama/llama-4-scout:free  (terbaru dari Meta)
  */
@@ -48,8 +48,8 @@ const PROVIDERS = {
 // ─── MODEL REGISTRY ───────────────────────────────────────────────────────────
 const MODELS = {
   llama3  : { provider: "groq",       id: "llama-3.3-70b-versatile",        label: "LLaMA 3.3 70B (Groq)"       },
-  deepseek: { provider: "openrouter", id: "deepseek/deepseek-r1:free",       label: "DeepSeek R1 (OpenRouter)"   },
-  qwen    : { provider: "openrouter", id: "qwen/qwen3-235b-a22b:free",       label: "Qwen3 235B (OpenRouter)"    },
+  deepseek: { provider: "openrouter", id: "deepseek/deepseek-chat-v3-0324:free",       label: "DeepSeek V3 0324 (OpenRouter)"   },
+  qwen    : { provider: "openrouter", id: "qwen/qwen3-30b-a3b:free",       label: "Qwen3 30B (OpenRouter)"    },
   phi4    : { provider: "openrouter", id: "microsoft/phi-4:free",            label: "Phi-4 (OpenRouter)"         },
   llama4  : { provider: "openrouter", id: "meta-llama/llama-4-scout:free",   label: "LLaMA 4 Scout (OpenRouter)" },
 };
