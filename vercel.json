@@ -1,31 +1,31 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/api/ai",                "destination": "/api/ai.js" },
-    { "source": "/api/downloader",        "destination": "/api/downloader.js" },
-    { "source": "/api/tools",             "destination": "/api/tools.js" },
-    { "source": "/api/proxy",             "destination": "/api/proxy.js" },
-    { "source": "/api/news",              "destination": "/api/news.js" },
+    { "source": "/api/ai", "destination": "/api/ai.js" },
+    { "source": "/api/downloader", "destination": "/api/downloader.js" },
+    { "source": "/api/tools", "destination": "/api/tools.js" },
+    { "source": "/api/proxy", "destination": "/api/proxy.js" },
+    { "source": "/api/news", "destination": "/api/news.js" },
+    { "source": "/api/sankanime", "destination": "/api/sankanime.js" },
 
-    { "source": "/api/home",              "destination": "/api/drama.js?action=home" },
-    { "source": "/api/search",            "destination": "/api/drama.js?action=search" },
-    { "source": "/api/video",             "destination": "/api/drama.js?action=video" },
-    { "source": "/api/detail/:id",        "destination": "/api/drama.js?action=detail&id=:id" },
-    { "source": "/api/trending",          "destination": "/api/drama.js?action=trending" },
-    { "source": "/api/rank",              "destination": "/api/drama.js?action=rank" },
-    { "source": "/api/episodes/:id",      "destination": "/api/drama.js?action=episodes&id=:id" },
+    { "source": "/api/home", "destination": "/api/drama.js?action=home" },
+    { "source": "/api/search", "destination": "/api/drama.js?action=search" },
+    { "source": "/api/video", "destination": "/api/drama.js?action=video" },
+    { "source": "/api/detail/:id", "destination": "/api/drama.js?action=detail&id=:id" },
+    { "source": "/api/trending", "destination": "/api/drama.js?action=trending" },
+    { "source": "/api/rank", "destination": "/api/drama.js?action=rank" },
+    { "source": "/api/episodes/:id", "destination": "/api/drama.js?action=episodes&id=:id" },
 
-    { "source": "/api/drama",             "destination": "/api/drama.js" },
-
-    { "source": "/",                      "destination": "/public/index.html" }
+    { "source": "/api/drama", "destination": "/api/drama.js" },
+    { "source": "/", "destination": "/public/index.html" }
   ],
   "headers": [
     {
       "source": "/api/(.*)",
       "headers": [
-        { "key": "Access-Control-Allow-Origin",   "value": "*" },
-        { "key": "Access-Control-Allow-Methods",  "value": "GET, POST, OPTIONS" },
-        { "key": "Access-Control-Allow-Headers",  "value": "Content-Type, Authorization, Range" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, Range" },
         { "key": "Access-Control-Expose-Headers", "value": "Content-Length, Content-Range" }
       ]
     }
