@@ -1612,6 +1612,14 @@ body.light .res-code,body.light .curl-box{background:rgba(0,0,0,0.04)}
         </div>
         <span class="ping-dot checking" id="ping-manga" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
+      <div class="api-item" data-name="Sankanime API" data-desc="Anime streaming, detail, episode, genre, movie, popular, dan latest dari Sankanime." data-cat="tools" onclick="openEndpoint('sankanime')">
+        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg></div>
+        <div class="api-info">
+          <div class="api-name-row"><span class="api-name">Sankanime API</span><span class="api-badge">TOOLS</span></div>
+          <div class="api-desc">Anime streaming, detail anime, episode stream, genre, movie, popular, dan latest.</div>
+        </div>
+        <span class="ping-dot checking" id="ping-sankanime" title="Checking..."></span><span class="api-chevron">›</span>
+      </div>
     </div>
 
     <div class="cat-label">FUN</div>
@@ -2052,6 +2060,35 @@ const EP = {
     ]
   },
 
+  sankanime: {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg>',
+    name:'Sankanime API', badge:'TOOLS', method:'GET', path:'/api/sankanime', key:'skn',
+    desc:'Anime streaming dan informasi anime dari Sankanime/Sanka API. Support latest, popular, search, detail anime, episode stream, movie, list anime, genres, dan filter genre.',
+    placeholder:'naruto',
+    quickPrompts:[
+      {label:'Latest Anime', prompt:'/api/sankanime?action=latest'},
+      {label:'Popular Anime', prompt:'/api/sankanime?action=popular'},
+      {label:'Search Naruto', prompt:'/api/sankanime?action=search&q=naruto'},
+      {label:'Genres', prompt:'/api/sankanime?action=genres'}
+    ],
+    examples:[
+      '/api/sankanime?action=latest',
+      '/api/sankanime?action=popular',
+      '/api/sankanime?action=search&q=naruto',
+      '/api/sankanime?action=detail&slug=one-piece',
+      '/api/sankanime?action=episode&slug=one-piece-episode-1100',
+      '/api/sankanime?action=movie',
+      '/api/sankanime?action=list',
+      '/api/sankanime?action=genres',
+      '/api/sankanime?action=genre&slug=action'
+    ],
+    params:[
+      {name:'action',type:'select',req:true,options:['latest','popular','search','detail','episode','movie','list','genres','genre'],desc:'latest = anime terbaru, popular = anime populer, search = cari anime, detail = detail anime, episode = detail episode + stream, movie = anime movie, list = daftar anime, genres = list genre, genre = anime berdasarkan genre'},
+      {name:'q',type:'string',req:false,desc:'Keyword anime untuk action=search. Contoh: naruto, one piece'},
+      {name:'slug',type:'string',req:false,desc:'Slug anime/episode/genre. Wajib untuk action=detail, episode, dan genre'},
+      {name:'page',type:'number',req:false,desc:'Nomor halaman untuk latest, movie, list, dan genre. Default: 1'}
+    ]
+  },
   film: {
     icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M17 7h5M2 17h5M17 17h5"/></svg>',
     name:'Info Film & Series', badge:'TOOLS', method:'GET', path:'/api/tools', tool:'film', key:'flm',
@@ -3586,8 +3623,9 @@ const RELATED_MAP = {
   cekno:     ['kurs','resi','cuaca'],
   resi:      ['cekno','kurs','bola'],
   quote:     ['anime','lirik','film'],
-  anime:     ['aiimage','quote','manga'],
-  manga:     ['anime','film','quote'],
+  anime:     ['aiimage','quote','manga','sankanime'],
+  manga:     ['anime','film','quote','sankanime'],
+  sankanime: ['anime','manga','film'],
   film:      ['lirik','manga','bola'],
   sholat:    ['cuaca','resi','bola'],
   bola:      ['sholat','film','lirik'],
@@ -3704,6 +3742,7 @@ function showPage(name){
     manga:     '/api/tools',
     quote:     '/api/tools',
     anime:     '/api/tools',
+    sankanime: '/api/sankanime?action=popular',
     aichat:    '/api/ai?tool=chat&prompt=ping',
     aiimage:   '/api/tools',
   };
