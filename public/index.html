@@ -1612,14 +1612,6 @@ body.light .res-code,body.light .curl-box{background:rgba(0,0,0,0.04)}
         </div>
         <span class="ping-dot checking" id="ping-manga" title="Checking..."></span><span class="api-chevron">›</span>
       </div>
-      <div class="api-item" data-name="Sankanime API" data-desc="Anime streaming, detail, episode, genre, movie, popular, dan latest dari Sankanime." data-cat="tools" onclick="openEndpoint('sankanime')">
-        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg></div>
-        <div class="api-info">
-          <div class="api-name-row"><span class="api-name">Sankanime API</span><span class="api-badge">TOOLS</span></div>
-          <div class="api-desc">Anime streaming, detail anime, episode stream, genre, movie, popular, dan latest.</div>
-        </div>
-        <span class="ping-dot checking" id="ping-sankanime" title="Checking..."></span><span class="api-chevron">›</span>
-      </div>
     </div>
 
     <div class="cat-label">FUN</div>
@@ -2060,34 +2052,50 @@ const EP = {
     ]
   },
 
-  sankanime: {
-    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg>',
-    name:'Sankanime API', badge:'TOOLS', method:'GET', path:'/api/sankanime', key:'skn',
-    desc:'Anime streaming dan informasi anime dari Sankanime/Sanka API. Support latest, popular, search, detail anime, episode stream, movie, list anime, genres, dan filter genre.',
-    placeholder:'naruto',
-    quickPrompts:[
-      {label:'Latest Anime', prompt:'/api/sankanime?action=latest'},
-      {label:'Popular Anime', prompt:'/api/sankanime?action=popular'},
-      {label:'Search Naruto', prompt:'/api/sankanime?action=search&q=naruto'},
-      {label:'Genres', prompt:'/api/sankanime?action=genres'}
-    ],
-    examples:[
-      '/api/sankanime?action=latest',
-      '/api/sankanime?action=popular',
-      '/api/sankanime?action=search&q=naruto',
-      '/api/sankanime?action=detail&slug=one-piece',
-      '/api/sankanime?action=episode&slug=one-piece-episode-1100',
-      '/api/sankanime?action=movie',
-      '/api/sankanime?action=list',
-      '/api/sankanime?action=genres',
-      '/api/sankanime?action=genre&slug=action'
-    ],
-    params:[
-      {name:'action',type:'select',req:true,options:['latest','popular','search','detail','episode','movie','list','genres','genre'],desc:'latest = anime terbaru, popular = anime populer, search = cari anime, detail = detail anime, episode = detail episode + stream, movie = anime movie, list = daftar anime, genres = list genre, genre = anime berdasarkan genre'},
-      {name:'q',type:'string',req:false,desc:'Keyword anime untuk action=search. Contoh: naruto, one piece'},
-      {name:'slug',type:'string',req:false,desc:'Slug anime/episode/genre. Wajib untuk action=detail, episode, dan genre'},
-      {name:'page',type:'number',req:false,desc:'Nomor halaman untuk latest, movie, list, dan genre. Default: 1'}
-    ]
+  'sankanime-latest': {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg>', name:'Sankanime Latest', badge:'ANIME', method:'GET', path:'/api/sankanime', key:'skl',
+    desc:'Ambil anime update terbaru dari Sankanime.',
+    params:[{name:'action', value:'latest', type:'hidden'},{name:'page', label:'Page', type:'string', req:false, value:'1', placeholder:'1', desc:'Nomor halaman. Default: 1'}]
+  },
+  'sankanime-popular': {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c0 4-4 6-4 10a4 4 0 0 0 8 0c0-4-4-6-4-10z"/></svg>', name:'Sankanime Popular', badge:'ANIME', method:'GET', path:'/api/sankanime', key:'skp',
+    desc:'Ambil daftar anime populer dari Sankanime.',
+    params:[{name:'action', value:'popular', type:'hidden'}]
+  },
+  'sankanime-search': {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>', name:'Sankanime Search', badge:'ANIME', method:'GET', path:'/api/sankanime', key:'sks',
+    desc:'Cari anime berdasarkan keyword.', placeholder:'naruto',
+    params:[{name:'action', value:'search', type:'hidden'},{name:'q', label:'Keyword', type:'string', req:true, placeholder:'naruto', desc:'Keyword anime yang dicari. Contoh: naruto'}]
+  },
+  'sankanime-detail': {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>', name:'Sankanime Detail', badge:'ANIME', method:'GET', path:'/api/sankanime', key:'skd',
+    desc:'Ambil detail anime berdasarkan slug.',
+    params:[{name:'action', value:'detail', type:'hidden'},{name:'slug', label:'Slug Anime', type:'string', req:true, value:'one-piece', placeholder:'one-piece', desc:'Slug anime. Contoh: one-piece'}]
+  },
+  'sankanime-episode': {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>', name:'Sankanime Episode Stream', badge:'ANIME', method:'GET', path:'/api/sankanime', key:'ske',
+    desc:'Ambil detail episode, stream, dan link download jika tersedia.',
+    params:[{name:'action', value:'episode', type:'hidden'},{name:'slug', label:'Slug Episode', type:'string', req:true, value:'one-piece-episode-1100', placeholder:'one-piece-episode-1100', desc:'Slug episode anime.'}]
+  },
+  'sankanime-movie': {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 2v20M17 2v20M2 12h20"/></svg>', name:'Sankanime Movie', badge:'ANIME', method:'GET', path:'/api/sankanime', key:'skm',
+    desc:'Ambil daftar anime movie.',
+    params:[{name:'action', value:'movie', type:'hidden'},{name:'page', label:'Page', type:'string', req:false, value:'1', placeholder:'1', desc:'Nomor halaman. Default: 1'}]
+  },
+  'sankanime-list': {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg>', name:'Sankanime List Anime', badge:'ANIME', method:'GET', path:'/api/sankanime', key:'skli',
+    desc:'Ambil list anime A-Z dari Sankanime.',
+    params:[{name:'action', value:'list', type:'hidden'},{name:'page', label:'Page', type:'string', req:false, value:'1', placeholder:'1', desc:'Nomor halaman. Default: 1'}]
+  },
+  'sankanime-genres': {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3H4v7l9.59 9.59a2 2 0 0 0 2.82 0l4.18-4.18a2 2 0 0 0 0-2.82z"/></svg>', name:'Sankanime Genres', badge:'ANIME', method:'GET', path:'/api/sankanime', key:'skg',
+    desc:'Ambil daftar genre anime.',
+    params:[{name:'action', value:'genres', type:'hidden'}]
+  },
+  'sankanime-genre': {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3H4v7l9.59 9.59a2 2 0 0 0 2.82 0l4.18-4.18a2 2 0 0 0 0-2.82z"/></svg>', name:'Sankanime By Genre', badge:'ANIME', method:'GET', path:'/api/sankanime', key:'skge',
+    desc:'Ambil anime berdasarkan genre tertentu.',
+    params:[{name:'action', value:'genre', type:'hidden'},{name:'slug', label:'Slug Genre', type:'string', req:true, value:'action', placeholder:'action', desc:'Slug genre. Contoh: action'},{name:'page', label:'Page', type:'string', req:false, value:'1', placeholder:'1', desc:'Nomor halaman. Default: 1'}]
   },
   film: {
     icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M17 7h5M2 17h5M17 17h5"/></svg>',
@@ -2521,6 +2529,42 @@ function toggleDramaPlatform(platId) {
   arrow.classList.toggle('open', isOpen);
 }
 
+
+const SANKANIME_ENDPOINTS = [
+  { id:'sankanime-latest',  action:'latest',  label:'Latest',         desc:'Anime update terbaru' },
+  { id:'sankanime-popular', action:'popular', label:'Popular',        desc:'Anime populer' },
+  { id:'sankanime-search',  action:'search',  label:'Search',         desc:'Cari anime' },
+  { id:'sankanime-detail',  action:'detail',  label:'Detail',         desc:'Detail anime' },
+  { id:'sankanime-episode', action:'episode', label:'Episode Stream', desc:'Stream episode' },
+  { id:'sankanime-movie',   action:'movie',   label:'Movie',          desc:'Anime movie' },
+  { id:'sankanime-list',    action:'list',    label:'List Anime',     desc:'List anime A-Z' },
+  { id:'sankanime-genres',  action:'genres',  label:'Genres',         desc:'Daftar genre' },
+  { id:'sankanime-genre',   action:'genre',   label:'Genre',          desc:'Anime by genre' },
+];
+
+function renderSankanimePlatform() {
+  const icon = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg>`;
+  const epIcons = { latest:'🏠', popular:'🔥', search:'🔍', detail:'📄', episode:'▶️', movie:'🎬', list:'📚', genres:'🏷️', genre:'🧩' };
+  return `
+    <div class="drama-platform-group">
+      <div class="drama-platform-header" onclick="toggleDramaPlatform('sankanime')">
+        <div class="drama-platform-icon">${icon}</div>
+        <span class="drama-platform-name">Sankanime</span>
+        <span class="drama-platform-count">${SANKANIME_ENDPOINTS.length} endpoints</span>
+        <span class="drama-platform-arrow" id="drama-arrow-sankanime">›</span>
+      </div>
+      <div class="drama-endpoint-list" id="drama-ep-list-sankanime">
+        ${SANKANIME_ENDPOINTS.map(ep => `
+          <div class="drama-ep-item" onclick="openEndpoint('${ep.id}')">
+            <span class="drama-ep-icon">${epIcons[ep.action] || '🎌'}</span>
+            <span class="drama-ep-method">GET</span>
+            <span class="drama-ep-path">${ep.label}</span>
+            <span class="drama-ep-desc">${ep.desc}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
 function renderDramaPlatforms() {
   const container = document.getElementById('drama-platforms-list');
   if (!container) return;
@@ -2585,7 +2629,7 @@ function renderDramaPlatforms() {
         }).join('')}
       </div>
     </div>
-  `).join('');
+  `).join('') + renderSankanimePlatform();
 }
 
 // Auto-render setelah DOM siap
@@ -3623,9 +3667,17 @@ const RELATED_MAP = {
   cekno:     ['kurs','resi','cuaca'],
   resi:      ['cekno','kurs','bola'],
   quote:     ['anime','lirik','film'],
-  anime:     ['aiimage','quote','manga','sankanime'],
-  manga:     ['anime','film','quote','sankanime'],
-  sankanime: ['anime','manga','film'],
+  anime:     ['aiimage','quote','manga','sankanime-latest'],
+  manga:     ['anime','film','quote','sankanime-search'],
+  'sankanime-latest':  ['sankanime-popular','sankanime-search','anime','manga'],
+  'sankanime-popular': ['sankanime-latest','sankanime-search','anime','manga'],
+  'sankanime-search':  ['sankanime-detail','sankanime-episode','anime','manga'],
+  'sankanime-detail':  ['sankanime-episode','sankanime-search','anime','manga'],
+  'sankanime-episode': ['sankanime-detail','sankanime-search','anime','manga'],
+  'sankanime-movie':   ['sankanime-latest','sankanime-popular','anime','manga'],
+  'sankanime-list':    ['sankanime-search','sankanime-genres','anime','manga'],
+  'sankanime-genres':  ['sankanime-genre','sankanime-list','anime','manga'],
+  'sankanime-genre':   ['sankanime-genres','sankanime-list','anime','manga'],
   film:      ['lirik','manga','bola'],
   sholat:    ['cuaca','resi','bola'],
   bola:      ['sholat','film','lirik'],
@@ -3742,7 +3794,6 @@ function showPage(name){
     manga:     '/api/tools',
     quote:     '/api/tools',
     anime:     '/api/tools',
-    sankanime: '/api/sankanime?action=popular',
     aichat:    '/api/ai?tool=chat&prompt=ping',
     aiimage:   '/api/tools',
   };
