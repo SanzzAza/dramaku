@@ -343,8 +343,23 @@ body::after{
 /* ── FEATURE CARDS ── */
 .home-features{
   display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
-  padding:0 24px 56px;max-width:900px;margin:0 auto;
+  padding:0 24px 64px;max-width:1020px;margin:0 auto;
 }
+.quick-start{
+  max-width:1020px;margin:0 auto 28px;padding:0 24px;
+}
+.quick-start-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+}
+.quick-step{
+  background:rgba(24,24,48,0.6);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:14px;
+}
+.quick-step b{display:block;font-size:12px;margin-bottom:6px;color:var(--text)}
+.quick-step p{font-size:12px;color:var(--text2);line-height:1.55}
+.quick-step code{font-family:monospace;color:#c4b5fd}
 .feat-card{
   background:rgba(24,24,48,0.6);
   border:1px solid var(--border);
@@ -377,6 +392,13 @@ body::after{
 /* ── USE CASES ── */
 .usecase-section{padding:0 24px 64px;max-width:900px;margin:0 auto}
 .usecase-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.usecase-section,.how-section,.home-faq{
+  border:1px solid rgba(255,255,255,0.04);
+  background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0));
+  border-radius:22px;
+  padding-top:28px;
+}
+.usecase-section{max-width:1020px;margin-bottom:24px}
 .uc-card{
   background:rgba(24,24,48,0.6);
   border:1px solid var(--border);
@@ -443,11 +465,14 @@ body::after{
 }
 .section-title{
   text-align:center;font-size:22px;font-weight:800;
-  letter-spacing:-0.02em;margin-bottom:8px;
+  letter-spacing:-0.02em;margin-bottom:10px;
+  line-height:1.25;
 }
 .section-sub{
   text-align:center;font-size:13px;color:var(--text2);
-  margin-bottom:36px;
+  margin:0 auto 36px;
+  max-width:560px;
+  line-height:1.7;
 }
 .how-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .how-step{
@@ -480,9 +505,9 @@ body::after{
 .faq-item{
   background:var(--surface);border:1px solid var(--border);
   border-radius:14px;padding:18px 20px;margin-bottom:10px;
-  cursor:pointer;transition:border-color 0.2s;
+  cursor:pointer;transition:border-color 0.2s,transform 0.2s,box-shadow 0.2s;
 }
-.faq-item:hover{border-color:var(--border2)}
+.faq-item:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.18)}
 .faq-q{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600}
 .faq-q::before{content:'›';color:var(--primary-light);font-size:18px;font-weight:700;transition:transform 0.2s;display:inline-block}
 .faq-item.open .faq-q::before{transform:rotate(90deg)}
@@ -492,10 +517,12 @@ body::after{
 /* FOOTER */
 .footer{
   position:relative;z-index:1;
-  border-top:1px solid var(--border);
-  padding:40px 24px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:32px 24px;
   display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:32px;
-  max-width:860px;margin:0 auto;
+  max-width:1020px;margin:0 auto 14px;
+  background:rgba(255,255,255,0.02);
 }
 .footer-brand-name{font-size:15px;font-weight:800}
 .footer-brand-name span{color:var(--primary-light)}
@@ -514,6 +541,17 @@ body::after{
 /* ══ DOCS ══════════════════════════════════════════ */
 .docs-inner{padding:24px 20px 60px;max-width:720px;margin:0 auto}
 .docs-search-wrap{margin-bottom:24px}
+.docs-top-shortcuts{
+  display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px
+}
+.docs-chip{
+  border:1px solid var(--border);
+  background:rgba(255,255,255,0.03);
+  color:var(--text2);font-size:12px;font-weight:600;
+  border-radius:999px;padding:7px 12px;text-decoration:none;
+  transition:all .15s;
+}
+.docs-chip:hover{color:var(--text);border-color:var(--border2);background:rgba(124,58,237,0.12)}
 .docs-search{
   width:100%;background:var(--surface);
   border:1px solid var(--border);border-radius:12px;
@@ -828,9 +866,11 @@ body::after{
   .nav-links{display:none}
   .nav-hamburger{display:flex}
   .home-features{grid-template-columns:1fr;max-width:400px}
+  .quick-start-grid{grid-template-columns:1fr}
   .usecase-grid{grid-template-columns:1fr}
   .how-steps{grid-template-columns:1fr}
   .hero-stats{grid-template-columns:repeat(2,1fr);display:grid}
+  .usecase-section,.how-section,.home-faq{border:none;background:transparent;padding-top:0}
   .stat-item{border-right:none;border-bottom:1px solid var(--border)}
   .footer{grid-template-columns:1fr 1fr;gap:24px}
   .param-table th:last-child,.param-table td:last-child{display:none}
@@ -1100,7 +1140,7 @@ body.light .res-code,body.light .curl-box{background:rgba(0,0,0,0.04)}
     <a href="#" id="nav-news" onclick="showPage('news');setNav('news');return false">NEWS</a>
   </div>
   <div class="nav-right">
-    <span class="status-badge"><span class="status-badge-dot"></span>ALL SYSTEMS OK</span>
+    <span class="status-badge" id="status-badge"><span class="status-badge-dot"></span><span id="status-text">CHECKING STATUS...</span></span>
     <a class="nav-btn" href="#" onclick="showPage('docs');setNav('docs');return false">GET STARTED</a>
     <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
       <svg id="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -1131,10 +1171,10 @@ body.light .res-code,body.light .curl-box{background:rgba(0,0,0,0.04)}
   <div class="home-hero">
     <canvas id="hero-canvas"></canvas>
     <!-- orbs -->
-    <div class="hero-badge"><span class="hero-badge-dot"></span>THE FUTURE OF REST API</div>
+    <div class="hero-badge"><span class="hero-badge-dot"></span>MODERN REST API PLATFORM</div>
     <div class="hero-avatar"><img src="https://i.ibb.co.com/q4HBSw3/1777719969821.jpg" alt="SanzXD"/></div>
     <h1>API untuk<br><span class="grad"><span class="typewriter-word" id="tw-word">TikTok</span><span class="typewriter-cursor" id="tw-cursor"></span></span></h1>
-    <p class="hero-sub">Akses endpoint <strong>Downloader</strong>, <strong>Drama</strong>, <strong>Berita</strong>, dan banyak tools lainnya dalam satu platform yang cepat, aman, dan mudah digunakan.</p>
+    <p class="hero-sub">Akses endpoint <strong>Downloader</strong>, <strong>Drama</strong>, <strong>Berita</strong>, <strong>AI</strong>, dan utility tools dalam satu platform yang cepat, aman, dan mudah digunakan.</p>
     <div class="hero-cta">
       <a class="btn-primary" href="#" onclick="showPage('docs');setNav('docs');return false">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -1187,6 +1227,24 @@ body.light .res-code,body.light .curl-box{background:rgba(0,0,0,0.04)}
   <!-- Marquee -->
   <div class="hero-marquee">
     <div class="marquee-track" id="marquee-track"></div>
+  </div>
+
+  <div class="quick-start">
+    <div class="section-label">Quick Start</div>
+    <div class="quick-start-grid">
+      <div class="quick-step">
+        <b>1) Pilih endpoint paling sering dipakai</b>
+        <p>Buka docs lalu mulai dari <code>TikTok DL</code>, <code>AI Chat</code>, atau <code>API Status</code>.</p>
+      </div>
+      <div class="quick-step">
+        <b>2) Coba langsung tanpa setup</b>
+        <p>Pakai panel <code>Try It Live</code> untuk kirim request dan lihat JSON response realtime.</p>
+      </div>
+      <div class="quick-step">
+        <b>3) Integrasi ke app kamu</b>
+        <p>Copy cURL lalu implementasi ke bot, website, atau mobile app dalam hitungan menit.</p>
+      </div>
+    </div>
   </div>
 
   <!-- Feature Cards -->
@@ -1407,10 +1465,32 @@ body.light .res-code,body.light .curl-box{background:rgba(0,0,0,0.04)}
 </div>
 
 <!-- ═══════════ DOCS ═══════════ -->
-<div id="page-docs" class="page">
+  <div id="page-docs" class="page">
   <div class="docs-inner">
     <div class="docs-search-wrap">
       <input class="docs-search" id="docs-search" placeholder="Search APIs by name, category, or description..." oninput="filterApis(this.value)"/>
+    </div>
+    <div class="docs-top-shortcuts">
+      <a class="docs-chip" href="#" onclick="openEndpoint('status');return false">⚡ API Status</a>
+      <a class="docs-chip" href="#" onclick="openEndpoint('tiktok');return false">🔥 TikTok DL</a>
+      <a class="docs-chip" href="#" onclick="openEndpoint('aichat');return false">🤖 AI Chat</a>
+      <a class="docs-chip" href="#" onclick="openEndpoint('news-latest');return false">📰 News Latest</a>
+      <a class="docs-chip" href="#" onclick="openEndpoint('drama-foryou');return false">🎬 Drama ForYou</a>
+    </div>
+
+    <div class="cat-label">SYSTEM</div>
+    <div class="api-list">
+      <div class="api-item" data-name="API Status" data-desc="Health check API + uptime + endpoint catalog." data-cat="system" onclick="openEndpoint('status')">
+        <div class="api-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="4" stroke="#34d399" stroke-width="1.8"/><path d="M7 12h3l1.5-3 2.5 6 1.5-3H17" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="api-info">
+          <div class="api-name-row">
+            <span class="api-name">API Status</span>
+            <span class="api-badge">SYSTEM</span>
+          </div>
+          <div class="api-desc">Health check API + uptime + endpoint catalog.</div>
+        </div>
+        <span class="ping-dot checking" id="ping-status" title="Checking..."></span><span class="api-chevron">›</span>
+      </div>
     </div>
 
     <div class="cat-label">DOWNLOADER</div>
@@ -1781,6 +1861,12 @@ function refreshNewsCategories(epKey) {
 }
 
 const EP = {
+  status: {
+    icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="4" stroke="#34d399" stroke-width="2"/><path d="M7 12h3l1.5-3 2.5 6 1.5-3H17" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    name:'API Status', badge:'SYSTEM', method:'GET', path:'/api/status', key:'st',
+    desc:'Health check endpoint untuk melihat status API, uptime, info runtime Node.js, serta katalog endpoint utama.',
+    params:[]
+  },
   tiktok: {
     icon:'<svg viewBox="0 0 24 24" width="28" height="28" fill="#a78bfa" xmlns="http://www.w3.org/2000/svg"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.74a4.85 4.85 0 0 1-1.01-.05z"/></svg>',
     name:'TikTok DL', badge:'DOWNLOADER', method:'GET', path:'/api/downloader', platform:'tiktok', key:'tt',
@@ -2870,6 +2956,10 @@ function getParamValues(ep) {
 
 function openEndpoint(id) {
   const ep = EP[id];
+  const firstParam = ep.params?.[0];
+  const queryPreview = firstParam
+    ? `?${ep.platform?`platform=${ep.platform}&`:''}${ep.tool?`tool=${ep.tool}&`:''}${firstParam.name}={${firstParam.name}}`
+    : '';
   ytFormat = 'mp3'; ytQuality = '128';
 
   const rows = ep.params.filter(p => p.type !== 'hidden').map(p => {
@@ -2911,7 +3001,7 @@ function openEndpoint(id) {
           <span class="detail-badge-green">● ${ep.method}</span>
         </div>
       </div>
-      <div class="detail-path">${base}${ep.path}?${ep.platform?`platform=${ep.platform}&`:''}${ep.tool?`tool=${ep.tool}&`:''}${ep.params[0].name}={${ep.params[0].name}}</div>
+      <div class="detail-path">${base}${ep.path}${queryPreview}</div>
       <div class="detail-desc">${ep.desc}</div>
     </div>
 
@@ -3771,6 +3861,7 @@ function showPage(name){
 (function(){
   const BASE = 'https://dramafeed.vercel.app';
   const PING_ENDPOINTS = {
+    status:    '/api/status',
     tiktok:    '/api/downloader',
     instagram: '/api/downloader',
     youtube:   '/api/downloader',
@@ -3834,6 +3925,28 @@ function showPage(name){
   setInterval(()=>{
     Object.entries(pathGroups).forEach(([path, ids])=> pingPath(path, ids));
   }, 120000);
+})();
+
+// ══ NAVBAR STATUS BADGE ══
+(function(){
+  const BASE = 'https://dramafeed.vercel.app';
+  const textEl = document.getElementById('status-text');
+  if (!textEl) return;
+
+  async function refreshStatusBadge() {
+    try {
+      const res = await fetch(`${BASE}/api/status?_t=${Date.now()}`, { method: 'GET', signal: AbortSignal.timeout(5000) });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const sec = data?.result?.uptime_sec ?? null;
+      textEl.textContent = sec === null ? 'ALL SYSTEMS OK' : `ALL SYSTEMS OK • UP ${sec}s`;
+    } catch (_) {
+      textEl.textContent = 'STATUS DEGRADED';
+    }
+  }
+
+  refreshStatusBadge();
+  setInterval(refreshStatusBadge, 60000);
 })();
 
 </script>
