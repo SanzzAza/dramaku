@@ -1,88 +1,68 @@
-# MyAPI
+# Dramaku API
 
-REST API sederhhshshsana untuk TikTok Downloader (dan lebih banyak endpoint ke depannya).
+REST API gratis untuk **drama feed**, **downloader**, **tools**, **AI chat/code**, dan **berita**.
 
-## Struktur Folder
+## Fitur Utama
+- 🎬 Drama multi-source: GoodShort, DramaBox, Melolo, DramaBite, DramaNova.
+- ⬇️ Downloader: TikTok, YouTube, Instagram, Facebook, Pinterest, X, Threads, Terabox.
+- 🧰 Tools utility: cuaca, kurs, QR, quote, screenshot, short URL, TTS, dll.
+- 🤖 AI endpoint: chat & code generator (Groq/OpenRouter/Cerebras).
+- 📰 News aggregator portal Indonesia.
+- ❤️ **Baru:** endpoint health-check `/api/status` untuk monitoring uptime dan daftar endpoint inti.
 
-```
-myapi/
+## Struktur Project
+
+```txt
+.
 ├── api/
-│   └── tiktok.js       ← endpoint GET /api/tiktok
-├── public/
-│   └── index.html      ← halaman dokumentasi interaktif
-├── server.js           ← untuk local development
-├── vercel.json         ← konfigurasi Vercel
+│   ├── ai.js
+│   ├── downloader.js
+│   ├── drama.js
+│   ├── news.js
+│   ├── proxy.js
+│   ├── sankanime.js
+│   ├── status.js
+│   └── tools.js
+├── public/index.html
+├── server.js
+├── vercel.json
 └── package.json
 ```
 
-## Cara Pakai API
+## Endpoint Ringkas
+- `GET /api/status`
+- `GET|POST /api/drama`
+- `GET|POST /api/downloader`
+- `GET|POST /api/tools`
+- `GET|POST /api/ai`
+- `GET|POST /api/news`
+- `GET /api/sankanime`
+- `GET /api/proxy`
 
-```
-GET /api/tiktok?url=https://vt.tiktok.com/xxxxx
-```
+## Environment Variables
+Buat file `.env` (untuk local) dari contoh `.env.example`:
 
-**Contoh Response:**
-```json
-{
-  "status": true,
-  "message": "Success",
-  "author": {
-    "username": "akueja",
-    "nickname": "akueja"
-  },
-  "title": "Judul video...",
-  "download": {
-    "no_watermark": "https://...",
-    "watermark": "https://...",
-    "audio": "https://..."
-  }
-}
-```
-
-## Deploy ke Vercel
-
-### 1. Install Vercel CLI
 ```bash
-npm install -g vercel
+cp .env.example .env
 ```
 
-### 2. Login Vercel
-```bash
-vercel login
-```
-
-### 3. Deploy
-```bash
-cd myapi
-vercel
-```
-
-Ikuti instruksinya, pilih:
-- Set up and deploy: **Y**
-- Which scope: pilih akun kamu
-- Link to existing project: **N**
-- Project name: **myapi** (atau nama lain)
-- Directory: **./** (enter saja)
-
-### 4. Setelah deploy
-Kamu akan dapat URL seperti: `https://myapi-xxx.vercel.app`
-
-Buka `public/index.html`, ubah baris ini:
-```js
-const BASE_URL = '';
-// Ganti jadi:
-const BASE_URL = 'https://myapi-xxx.vercel.app';
-```
-
-Lalu deploy ulang:
-```bash
-vercel --prod
-```
+Wajib diisi jika pakai endpoint AI:
+- `GROQ_API_KEY`
+- `OPENROUTER_API_KEY`
+- `CEREBRAS_API_KEY`
 
 ## Local Development
 
 ```bash
 npm install
 node server.js
-# Buka http://localhost:3000
+# buka http://localhost:3000
+```
+
+## Deploy Vercel
+
+```bash
+npm i -g vercel
+vercel
+vercel --prod
 ```

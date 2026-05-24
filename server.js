@@ -61,6 +61,7 @@ const server = createServer(async (req, res) => {
   };
 
   const apiMap = {
+    "/api/status":     "./api/status.js",
     "/api/downloader": "./api/downloader.js",
     "/api/tools":      "./api/tools.js",
     "/api/proxy":      "./api/proxy.js",
