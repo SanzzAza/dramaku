@@ -311,7 +311,7 @@ img{display:block}button{font-family:inherit;-webkit-tap-highlight-color:transpa
   <div class="s-results" id="sRes"><div class="empty-state" style="padding-top:100px"><svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" opacity=".2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><p>Ketik judul drama untuk mencari</p><p class="empty-sub">Cari dari 5 platform sekaligus</p></div></div>
 </div>
 
-<main class="main"><div id="v-home"></div><div id="v-populer" style="display:none"></div><div id="v-new" style="display:none"></div><div id="v-history" style="display:none"></div><div id="v-fav" style="display:none"></div></main>
+<main class="main"><div id="v-home"></div><div id="v-populer" style="display:none"></div><div id="v-new" style="display:none"></div><div id="v-t4" style="display:none"></div><div id="v-t5" style="display:none"></div><div id="v-t6" style="display:none"></div><div id="v-t7" style="display:none"></div><div id="v-history" style="display:none"></div><div id="v-fav" style="display:none"></div></main>
 
 <div class="detail-ov" id="detOv"><div id="detBody"></div></div>
 
@@ -348,7 +348,7 @@ const thumbCache={},platCache={};
 // Splash
 setTimeout(()=>{$('#splash').classList.add('hide');setTimeout(()=>$('#splash').remove(),500)},1800);
 
-function resetState(){pg={home:1,populer:1,new:1};busy={};more={home:1,populer:1,new:1};loaded={};['home','populer','new','history','fav'].forEach(k=>{const el=$('#v-'+k);if(el)el.innerHTML=''})}
+function resetState(){pg={home:1,populer:1,new:1,t4:1,t5:1,t6:1,t7:1};busy={};more={home:1,populer:1,new:1,t4:1,t5:1,t6:1,t7:1};loaded={};['home','populer','new','history','fav','t4','t5','t6','t7'].forEach(k=>{const el=$('#v-'+k);if(el)el.innerHTML=''})}
 function $(s,p){return(p||document).querySelector(s)}
 function $$(s,p){return(p||document).querySelectorAll(s)}
 
@@ -356,6 +356,16 @@ function togglePlat(){$('#platDd').classList.toggle('on');$('#platBtn').classLis
 function setPlatform(p){
   P=p;const labels={melolo:'Melolo',freereels:'FreeReels',flickreels:'FlickReels',dramanova:'DramaNova',reelshort:'ReelShort',netshort:'NetShort',dramabox:'DramaBox',goodshort:'GoodShort',moviebox:'MovieBox'};$('#platLabel').textContent=labels[p]||p;
   $$('.plat-opt').forEach(e=>e.classList.toggle('on',e.dataset.p===p));$('#platDd').classList.remove('on');$('#platBtn').classList.remove('open');
+  // Dynamic tabs per platform
+  const tabEl=document.querySelector('.tabs');
+  const defTabs='<div class="tab on" data-t="home" onclick="go(\'home\')">Beranda</div><div class="tab" data-t="populer" onclick="go(\'populer\')">Populer</div><div class="tab" data-t="new" onclick="go(\'new\')">Terbaru</div>';
+  if(p==='moviebox'){
+    tabEl.innerHTML='<div class="tab on" data-t="home" onclick="go(\'home\')">Indonesia</div><div class="tab" data-t="populer" onclick="go(\'populer\')">Global</div><div class="tab" data-t="new" onclick="go(\'new\')">Horror</div><div class="tab" data-t="t4" onclick="go(\'t4\')">Asia</div><div class="tab" data-t="t5" onclick="go(\'t5\')">Anime</div><div class="tab" data-t="t6" onclick="go(\'t6\')">CDrama</div><div class="tab" data-t="t7" onclick="go(\'t7\')">Reality</div>';
+  }else if(p==='dramabox'){
+    tabEl.innerHTML='<div class="tab on" data-t="home" onclick="go(\'home\')">Beranda</div><div class="tab" data-t="populer" onclick="go(\'populer\')">Populer</div><div class="tab" data-t="new" onclick="go(\'new\')">Terbaru</div><div class="tab" data-t="t4" onclick="go(\'t4\')">Ranking</div><div class="tab" data-t="t5" onclick="go(\'t5\')">Cina</div>';
+  }else{
+    tabEl.innerHTML=defTabs;
+  }
   resetState();go('home');
 }
 document.addEventListener('click',e=>{if(!e.target.closest('.plat-sel')){$('#platDd').classList.remove('on');$('#platBtn').classList.remove('open')}});
@@ -372,7 +382,7 @@ function flat(data){
   return out;
 }
 
-function go(t){curTab=t;$$('.tab').forEach(e=>e.classList.toggle('on',e.dataset.t===t));$$('.bnav-item').forEach(e=>e.classList.toggle('on',e.dataset.n===t));['home','populer','new','history','fav'].forEach(k=>{$('#v-'+k).style.display=k===t?'block':'none'});
+function go(t){curTab=t;$$('.tab').forEach(e=>e.classList.toggle('on',e.dataset.t===t));$$('.bnav-item').forEach(e=>e.classList.toggle('on',e.dataset.n===t));['home','populer','new','t4','t5','t6','t7','history','fav'].forEach(k=>{const el=$('#v-'+k);if(el)el.style.display=k===t?'block':'none'});
   if(t==='history'){renderHistory()}else if(t==='fav'){renderFav()}else if(!$('#v-'+t).innerHTML.trim())loadTab(t);window.scrollTo(0,0)}
 function goHome(){closeDet();closePl();go('home')}
 
@@ -407,7 +417,10 @@ async function loadTab(t){
       box.innerHTML=h||errHtml();loaded.home=1;
     }catch(e){box.innerHTML=errHtml()}
   }else if(t!=='home'){
-    if(pg[t]===1)box.innerHTML=`<div class="sec"><div class="sec-hd"><h2 class="sec-tt">${t==='populer'?'Paling Populer':'Paling Baru'}</h2></div><div class="grid" id="g-${t}"></div></div><div id="trg-${t}"></div>`;
+    const tabNames={populer:'Paling Populer',new:'Paling Baru',t4:'',t5:'',t6:'',t7:''};
+    const activeTab=document.querySelector(`.tab[data-t="${t}"]`);
+    const secTitle=activeTab?activeTab.textContent.trim():tabNames[t]||'';
+    if(pg[t]===1)box.innerHTML=`<div class="sec"><div class="sec-hd"><h2 class="sec-tt">${secTitle}</h2></div><div class="grid" id="g-${t}"></div></div><div id="trg-${t}"></div>`;
     const g=$('#g-'+t);if(pg[t]===1&&g)g.innerHTML=skelHtml(9,1);
     try{
       let ep,qp;
@@ -415,9 +428,15 @@ async function loadTab(t){
       else if(P==='flickreels'){ep=t==='populer'?'/populer':'/new';qp=t==='populer'?'':`?page=${pg[t]}`}
       else if(P==='reelshort'){ep=t==='populer'?'/populer':'/new';qp=t==='populer'?`?page=${pg[t]}&limit=20&period=0&rule=0`:`?page=${pg[t]}&limit=20`}
       else if(P==='netshort'){ep=t==='populer'?'/populer':'/new';qp=''}
-      else if(P==='dramabox'){ep=t==='populer'?'/populer':'/new';qp=`?page=${pg[t]}&lang=in`}
+      else if(P==='dramabox'){
+        const dbMap={home:'/home',populer:'/populer',new:'/new',t4:'/rank',t5:'/category?category=cina'};
+        ep=dbMap[t]||'/home';qp=(t==='t4'?'?lang=in':t==='t5'?'&page='+pg[t]+'&lang=in':'?page='+pg[t]+'&lang=in');
+      }
       else if(P==='goodshort'){ep=t==='populer'?'/populer':'/new';qp=t==='populer'?`?page=${pg[t]}`:`?page=${pg[t]}&channelId=563`}
-      else if(P==='moviebox'){ep=t==='populer'?'/indonesia':'/global';qp=`?page=${pg[t]}&perPage=10`}
+      else if(P==='moviebox'){
+        const mbMap={home:'/indonesia',populer:'/global',new:'/horror',t4:'/asia',t5:'/series/anime',t6:'/series/cdrama',t7:'/series/reality'};
+        ep=mbMap[t]||'/indonesia';qp=`?page=${pg[t]}&perPage=10`;
+      }
       else{ep=t==='populer'?'/populer':'/new';qp=`?page=${pg[t]}&lang=id`}
       const d=await fetch(base+ep+qp).then(r=>r.json());const items=flat(d.data);
       if(pg[t]===1&&g)g.innerHTML='';
@@ -641,7 +660,7 @@ async function doSearch(){
 
 window.addEventListener('scroll',()=>{
   // Infinite scroll
-  if(curTab!=='home'){const trg=$('#trg-'+curTab);if(trg&&trg.getBoundingClientRect().top<window.innerHeight+300)loadTab(curTab)}
+  if(curTab!=='home'&&curTab!=='history'&&curTab!=='fav'){const trg=$('#trg-'+curTab);if(trg&&trg.getBoundingClientRect().top<window.innerHeight+300)loadTab(curTab)}
   // Scroll to top button
   const btn=$('#scrollTop');if(btn){if(window.scrollY>400)btn.classList.add('show');else btn.classList.remove('show')}
 });
