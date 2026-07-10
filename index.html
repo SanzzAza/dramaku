@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#070b0f">
+<title>Dramaku - Streaming Drama Terbaik</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#070b0f;--bg2:#0d1117;--bg3:#151c25;--bg4:#1c2530;--accent:#10b981;--accent2:#34d399;--accent3:#059669;--glow:rgba(16,185,129,.18);--glow2:rgba(16,185,129,.08);--gold:#f59e0b;--text:#eaf0f7;--text2:#8b9cb8;--text3:#4a5b72;--border:rgba(255,255,255,.06);--border2:rgba(16,185,129,.15);--r:16px;--rs:12px}
+html,body{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased;min-height:100vh}
+body{padding-bottom:80px}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--accent);border-radius:4px}
+img{display:block}button{font-family:inherit;-webkit-tap-highlight-color:transparent}
+
+/* ===== SPLASH ===== */
+.splash{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s,visibility .5s}
+.splash.hide{opacity:0;visibility:hidden}
+.splash-logo{width:60px;height:60px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;animation:splashPulse 1.5s ease infinite;box-shadow:0 4px 24px var(--glow)}
+.splash-text{font-size:22px;font-weight:900;background:linear-gradient(135deg,var(--accent2),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.splash-sub{font-size:11px;color:var(--text3);font-weight:500;letter-spacing:1px}
+.splash-bar{width:120px;height:3px;border-radius:3px;background:var(--bg3);overflow:hidden;margin-top:8px}
+.splash-bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent3),var(--accent2));border-radius:3px;animation:splashLoad 1.5s ease forwards}
+@keyframes splashPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes splashLoad{0%{width:0}100%{width:100%}}
+
+/* ===== HEADER ===== */
+.hdr{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:linear-gradient(180deg,rgba(7,11,15,.97),rgba(7,11,15,.85));backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:9px;cursor:pointer}
+.logo-icon{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center}
+.logo-text{font-size:19px;font-weight:900;letter-spacing:-.5px;background:linear-gradient(135deg,var(--accent2),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hdr-right{display:flex;gap:8px}
+.hdr-btn{width:38px;height:38px;border-radius:11px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.hdr-btn:active{transform:scale(.9)}
+
+/* ===== PLATFORM BAR ===== */
+.plat-bar{position:fixed;top:56px;left:0;right:0;z-index:99;display:flex;align-items:center;gap:8px;padding:6px 16px;background:var(--bg);border-bottom:1px solid var(--border)}
+.plat-sel{flex:1;position:relative}
+.plat-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 14px;border-radius:11px;background:var(--bg3);border:1.5px solid var(--border);color:var(--text);font-size:13px;font-weight:700;cursor:pointer;transition:.2s}
+.plat-btn:active{border-color:var(--accent)}
+.plat-btn svg{flex-shrink:0;transition:transform .2s}
+.plat-btn.open svg{transform:rotate(180deg)}
+.plat-dd{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:none;z-index:10;box-shadow:0 12px 40px rgba(0,0,0,.6)}
+.plat-dd.on{display:block;animation:fadeIn .15s}
+.plat-opt{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;transition:.12s;font-size:13px;font-weight:600;color:var(--text2);border-bottom:1px solid var(--border)}
+.plat-opt:last-child{border:none}
+.plat-opt:active{background:var(--bg3)}
+.plat-opt.on{color:var(--accent);background:var(--glow2)}
+.plat-opt .plat-badge{margin-left:auto;font-size:9px;padding:2px 7px;border-radius:6px;font-weight:700}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== TABS ===== */
+.tabs{position:fixed;top:98px;left:0;right:0;z-index:98;display:flex;padding:4px 14px;gap:6px;background:linear-gradient(180deg,var(--bg),rgba(7,11,15,.9));overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:7px 16px;font-size:12.5px;font-weight:600;color:var(--text3);cursor:pointer;white-space:nowrap;border-radius:22px;transition:.25s;border:1px solid transparent;display:flex;align-items:center;gap:5px}
+.tab.on{color:#fff;background:linear-gradient(135deg,var(--accent3),var(--accent));border-color:var(--accent)}
+.tab:not(.on):active{background:var(--bg3)}
+
+/* ===== MAIN ===== */
+.main{padding-top:140px;min-height:100vh}
+.sec{padding:0 16px;margin-bottom:26px}
+.sec-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sec-tt{font-size:16px;font-weight:800;display:flex;align-items:center;gap:7px}
+.sec-more{font-size:10.5px;font-weight:700;color:var(--accent);cursor:pointer;display:flex;align-items:center;gap:4px;padding:5px 11px;border-radius:18px;border:1px solid var(--border2);background:var(--glow2);transition:.2s}
+.sec-more:active{transform:scale(.95)}
+
+/* ===== STATS BANNER ===== */
+.stats-banner{margin:0 16px 20px;padding:14px 16px;border-radius:var(--rs);background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.stats-banner svg{flex-shrink:0;opacity:.5}
+.stats-banner .stats-text{flex:1}
+.stats-banner .stats-title{font-size:13px;font-weight:800;margin-bottom:2px}
+.stats-banner .stats-sub{font-size:10px;color:var(--text3)}
+.random-btn{padding:8px 14px;border-radius:20px;background:linear-gradient(135deg,var(--accent3),var(--accent));border:none;color:#fff;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit;display:flex;align-items:center;gap:4px}
+.random-btn:active{transform:scale(.95)}
+
+/* ===== SHARE BTN ===== */
+.share-btn{width:52px;flex:none!important;padding:13px;border-radius:var(--r);background:var(--bg3);border:1.5px solid var(--border);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.share-btn:active{transform:scale(.95);background:var(--bg4)}
+
+/* ===== SCROLL TOP BTN ===== */
+.scroll-top{position:fixed;bottom:72px;right:14px;width:38px;height:38px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text2);display:none;align-items:center;justify-content:center;cursor:pointer;z-index:89;transition:.2s;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.scroll-top.show{display:flex}
+.scroll-top:active{transform:scale(.9)}
+
+/* ===== PLATFORM BADGE ON CARD ===== */
+.badge-plat{position:absolute;bottom:5px;right:5px;z-index:2;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);padding:2px 6px;border-radius:6px;font-size:7px;font-weight:700;color:var(--accent2);border:1px solid var(--border)}
+
+/* ===== HOME FOOTER ===== */
+.home-footer{text-align:center;padding:30px 16px 20px;color:var(--text3);font-size:9px;line-height:1.8}
+.home-footer a{color:var(--accent);text-decoration:none;font-weight:600}
+
+/* ===== CARD GRID ===== */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.scroll-w{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -16px;padding:0 16px}
+.scroll-w::-webkit-scrollbar{display:none}
+.scroll-r{display:flex;gap:10px;width:max-content}
+.scroll-r .card{width:125px;flex-shrink:0}
+
+/* ===== CARD ===== */
+.card{cursor:pointer;border-radius:var(--rs);overflow:hidden;background:var(--bg2);transition:transform .15s;position:relative;border:1px solid var(--border)}
+.card:active{transform:scale(.97)}
+.card-img{position:relative;width:100%;padding-top:142%;overflow:hidden;background:var(--bg3)}
+.card-img img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}
+.card-img::after{content:'';position:absolute;bottom:0;left:0;right:0;height:45%;background:linear-gradient(transparent,rgba(7,11,15,.75));pointer-events:none}
+.badge-ep{position:absolute;top:5px;right:5px;z-index:2;background:rgba(21,28,37,.8);backdrop-filter:blur(6px);padding:2px 7px;border-radius:7px;font-size:8.5px;font-weight:700;border:1px solid var(--border)}
+.badge-free{position:absolute;top:5px;left:5px;z-index:2;background:linear-gradient(135deg,#0ea5e9,#38bdf8);padding:2px 7px;border-radius:7px;font-size:7.5px;font-weight:800;color:#fff}
+.badge-views{position:absolute;bottom:5px;left:5px;z-index:2;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);padding:2px 7px;border-radius:7px;font-size:7.5px;font-weight:600;display:flex;align-items:center;gap:3px;color:var(--text2)}
+.card-body{padding:8px 7px 7px}
+.card-name{font-size:11px;font-weight:700;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-rating{display:flex;align-items:center;gap:3px;margin-top:3px;font-size:8.5px;font-weight:700;color:var(--gold)}
+
+
+/* ===== SKEL ===== */
+.skel{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shim 1.8s ease infinite;border-radius:var(--rs)}
+@keyframes shim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skel-img{width:100%;padding-top:142%}.skel-t{height:10px;margin:7px 7px 3px;width:75%;border-radius:3px}.skel-t2{height:8px;margin:0 7px 7px;width:50%;border-radius:3px}
+
+/* ===== SEARCH ===== */
+.search-ov{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:rgba(7,11,15,.96);backdrop-filter:blur(20px);display:none;flex-direction:column;padding:16px}
+.search-ov.on{display:flex;animation:fadeIn .15s}
+.s-bar{display:flex;gap:10px;align-items:center;margin-bottom:14px}
+.s-bar input{flex:1;height:44px;border-radius:12px;background:var(--bg3);border:1.5px solid var(--border);color:var(--text);padding:0 16px;font-size:14px;outline:none;font-family:inherit;transition:.2s}
+.s-bar input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
+.s-bar input::placeholder{color:var(--text3)}
+.s-cancel{background:none;border:none;color:var(--accent);font-size:14px;font-weight:700;cursor:pointer}
+.s-results{flex:1;overflow-y:auto;padding-bottom:20px}
+.s-empty{text-align:center;color:var(--text3);padding:80px 20px;font-size:13px}
+
+/* ===== DETAIL ===== */
+.detail-ov{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:150;background:var(--bg);overflow-y:auto}
+.detail-ov.on{display:block;animation:slideU .3s cubic-bezier(.16,1,.3,1)}
+@keyframes slideU{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.d-hero{position:relative;width:100%;height:230px;overflow:hidden}
+.d-hero img{width:100%;height:100%;object-fit:cover;filter:blur(14px) brightness(.28) saturate(1.3);transform:scale(1.15)}
+.d-hero-grad{position:absolute;bottom:0;left:0;right:0;height:80%;background:linear-gradient(transparent,var(--bg))}
+.d-back{position:absolute;top:14px;left:14px;z-index:5;width:36px;height:36px;border-radius:11px;background:rgba(0,0,0,.4);backdrop-filter:blur(12px);border:1px solid var(--border);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.d-back:active{transform:scale(.9)}
+.d-info{display:flex;gap:14px;padding:0 16px;margin-top:-65px;position:relative;z-index:2}
+.d-poster{width:105px;flex-shrink:0;border-radius:var(--rs);overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.5);border:2px solid var(--border2)}
+.d-poster img{width:100%;aspect-ratio:570/810;object-fit:cover;background:var(--bg3)}
+.d-meta{flex:1;min-width:0;padding-top:14px}
+.d-title{font-size:18px;font-weight:900;line-height:1.3;margin-bottom:5px}
+.d-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.d-tag{padding:2px 9px;border-radius:16px;background:var(--glow2);border:1px solid var(--border2);font-size:9.5px;color:var(--accent2);font-weight:600}
+.d-stats{font-size:10.5px;color:var(--text3);display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.d-rating{display:flex;align-items:center;gap:3px;color:var(--gold);font-weight:700}
+.d-desc{padding:14px 16px;font-size:12px;color:var(--text2);line-height:1.8}
+.d-desc .more{color:var(--accent);cursor:pointer;font-weight:700}
+.play-all-btn{display:flex;align-items:center;justify-content:center;gap:9px;padding:13px;border-radius:var(--r);background:linear-gradient(135deg,var(--accent3),var(--accent),var(--accent2));background-size:200% 200%;animation:grad 3s ease infinite;border:none;color:#fff;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 4px 20px var(--glow)}
+.fav-btn{width:52px;flex:none!important;padding:13px;border-radius:var(--r);border:1.5px solid var(--border);color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.fav-btn:active{transform:scale(.95)}
+.fav-btn.on{background:var(--accent)!important;border-color:var(--accent)}
+.play-all-btn:active{transform:scale(.97);opacity:.9}
+@keyframes grad{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.ep-sec{padding:0 16px 20px}
+.ep-sec-tt{font-size:14px;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.ep-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.ep-btn{padding:9px 0;text-align:center;border-radius:10px;background:var(--bg3);border:1.5px solid var(--border);color:var(--text2);font-size:11.5px;font-weight:700;cursor:pointer;transition:.2s;font-family:inherit}
+.ep-btn:active,.ep-btn.on{background:linear-gradient(135deg,var(--accent3),var(--accent));color:#fff;border-color:var(--accent)}
+
+/* ===== FOOTER (detail page) ===== */
+.d-footer{text-align:center;padding:20px 16px 100px;color:var(--text3);font-size:10px;border-top:1px solid var(--border);margin:0 16px}
+.d-footer a{color:var(--accent);text-decoration:none;font-weight:600}
+
+/* ===== PLAYER ===== */
+.player-ov{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:300;background:#000;flex-direction:column}
+.player-ov.on{display:flex}
+.p-hdr{position:absolute;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;gap:12px;padding:12px 16px;background:linear-gradient(rgba(0,0,0,.8),transparent)}
+.p-back{width:36px;height:36px;border-radius:11px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.p-back:active{transform:scale(.9)}
+.p-title{flex:1;min-width:0}
+.p-title h3{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.p-title p{font-size:9.5px;color:rgba(255,255,255,.4);margin-top:1px}
+.p-container{flex:1;overflow-y:scroll;scroll-snap-type:y proximity;-webkit-overflow-scrolling:touch}
+.p-container::-webkit-scrollbar{display:none}
+.v-slide{width:100%;height:100vh;height:100dvh;scroll-snap-align:start;position:relative;display:flex;align-items:center;justify-content:center;background:#000}
+.v-slide video{width:100%;height:100%;object-fit:contain}
+.v-slide video::cue{background:rgba(0,0,0,.65);color:#fff;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;line-height:1.5;padding:2px 6px;border-radius:4px}
+.v-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:12px;z-index:3}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.08);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.v-actions{position:absolute;right:10px;bottom:100px;z-index:5;display:flex;flex-direction:column;gap:18px;align-items:center}
+.v-act{display:flex;flex-direction:column;align-items:center;gap:3px}
+.v-act button{width:44px;height:44px;border-radius:13px;background:rgba(255,255,255,.08);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.06);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.v-act button:active{transform:scale(.88)}
+.v-act button.liked{background:var(--accent);border-color:var(--accent)}
+.v-act span{font-size:8.5px;color:rgba(255,255,255,.45);font-weight:600}
+.v-info{position:absolute;bottom:0;left:0;right:68px;z-index:4;padding:18px 14px 26px;background:linear-gradient(transparent,rgba(0,0,0,.8))}
+.v-info .ep-lbl{display:inline-block;padding:3px 10px;border-radius:16px;background:linear-gradient(135deg,var(--accent3),var(--accent));font-size:9.5px;font-weight:800;margin-bottom:6px;color:#fff}
+.v-info .ep-nm{font-size:14px;font-weight:800;margin-bottom:3px;color:#fff}
+.v-info .ep-ds{font-size:10.5px;color:rgba(255,255,255,.4);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.v-prog{position:absolute;bottom:0;left:0;right:0;height:2px;background:transparent;z-index:6}
+.v-prog-bar{height:100%;background:linear-gradient(90deg,var(--accent3),var(--accent2));width:0;transition:width .25s linear}
+.pause-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:rgba(0,0,0,.35);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s;pointer-events:none;z-index:5;border:1px solid rgba(255,255,255,.08)}
+.pause-icon.show{opacity:1}
+/* Double tap heart */
+.dbl-heart{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);font-size:80px;z-index:7;pointer-events:none;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4))}
+.dbl-heart.pop{animation:heartPop .8s ease forwards}
+@keyframes heartPop{0%{transform:translate(-50%,-50%) scale(0);opacity:1}25%{transform:translate(-50%,-50%) scale(1.2);opacity:1}50%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-50%) scale(1.4);opacity:0}}
+
+.p-hdr,.v-info,.v-actions{transition:opacity .35s,transform .35s}
+.p-ui-hidden .p-hdr{opacity:0;transform:translateY(-20px);pointer-events:none}
+.p-ui-hidden .v-info{opacity:0;transform:translateY(20px);pointer-events:none}
+.p-ui-hidden .v-actions{opacity:0;transform:translateX(20px);pointer-events:none}
+
+/* ===== EP MODAL ===== */
+.ep-modal-backdrop{position:fixed;top:0;left:0;right:0;bottom:0;z-index:315;background:rgba(0,0,0,.55);display:none}
+.ep-modal-backdrop.on{display:block}
+.ep-modal{position:fixed;bottom:0;left:0;right:0;z-index:320;max-height:70vh;background:var(--bg2);border-radius:18px 18px 0 0;border:1px solid var(--border);border-bottom:none;display:none;flex-direction:column;transform:translateY(100%);transition:transform .35s cubic-bezier(.16,1,.3,1)}
+.ep-modal.on{display:flex;transform:translateY(0)}
+.ep-m-handle{width:36px;height:4px;border-radius:4px;background:var(--text3);margin:10px auto 0;opacity:.4}
+.ep-m-header{display:flex;align-items:center;gap:10px;padding:12px 16px 8px}
+.ep-m-poster{width:40px;height:56px;border-radius:7px;overflow:hidden;flex-shrink:0;border:1px solid var(--border2)}
+.ep-m-poster img{width:100%;height:100%;object-fit:cover}
+.ep-m-info{flex:1;min-width:0}
+.ep-m-info h3{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ep-m-info p{font-size:10px;color:var(--text3);margin-top:2px}
+.ep-m-close{width:32px;height:32px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ep-m-close:active{transform:scale(.9)}
+.ep-m-ranges{display:flex;gap:5px;padding:4px 16px 8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.ep-m-ranges::-webkit-scrollbar{display:none}
+.ep-m-range{padding:5px 14px;border-radius:16px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:.2s;font-family:inherit}
+.ep-m-range.on{background:linear-gradient(135deg,var(--accent3),var(--accent));color:#fff;border-color:var(--accent)}
+.ep-m-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;padding:0 16px 22px;overflow-y:auto;flex:1}
+.ep-m-btn{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--bg3);border:1.5px solid var(--border);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;transition:.2s;font-family:inherit}
+.ep-m-btn:active{transform:scale(.92)}
+.ep-m-btn.on{background:linear-gradient(135deg,var(--accent3),var(--accent));color:#fff;border-color:var(--accent)}
+
+/* ===== BOTTOM NAV ===== */
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:90;display:flex;height:60px;background:linear-gradient(0deg,rgba(7,11,15,.98),rgba(7,11,15,.9));backdrop-filter:blur(24px);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom,0)}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--text3);cursor:pointer;border:none;background:none;font-family:inherit;transition:.2s;position:relative}
+.bnav-item.on{color:var(--accent)}
+.bnav-item.on::before{content:'';position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:20px;height:2.5px;border-radius:0 0 3px 3px;background:var(--accent)}
+.bnav-item svg{width:20px;height:20px}
+.bnav-item span{font-size:8.5px;font-weight:700}
+
+/* ===== CONTINUE WATCHING CARD ===== */
+.cw-card{display:flex;gap:12px;padding:12px;margin:0 16px 20px;border-radius:var(--rs);background:var(--bg2);border:1px solid var(--border);cursor:pointer;transition:.15s;overflow:hidden;position:relative}
+.cw-card:active{transform:scale(.98)}
+.cw-poster{width:70px;height:98px;border-radius:8px;overflow:hidden;flex-shrink:0;background:var(--bg3)}
+.cw-poster img{width:100%;height:100%;object-fit:cover}
+.cw-info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.cw-title{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cw-sub{font-size:10px;color:var(--text3)}
+.cw-btn{display:flex;align-items:center;gap:5px;padding:6px 14px;border-radius:20px;background:var(--accent);color:#fff;font-size:10.5px;font-weight:700;border:none;cursor:pointer;width:fit-content;margin-top:4px}
+.cw-badge{position:absolute;top:0;right:0;padding:4px 10px;border-radius:0 0 0 10px;background:var(--accent);font-size:8px;font-weight:800;color:#fff}
+
+/* ===== BETTER EMPTY STATE ===== */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 30px;color:var(--text3);text-align:center;gap:12px}
+.empty-state svg{opacity:.25}
+.empty-state p{font-size:13px;line-height:1.5}
+.empty-state .empty-sub{font-size:11px;color:var(--text3);opacity:.7}
+
+.err{text-align:center;padding:80px 16px;color:var(--text3)}
+.err p{font-size:12px;margin:10px 0}
+.retry{padding:9px 22px;border-radius:11px;background:linear-gradient(135deg,var(--accent3),var(--accent));color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer}
+.retry:active{transform:scale(.95)}
+.load-spin{display:flex;justify-content:center;padding:30px 0}
+
+@media(min-width:500px){.grid{grid-template-columns:repeat(4,1fr)}.ep-grid{grid-template-columns:repeat(8,1fr)}}
+@media(min-width:768px){.grid{grid-template-columns:repeat(5,1fr)}}
+@media(min-width:1024px){.grid{grid-template-columns:repeat(6,1fr)}.main{max-width:1100px;margin:0 auto}}
+</style>
+</head>
+<body>
+
+<!-- SPLASH SCREEN -->
+<div class="splash" id="splash">
+  <div class="splash-logo"><svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M4 3.5C4 2.67 4.67 2 5.5 2h4c.83 0 1.5.67 1.5 1.5v17c0 .83-.67 1.5-1.5 1.5h-4c-.83 0-1.5-.67-1.5-1.5v-17zM13 7l8.5 5.5L13 18V7z"/></svg></div>
+  <div class="splash-text">Dramaku</div>
+  <div class="splash-sub">NONTON DRAMA SEPUASNYA</div>
+  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+</div>
+
+<header class="hdr">
+  <div class="logo" onclick="goHome()"><div class="logo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M4 3.5C4 2.67 4.67 2 5.5 2h4c.83 0 1.5.67 1.5 1.5v17c0 .83-.67 1.5-1.5 1.5h-4c-.83 0-1.5-.67-1.5-1.5v-17zM13 7l8.5 5.5L13 18V7z"/></svg></div><div class="logo-text">Dramaku</div></div>
+  <div class="hdr-right">
+    <button class="hdr-btn" onclick="openSearch()"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M12 12l3.5 3.5"/></svg></button>
+  </div>
+</header>
+
+<div class="plat-bar">
+  <div class="plat-sel">
+    <button class="plat-btn" id="platBtn" onclick="togglePlat()">
+      <span id="platLabel">Melolo</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="plat-dd" id="platDd">
+      <div class="plat-opt on" data-p="melolo" onclick="setPlatform('melolo')"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAGYktHRAD/AP8A/6C9p5MAAAAHdElNRQfqBwoABhmUp6F2AAAEmklEQVRIx9VWW2wUZRT+zv/P7OzO9rJuIbXbgpRauiWlJsZgLBINiaBEwASiVhMxEYWYIJpIjPogipcHQwwaY2I04QURqMrFCCIakVgvhIoSCkYo0JtdSrfdzt66O/9/fBgtpGxBSX3gvM3MyfnO953LHOBaN3lFD0Eg8T+BS9BFj0SQckIZMMMwRE11cNpUv5By2HGZJzJ9sby5vL21jkcaWTUmO2e2fVu3dk1l5HobgBAQ4moZEAFAtLZ4986qiiq8945zqDU7Z6517Fgu4fBwEqfPpIUgrSEEiHDVtET7D7VdR+sBEfDLrt8aG+ptgKK1JQvnT9q/M7pgXrhgqcZGKfxWANDdvbo3pgDtMwmkE45a/lD58RM1OzeXz7tL7N0VadlUc+P0IqVA4yt2GQCc6tGdMQVAMwRBuWRaBMFaKndQu0l36YPWr603rHuuyrJ8WhfuscIAWgPA/v3JL/akvHZyFZeUiG0tA4vu6fxqX94sFWDk49qS6qVXSw8fqLn9trBSBTAKAITDAcsnqyqDn+w6v2lzLFhkaQUwhEA2y30xnU6zp7phEDTlz6loFAe+rHxqZUSpsVqJS5WZ21RcUWGueHSSaSJoi9WPR5SGYVAioR5+oOxQW/WSxT7taCmJGQQ2TFIpVpncxnfL1qyKeN11OQamAdflGyopVGKWlprV04TWDEAIMi0CWNiSJJhBBCJiZiIIFjqee2N9uH5GsdYQND6AFDKT5fLJRlmZGQ7JcEjmXYZE0MbmLf3NS7uffSaeyZIQzAylmCSkRQDncxQI8f3LSoEL60uOkYgZTbeWzr4ldN9Ci1k0zAwsWmANJnx3zPGP5E3WqrfPdbVv2SLbNFhrGMUi5YjEIIJhwZqlQQMx3rZjcHQAjQIrSKP9RObHn/HCKyFkufOk/qMjM7Wh9+bG0J7d1ac7c6uejCXTyvZDBsW27bkVq3ucZL55WfjDjZNNYjCNW2QPM53mg63xjrMu0hoKr2+IHzo8vOOj2t9Ppda93Nff7R45Gh92GBbcFD39fE/TbOuDt6dsaTm3e28afnnk+MjovilcA8VKSpICkARBZ7pydTP8S5qLZzVYnV0jUhAAIoakVFrHzuXm31382MoigOKOAouPtydGJ2kcAMWaWV9YYeTmNaDUCI/mxQwwQGBQPqmz5xXAvT36xbUDJzscr5aeGZcO8HffO85w3ufzvIjhxSUUWpzMbEgYfvIH5Po3u70MRtMvzGAgngFAADS8wH/HZYxhoBTA7CrRfpyzGX2x9JcD8JykSfATJBiQkgBIgzxhAEiLYIGKxHVh+dqG2J33dnhfLs59XAAv3/7zOtmjkUZxEYaGNBwMDCo7KDz4s2eU8ydatqaHBpWTyg0lsv/5d2OaAsDSxZP3fRYFZCBgAfLzrdP3fVoDwLalbRv/Jo5RUCJmRCr8778VmVKB+pvkT1/XtLVlmprsxibr4J5c0Pan0lnvotFXfQYIQaufiJz+JZrvm6mzszjZePibukeay23bV7CY49kVHA1D1E4P2jZ19+Rj/dl/ajxhl8sEHF5XpioI3ojxhGZ/7dhfk9QP6jseAs4AAAAldEVYdGRhdGU6Y3JlYXRlADIwMjYtMDctMTBUMDA6MDU6NTgrMDA6MDAu0/c9AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI2LTA3LTEwVDAwOjA1OjU4KzAwOjAwX45PgQAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNi0wNy0xMFQwMDowNjoyNSswMDowMIi+vYQAAAAASUVORK5CYII=" style="width:20px;height:20px;border-radius:5px;flex-shrink:0">Melolo<span class="plat-badge" style="background:#10b98120;color:#10b981">1200+ Drama</span></div>
+      <div class="plat-opt" data-p="freereels" onclick="setPlatform('freereels')"><img src="data:image/png;base64,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" style="width:20px;height:20px;border-radius:5px;flex-shrink:0">FreeReels<span class="plat-badge" style="background:#0ea5e920;color:#38bdf8">Gratis</span></div>
+      <div class="plat-opt" data-p="flickreels" onclick="setPlatform('flickreels')"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAGYktHRAD/AP8A/6C9p5MAAAAHdElNRQfqBwoABhmUp6F2AAAFPUlEQVRIx41WXahc1RX+vrX3mdxr7rW3xFxFhagYf+qTqK0RWySUPGkrKhGqPpRCtIVAwedgUfGnbV4aERXjD+hLoCagrYaoCP7Rp7ToQ1+iNqbEvyQmd+7MnJmz1+fD2efMzL1X2s1ms2fO3t9aa6+1vrWo94iVQwABQALqLQE2GwCC6mP1BmBznivRItYYbKAJEjTAQKqRkBykjBIcckrj86vGWgJqRWiggQHM6CRdcEeYA6TUEyAzh1xKlP8fFtSG02ChgQ6ikQQsOdhhWI+PD6MTddlVrgroJXmiDErwBPkKGXEluhkYawGyAAbSkhuM4Yd2+ivseTo9+1cVEb/c2rlzW//qHzGGjryiCBCq4N44DAA4drJa9AgLYqQFR5AszAe57f9b9dizoyNHtWEhSPrP8W8u2nT5rvvsnpv/m/pmGNETvMoyGjus1hwS2KJHWEGLYoFOETas++hju3NnueOB4Vff4LyNRbe71Ost3//7e996/4Nw1uWoKgsdWJHvMoJNmEAxxwwJC82MsChGxnhmyXbvGb74yrAstbihGAyGXxw/ueXGG3c9/MhPttywPEBgiTijKlLePLQAwasa1pqnqgMmgBEMYkyKOLvYdyg9/kw50+HCD8KJE9+etX5u9xNPHjj45o+vvwHAUjd1lwcoOmCteGjWgAY5TgXlhAVQAKNZWpiDBVta6t16+x0P/2n3xsVF90Ti8OF/f3jwoW1Xfwabh42o2KjvkIMGOqTYJFRYOVE/6Cg5CFaj0fZf3bVxcbEajfqD8vX9T8YzL/z6lmp2bk7LQwsBSaDnabWMBMlANDll4+Qyy6YwtGFcpQQgFsVf/vxYefyPt/3uvGL+nNGyIUQwqL5SI6BdYQBrJpjI3iaBLYDMYQaY5Wft98v7H+zu2vnF6VNenDtb60FOorccQwMI1lxmeZ3kCdga9BLMU9r78qlt248+/cTnVRLMBE5db2AtM1iWwWl5BrIxYIoNi6KYXTc4duzbA+9ef+jDGczKZWuB5Cea4NE8W6lrjEFZft3tX7L5ygNvvPbcS3sHw3xeLS5aYm/zYII78L/GpZs3P/SHB/7+9jtbfrq1qhI5qYpWbGKz03QlqfdrCEtV9Zv7fgtAEoBPjnxO79WxwKnraKhCLdbk6pADNcWvlOHuIYSTpwavH9g703/uF1uFZRgdrlVQtQX5h+e1rlByKAG+utyR4dDBNz/91+6fX3fkkisX1K00Kon2VgulmuyUNc2fHUqQQQZPkKajACHEfS8/tVA+uuOec+WL6XTfUBFtUfMxGrx5oow7PTO5p9VuKHufbblpDoNCw15gUqrgiUpQWoVT55GE/LmZuW5UkK8WUITCz5TQkKiURhna00oQCUBTHFqtc2YQItRaMBVO8mQaIg3hI9bQXk2srR0CGdtLUII4ni4kEE7m1GhdYSb4CD5CGkEOVfCUtclrak1v6FqCp6lMdkEoS5VDxAAzuOc73WWHD7OMWrPaW60FTTmb6CrIrIsAByFKGOiKTXbxhfzyJHo9FJ2iP8S+F/ecw1fn52c1HDReTdmCtuhPNEicah3HjUUQAxA4E5a69sa79vz+4bU/u/uq8/95zaZ/XHrFggYBcqLx3NjPUy3FagF140VYFAPNXIHROM9hN3x5rHvBRYWF9d6raE5JErPz2odSJmCuKWCidRQNNDIIlkQLtHXBSwBurIlIbBN+Imy+v3VsY4WERCXQwQRahCnRexUJAoKYe28fU8u4x56KuZjNmfy3VUSCRHrus2vGBPh97fsqdADfARY3dzUj8D2lAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDI2LTA3LTEwVDAwOjA1OjU4KzAwOjAwLtP3PQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyNi0wNy0xMFQwMDowNTo1OCswMDowMF+OT4EAAAAodEVYdGRhdGU6dGltZXN0YW1wADIwMjYtMDctMTBUMDA6MDY6MjUrMDA6MDCIvr2EAAAAAElFTkSuQmCC" style="width:20px;height:20px;border-radius:5px;flex-shrink:0">FlickReels<span class="plat-badge" style="background:#8b5cf620;color:#a78bfa">500+ Drama</span></div>
+      <div class="plat-opt" data-p="dramanova" onclick="setPlatform('dramanova')"><img src="data:image/png;base64,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" style="width:20px;height:20px;border-radius:5px;flex-shrink:0">DramaNova<span class="plat-badge" style="background:#f59e0b20;color:#fbbf24">Subtitle</span></div>
+      <div class="plat-opt" data-p="reelshort" onclick="setPlatform('reelshort')"><img src="data:image/png;base64,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" style="width:20px;height:20px;border-radius:5px;flex-shrink:0">ReelShort<span class="plat-badge" style="background:#ef444420;color:#f87171">HD 1080p</span></div>
+      <div class="plat-opt" data-p="netshort" onclick="setPlatform('netshort')"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAADSUlEQVR4nO2Xy4scVRTGf+feW/2aSTLToyEEtZnJayJEURsRjIkxATeusvMBBleCIUj+C1dBsnETyMKFiBtFCApBEAxGQaMimPFF0DBx3unu6kd11T0uukedSVL9yEgI5EBBQVHn+93vnu9SJYByB8vcSfF7AHc/QBbHFnK3BeCGffGI7OAwOylowJ9S4X2+54quDNxHGDCGeQJelEc4qDvwKIriMFRo8q58y5f6x/8HsF028Rpl9uj9tEjWPLMIMcqH8iPndIYE31fPvrfgMdnOMcoUKdCWBLNufGJNaEjMAUo4gU/1F+rEPfv2dEAQXpBpjrIPi7npyjyeurap0mCZOisS8jPzfK3XCHtApDoQYDkmj3NId9LG4/HIDeJKU2JCaXFdGyxKjTkqRBoxYTM01OP9rbcjNYZTUvxHvGOTrLkEMCLEeJY1ZElCFqmxpDWumZA5G4OsRx7AgQpNahIxQpZ43dB16IUAxyh5WibmJz/LPBXmTZ1ZFxMlCZqy+p4OzGqV03zBEiGBmjXrt13xQAIy4njUljiQe5iaiblim0S+I66aHrK+YngfBU6aZ5j04yQoBoM1jgCLxRJYhw0cmVyWy2aOt2qf8Htzvlfb3g6s1oOjW5natYuR4lhHXBwBDovFGYuxFnWGyCTsLTzAqdIrPL15d18AqQ4IwtHxJ3h92xGyNiBWT2OxSnOuilODNQbnHDiLZATJOezmHIFzxJpw5q/PeG/xYuqhlDqEz41Mc3LieaIooU0LQciPFgjE0loIMUpnygUk47D5AOKEdpxgEN4YP8z1qM7H1e+GA3jIFpEWtH27a1a3rCUzMYo2250wBhacJWn9u9IEJWMcJTORJpEOcC78gafsJHvsNlrErN0tQQLbvVe09d/nQhbHTHKVj2qXUgF6pmBM8pzIPcshu5uIpGdkBMjguOB/41TzPAs+vD0A6GT+ZVfmJVNGkFsOle2G6gN/ibPxRdo3ObyGAlit/WaK47KfMQo3NA+wVGnyjl7gvJ/pt+XgHySTUuRNOcg0W4m6EBksv7LA2/o5l7W/A2hoAIBNkuVVKfMkJQT4hquc1a9Y1sagrYYDWK0tkkMQVoYQ3hCAjai7+7/gHsBG1N/cRTWFJIKA6gAAAABJRU5ErkJggg==" style="width:20px;height:20px;border-radius:5px;flex-shrink:0">NetShort<span class="plat-badge" style="background:#6366f120;color:#818cf8">Indo</span></div>
+      <div class="plat-opt" data-p="dramabox" onclick="setPlatform('dramabox')"><img src="data:image/png;base64,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" style="width:20px;height:20px;border-radius:5px;flex-shrink:0">DramaBox<span class="plat-badge" style="background:#ec489920;color:#f472b6">145M+</span></div>
+      <div class="plat-opt" data-p="goodshort" onclick="setPlatform('goodshort')"><img src="data:image/png;base64,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" style="width:20px;height:20px;border-radius:5px;flex-shrink:0">GoodShort<span class="plat-badge" style="background:#22c55e20;color:#4ade80">Full HD</span></div>
+      <div class="plat-opt" data-p="moviebox" onclick="setPlatform('moviebox')"><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect fill='%23e50914' width='32' height='32' rx='8'/><path d='M8 8h5v16H8zM15 8h5l4 16h-5z' fill='white'/></svg>" style="width:20px;height:20px;border-radius:5px;flex-shrink:0">MovieBox<span class="plat-badge" style="background:#e5091420;color:#f87171">Film</span></div>
+    </div>
+  </div>
+</div>
+
+<nav class="tabs">
+  <div class="tab on" data-t="home" onclick="go('home')"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z"/></svg> Beranda</div>
+  <div class="tab" data-t="populer" onclick="go('populer')"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg> Populer</div>
+  <div class="tab" data-t="new" onclick="go('new')"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M22 9.24l-7.19-.62L12 2 9.19 8.62 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03z"/></svg> Terbaru</div>
+</nav>
+
+<div class="search-ov" id="sOv">
+  <div class="s-bar"><input id="sInp" placeholder="Cari drama favorit..." oninput="debSearch()"/><button class="s-cancel" onclick="closeSearch()">Batal</button></div>
+  <div class="s-results" id="sRes"><div class="empty-state" style="padding-top:100px"><svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" opacity=".2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><p>Ketik judul drama untuk mencari</p><p class="empty-sub">Cari dari 5 platform sekaligus</p></div></div>
+</div>
+
+<main class="main"><div id="v-home"></div><div id="v-populer" style="display:none"></div><div id="v-new" style="display:none"></div><div id="v-history" style="display:none"></div><div id="v-fav" style="display:none"></div></main>
+
+<div class="detail-ov" id="detOv"><div id="detBody"></div></div>
+
+<div class="player-ov" id="plOv">
+  <div class="p-hdr"><button class="p-back" onclick="closePl()"><svg width="17" height="17" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M14 8.5H4M8.5 14l-4.5-5.5L8.5 3"/></svg></button><div class="p-title"><h3 id="plName">-</h3><p id="plEp">-</p></div></div>
+  <div class="p-container" id="plCont"></div>
+</div>
+
+<div class="ep-modal-backdrop" id="epBd" onclick="closeEpModal()"></div>
+<div class="ep-modal" id="epMod">
+  <div class="ep-m-handle"></div>
+  <div class="ep-m-header"><div class="ep-m-poster"><img id="epModPoster" src=""/></div><div class="ep-m-info"><h3 id="epModTitle">-</h3><p id="epModSub">-</p></div><button class="ep-m-close" onclick="closeEpModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+  <div class="ep-m-ranges" id="epModRanges"></div>
+  <div class="ep-m-grid" id="epModGrid"></div>
+</div>
+
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg></button>
+
+<nav class="bnav">
+  <button class="bnav-item on" data-n="home" onclick="go('home')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z"/></svg><span>Beranda</span></button>
+  <button class="bnav-item" data-n="populer" onclick="go('populer')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg><span>Populer</span></button>
+  <button class="bnav-item" data-n="new" onclick="go('new')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 9.24l-7.19-.62L12 2 9.19 8.62 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03z"/></svg><span>Terbaru</span></button>
+  <button class="bnav-item" data-n="history" onclick="go('history')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3a9 9 0 00-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0013 21a9 9 0 000-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg><span>Riwayat</span></button>
+  <button class="bnav-item" data-n="fav" onclick="go('fav')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg><span>Favorit</span></button>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
+<script>
+const API={melolo:'https://api.sonzaix.indevs.in/melolo',freereels:'https://api.sonzaix.indevs.in/freereels',flickreels:'https://api.sonzaix.indevs.in/flickreels',dramanova:'https://api.sonzaix.indevs.in/dramanova',reelshort:'https://api.sonzaix.indevs.in/reelshort',netshort:'https://api.sonzaix.indevs.in/netshort',dramabox:'https://api.sonzaix.indevs.in/dramabox',goodshort:'https://api.sonzaix.indevs.in/goodshort',moviebox:'https://api.sonzaix.indevs.in/moviebox'};
+let P='melolo',curTab='home',pg={},busy={},more={},loaded={};
+let curDrama=null,curEps=[],curPE=0,sto=null;
+const thumbCache={},platCache={};
+
+// Splash
+setTimeout(()=>{$('#splash').classList.add('hide');setTimeout(()=>$('#splash').remove(),500)},1800);
+
+function resetState(){pg={home:1,populer:1,new:1};busy={};more={home:1,populer:1,new:1};loaded={};['home','populer','new','history','fav'].forEach(k=>{const el=$('#v-'+k);if(el)el.innerHTML=''})}
+function $(s,p){return(p||document).querySelector(s)}
+function $$(s,p){return(p||document).querySelectorAll(s)}
+
+function togglePlat(){$('#platDd').classList.toggle('on');$('#platBtn').classList.toggle('open')}
+function setPlatform(p){
+  P=p;const labels={melolo:'Melolo',freereels:'FreeReels',flickreels:'FlickReels',dramanova:'DramaNova',reelshort:'ReelShort',netshort:'NetShort',dramabox:'DramaBox',goodshort:'GoodShort',moviebox:'MovieBox'};$('#platLabel').textContent=labels[p]||p;
+  $$('.plat-opt').forEach(e=>e.classList.toggle('on',e.dataset.p===p));$('#platDd').classList.remove('on');$('#platBtn').classList.remove('open');
+  // MovieBox: ganti tabs
+  const tabEl=document.querySelector('.tabs');
+  if(p==='moviebox'){
+    tabEl.innerHTML=`<div class="tab on" data-t="home" onclick="go('home')">Beranda</div><div class="tab" data-t="populer" onclick="go('populer')">Indonesia</div><div class="tab" data-t="new" onclick="go('new')">Global</div>`;
+  }else{
+    tabEl.innerHTML=`<div class="tab on" data-t="home" onclick="go('home')"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z"/></svg> Beranda</div><div class="tab" data-t="populer" onclick="go('populer')"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg> Populer</div><div class="tab" data-t="new" onclick="go('new')"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M22 9.24l-7.19-.62L12 2 9.19 8.62 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03z"/></svg> Terbaru</div>`;
+  }
+  resetState();go('home');
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.plat-sel')){$('#platDd').classList.remove('on');$('#platBtn').classList.remove('open')}});
+
+function fixImg(u){if(!u)return'';if(u.includes('fizzopic.org')&&u.includes('.heic')){const m=u.match(/novel-images-apsoutheast\/([a-f0-9]+)~/);if(m&&m[1])return'https://p19-novel-sg.ibyteimg.com/img/novel-images-sg/'+m[1]+'~tplv-resize:570:810.jpg'}return u}
+function mbMap(d){return{drama_id:d.subjectId,drama_name:d.title||'',description:d.description||'',episode_count:'',watch_value:d.viewers?String(d.viewers):'',thumb_url:d.cover?.url||'',tags:d.genre?d.genre.split(', '):[],is_new_book:'0',_subjectType:d.subjectType,_imdb:d.imdbRatingValue||d.imdbRate||'',_duration:d.seconds?Math.floor(d.seconds/60)+'m':d.duration||''}}
+function flat(data){
+  if(!data||typeof data!=='object')return[];let out=[];
+  if(Array.isArray(data)){data.forEach(g=>{if(g.books&&Array.isArray(g.books))out.push(...g.books);else if(g.drama_id)out.push(g)})}
+  else if(data.items&&Array.isArray(data.items)){out=data.items.map(d=>({drama_id:d.drama_id,drama_name:d.title||d.drama_name||'',description:d.description||d.synopsis||'',episode_count:d.total_episodes||d.episode_count||'',watch_value:d.view_count?String(d.view_count):'',thumb_url:d.poster||d.raw?.coverImage||d.raw?.posterImg||'',tags:d.categories?d.categories.map(c=>c.name||c):(d.raw?.categoryNames||[]),free:d.free||false,is_new_book:d.is_new_book||'0'}))}
+  // MovieBox: data.subjects[] OR data.results[].subjects[]
+  else if(data.subjects&&Array.isArray(data.subjects)){out=data.subjects.map(mbMap)}
+  else if(data.results&&Array.isArray(data.results)){data.results.forEach(r=>{if(r.subjects)out.push(...r.subjects.map(mbMap))})}
+  out.forEach(d=>{if(d.thumb_url)d.thumb_url=fixImg(d.thumb_url);if(!d.thumb_url&&d.cover)d.thumb_url=d.cover;if(d.drama_id&&d.thumb_url)thumbCache[d.drama_id]=d.thumb_url;if(d.drama_id)platCache[d.drama_id]=d.free?'freereels':P});
+  return out;
+}
+
+function go(t){curTab=t;$$('.tab').forEach(e=>e.classList.toggle('on',e.dataset.t===t));$$('.bnav-item').forEach(e=>e.classList.toggle('on',e.dataset.n===t));['home','populer','new','history','fav'].forEach(k=>{$('#v-'+k).style.display=k===t?'block':'none'});
+  if(t==='history'){renderHistory()}else if(t==='fav'){renderFav()}else if(!$('#v-'+t).innerHTML.trim())loadTab(t);window.scrollTo(0,0)}
+function goHome(){closeDet();closePl();go('home')}
+
+async function loadTab(t){
+  if(busy[t]||more[t]===0)return;busy[t]=1;const box=$('#v-'+t),base=API[P];
+  if(t==='home'&&!loaded.home){
+    box.innerHTML=skelHtml(9);
+    try{
+      const nl=P==='flickreels'||P==='dramanova'||P==='reelshort'||P==='netshort';
+      const dbLang=P==='dramabox'?'&lang=in':(!nl?'&lang=id':'');
+      let hU=base+'/home?page=1'+dbLang,pU=base+'/populer?page=1'+dbLang,nU=base+'/new?page=1'+dbLang;
+      if(P==='dramanova'){pU=base+'/discovery?size=10';nU=base+'/recommend?page=1&size=10'}
+      else if(P==='flickreels'){pU=base+'/populer';nU=base+'/new?page=1'}
+      else if(P==='reelshort'){hU=base+'/home?tab_id=0&sub_tab_id=0';pU=base+'/populer?page=1&limit=20&period=0&rule=0';nU=base+'/new?page=1&limit=20'}
+      else if(P==='netshort'){hU=base+'/home?page=1';pU=base+'/populer';nU=base+'/new'}
+      else if(P==='dramabox'){hU=base+'/home?page=1&lang=in';pU=base+'/populer?page=1&lang=in';nU=base+'/new?page=1&lang=in'}
+      else if(P==='goodshort'){hU=base+'/home';pU=base+'/populer?page=1';nU=base+'/new?page=1&channelId=563'}
+      else if(P==='moviebox'){hU=base+'/indonesia?page=1&perPage=10';pU=base+'/indonesia?page=1&perPage=10';nU=base+'/global?page=1&perPage=10'}
+      const[hd,pd,nd]=await Promise.all([fetch(hU).then(r=>r.json()),fetch(pU).then(r=>r.json()),fetch(nU).then(r=>r.json())]);
+      const pop=flat(pd.data).slice(0,10),nw=flat(nd.data).slice(0,10),rec=flat(hd.data);
+      let h='';
+      // Stats banner
+      h+=`<div class="stats-banner"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg><div class="stats-text"><div class="stats-title">5000+ drama & film tersedia</div><div class="stats-sub">Dari 9 platform · Gratis nonton sepuasnya</div></div><button class="random-btn" onclick="randomPick()"><svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>Acak</button></div>`;
+      // Continue watching card
+      const lastW=getHistory()[0];
+      const hr=new Date().getHours();const greet=hr<11?'Selamat pagi':hr<15?'Selamat siang':hr<18?'Selamat sore':'Selamat malam';
+      if(lastW)h+=`<div class="cw-card" onclick="resumeWatch('${lastW.id}','${lastW.thumb.replace(/'/g,"\\\\'")}','${lastW.plat}',${lastW.ep})"><div class="cw-poster"><img src="${lastW.thumb}" onerror="this.style.display='none'"/></div><div class="cw-info"><div class="cw-sub">${greet}, lanjut nonton?</div><div class="cw-title">${lastW.name}</div><button class="cw-btn" onclick="event.stopPropagation();resumeWatch('${lastW.id}','${lastW.thumb.replace(/'/g,"\\\\'")}','${lastW.plat}',${lastW.ep})"><svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg> Lanjut Episode ${lastW.ep}</button></div><div class="cw-badge">Terakhir</div></div>`;
+      if(pop.length)h+=secHtml('Lagi Populer',pop,'populer',1);
+      if(nw.length)h+=secHtml('Drama Terbaru',nw,'new',1);
+      if(rec.length)h+=`<div class="sec"><div class="sec-hd"><h2 class="sec-tt">Rekomendasi</h2></div><div class="grid">${rec.map(cardHtml).join('')}</div></div>`;
+      h+=`<div class="home-footer">Dramaku v2.0 · 9 Platform · Dibuat dengan cinta<br>Semua konten milik platform masing-masing</div>`;
+      box.innerHTML=h||errHtml();loaded.home=1;
+    }catch(e){box.innerHTML=errHtml()}
+  }else if(t!=='home'){
+    if(pg[t]===1)box.innerHTML=`<div class="sec"><div class="sec-hd"><h2 class="sec-tt">${t==='populer'?'Paling Populer':'Paling Baru'}</h2></div><div class="grid" id="g-${t}"></div></div><div id="trg-${t}"></div>`;
+    const g=$('#g-'+t);if(pg[t]===1&&g)g.innerHTML=skelHtml(9,1);
+    try{
+      let ep,qp;
+      if(P==='dramanova'){ep=t==='populer'?'/discovery':'/recommend';qp=t==='populer'?`?size=10&page=${pg[t]}`:`?page=${pg[t]}&size=10`}
+      else if(P==='flickreels'){ep=t==='populer'?'/populer':'/new';qp=t==='populer'?'':`?page=${pg[t]}`}
+      else if(P==='reelshort'){ep=t==='populer'?'/populer':'/new';qp=t==='populer'?`?page=${pg[t]}&limit=20&period=0&rule=0`:`?page=${pg[t]}&limit=20`}
+      else if(P==='netshort'){ep=t==='populer'?'/populer':'/new';qp=''}
+      else if(P==='dramabox'){ep=t==='populer'?'/populer':'/new';qp=`?page=${pg[t]}&lang=in`}
+      else if(P==='goodshort'){ep=t==='populer'?'/populer':'/new';qp=t==='populer'?`?page=${pg[t]}`:`?page=${pg[t]}&channelId=563`}
+      else if(P==='moviebox'){ep=t==='populer'?'/indonesia':'/global';qp=`?page=${pg[t]}&perPage=10`}
+      else{ep=t==='populer'?'/populer':'/new';qp=`?page=${pg[t]}&lang=id`}
+      const d=await fetch(base+ep+qp).then(r=>r.json());const items=flat(d.data);
+      if(pg[t]===1&&g)g.innerHTML='';
+      if(items.length){if(g)g.insertAdjacentHTML('beforeend',items.map(cardHtml).join(''));pg[t]++;if(d.has_more===false||items.length<8||(P==='dramanova'&&t==='populer')||(P==='flickreels'&&t==='populer'))more[t]=0}else more[t]=0;
+    }catch(e){if(pg[t]===1&&g)g.innerHTML=errHtml()}
+  }
+  busy[t]=0;
+}
+
+
+function cardHtml(d){
+  const img=d.thumb_url||'',nm=d.drama_name||'',ep=d.episode_count||'',id=d.drama_id||'',vw=d.watch_value||'',isFree=d.free===true;
+  const si=img.replace(/'/g,"\\'"),r=(8.5+Math.random()*1.5).toFixed(1);
+  
+  return`<div class="card" onclick="openDet('${id}','${si}')"><div class="card-img"><img src="${img}" alt="${nm}" loading="lazy" onerror="this.onerror=null;this.style.display='none'"/>${ep&&ep!=='0'&&ep!==0?`<div class="badge-ep">${ep} Ep</div>`:''}${isFree?'<div class="badge-free">FREE</div>':''}${vw&&vw!=='0'?`<div class="badge-views">${fmtV(vw)}</div>`:''}</div><div class="card-body"><div class="card-name">${nm}</div><div class="card-rating"><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 7h7l-5.5 4.5 2 7L12 16l-6.5 4.5 2-7L2 9h7z"/></svg> ${r}</div></div></div>`;
+}
+function fmtV(v){if(!v)return'';const n=parseInt(v);if(isNaN(n))return v;if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return v}
+function secHtml(title,items,tab,scroll){
+  const cards=items.map(cardHtml).join('');
+  return`<div class="sec"><div class="sec-hd"><h2 class="sec-tt">${title}</h2><div class="sec-more" onclick="go('${tab}')">Semua <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div></div>${scroll?`<div class="scroll-w"><div class="scroll-r">${cards}</div></div>`:`<div class="grid">${cards}</div>`}</div>`;
+}
+function skelHtml(n,f){let s='';for(let i=0;i<n;i++)s+=`<div><div class="skel skel-img"></div><div class="skel skel-t"></div><div class="skel skel-t2"></div></div>`;return f?s:`<div class="sec"><div class="grid">${s}</div></div>`}
+function errHtml(){return`<div class="empty-state"><svg width="56" height="56" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg><p>Gagal memuat data</p><p class="empty-sub">Periksa koneksi internet kamu</p><button class="retry" onclick="retry()">Coba Lagi</button></div>`}
+function emptyHtml(msg,sub){return`<div class="empty-state"><svg width="56" height="56" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/><path d="M12 12h2v2h-2zm0-6h2v4h-2z"/></svg><p>${msg}</p>${sub?`<p class="empty-sub">${sub}</p>`:''}</div>`}
+function retry(){pg[curTab]=1;more[curTab]=1;delete loaded[curTab];$('#v-'+curTab).innerHTML='';loadTab(curTab)}
+
+/* Lanjut nonton — buka detail lalu langsung play */
+function getDetailUrl(dp,id){
+  if(dp==='dramabox')return API[dp]+`/detail?bookId=${id}&lang=in`;
+  if(dp==='goodshort')return API[dp]+`/detail?bookId=${id}`;
+  if(dp==='moviebox')return API[dp]+`/detail?subjectId=${id}`;
+  const nl=dp==='flickreels'||dp==='dramanova'||dp==='reelshort'||dp==='netshort';
+  return API[dp]+`/detail?id=${id}`+(nl?'':'&lang=id');
+}
+
+async function resumeWatch(id,img,plat,ep){
+  if(img)thumbCache[id]=fixImg(img);if(plat)platCache[id]=plat;closeSearch();
+  $('#detOv').classList.add('on');$('#detBody').innerHTML=`<div class="load-spin" style="padding-top:45vh"><div class="spinner"></div></div>`;document.body.style.overflow='hidden';
+  const dp=plat||platCache[id]||P;
+  try{
+    const d=await fetch(getDetailUrl(dp,id)).then(r=>r.json());if(!d?.data)throw 0;
+    let dd=d.data;
+    // GoodShort: data.book + data.list
+    if(dp==='goodshort'&&d.data.book){dd={...d.data.book,drama_id:d.data.book.bookId,drama_name:d.data.book.bookName,description:d.data.book.introduction,episode_count:d.data.book.chapterCount,thumb_url:d.data.book.cover,tags:d.data.book.labels||[],watch_value:d.data.book.viewCountDisplay||''};curEps=d.data.list||[]}
+    if(dp==='moviebox'){dd={drama_id:d.data.subjectId,drama_name:d.data.title,description:d.data.description||"",episode_count:d.data.subjectType===2?d.data.resourceDetectors?.[0]?.totalEpisode||1:1,thumb_url:d.data.cover?.url||"",tags:d.data.genre?d.data.genre.split(", "):[],watch_value:d.data.imdbRatingValue?"IMDb "+d.data.imdbRatingValue:"",_subjectType:d.data.subjectType,_duration:d.data.duration||""};curEps=[]}
+    curDrama=dd;curDrama._p=dp;curDrama._thumb=fixImg(dd.thumb_url||dd.cover||dd.bookCover||thumbCache[id]||'');
+    if(!curEps.length)curEps=dd.video_list||dd.episode_list||dd.episodes||dd.chapterList||[];
+    renderDet(dd);setTimeout(()=>play(id,ep),300);
+  }catch(e){$('#detBody').innerHTML=`<div style="padding-top:100px">${errHtml()}</div>`}
+}
+
+async function openDet(id,img){
+  if(img)thumbCache[id]=fixImg(img);closeSearch();
+  $('#detOv').classList.add('on');$('#detBody').innerHTML=`<div class="load-spin" style="padding-top:45vh"><div class="spinner"></div></div>`;document.body.style.overflow='hidden';
+  const dp=platCache[id]||P;
+  try{
+    const d=await fetch(getDetailUrl(dp,id)).then(r=>r.json());if(!d?.data)throw 0;
+    let dd=d.data;
+    if(dp==='goodshort'&&d.data.book){dd={...d.data.book,drama_id:d.data.book.bookId,drama_name:d.data.book.bookName,description:d.data.book.introduction,episode_count:d.data.book.chapterCount,thumb_url:d.data.book.cover,tags:d.data.book.labels||[],watch_value:d.data.book.viewCountDisplay||''};curEps=d.data.list||[]}
+    if(dp==='moviebox'){dd={drama_id:d.data.subjectId,drama_name:d.data.title,description:d.data.description||"",episode_count:d.data.subjectType===2?d.data.resourceDetectors?.[0]?.totalEpisode||1:1,thumb_url:d.data.cover?.url||"",tags:d.data.genre?d.data.genre.split(", "):[],watch_value:d.data.imdbRatingValue?"IMDb "+d.data.imdbRatingValue:"",_subjectType:d.data.subjectType,_duration:d.data.duration||""};curEps=[]}
+    curDrama=dd;curDrama._p=dp;curDrama._thumb=fixImg(dd.thumb_url||dd.cover||dd.bookCover||thumbCache[id]||'');
+    if(dd.thumb_url||dd.cover||dd.bookCover)thumbCache[id]=curDrama._thumb;
+    if(!curEps.length)curEps=dd.video_list||dd.episode_list||dd.episodes||dd.chapterList||[];renderDet(dd);
+  }catch(e){$('#detBody').innerHTML=`<div style="padding-top:100px">${errHtml()}</div>`}
+}
+function renderDet(d){
+  const ec=d.episode_count||curEps.length||0,tags=(d.tags||[]).slice(0,5).map(t=>`<span class="d-tag">${t}</span>`).join(''),desc=d.description||'',short=desc.length>120?desc.slice(0,120)+'...':desc;
+  let eps='';for(let i=1;i<=ec;i++)eps+=`<button class="ep-btn" onclick="play('${d.drama_id}',${i})">${i}</button>`;
+  const poster=d._thumb||thumbCache[d.drama_id]||'',r=(8.5+Math.random()*1.5).toFixed(1);
+  $('#detBody').innerHTML=`<div class="d-hero"><img src="${poster}" onerror="this.style.display='none'"/><div class="d-hero-grad"></div><button class="d-back" onclick="closeDet()"><svg width="17" height="17" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M14 8.5H4M8.5 14l-4.5-5.5L8.5 3"/></svg></button></div>
+  <div class="d-info"><div class="d-poster"><img src="${poster}" onerror="this.onerror=null;this.style.background='var(--bg3)'"/></div><div class="d-meta"><h1 class="d-title">${d.drama_name||''}</h1><div class="d-tags">${tags}</div><div class="d-stats"><span class="d-rating"><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 7h7l-5.5 4.5 2 7L12 16l-6.5 4.5 2-7L2 9h7z"/></svg> ${r}</span><span>${ec} Episode</span>${d.watch_value?`<span>${fmtV(d.watch_value)} views</span>`:''}</div></div></div>
+  <div class="d-desc"><span id="dTxt">${short}</span>${desc.length>120?` <span class="more" onclick="togDesc()">Selengkapnya</span>`:''}</div>
+  <div style="display:flex;gap:8px;padding:0 16px;margin-bottom:18px">
+    <button class="play-all-btn" style="flex:1" onclick="play('${d.drama_id}',1)"><svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg> Mulai Tonton</button>
+    <button class="fav-btn ${isFav(d.drama_id)?'on':''}" style="background:${isFav(d.drama_id)?'var(--accent)':'var(--bg3)'}" onclick="toggleFavBtn(this)"><svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg></button>
+    <button class="share-btn" onclick="shareDrama()"><svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg></button>
+  </div>
+  <div class="ep-sec"><div class="ep-sec-tt">Daftar Episode</div><div class="ep-grid">${eps}</div></div>
+  <div class="d-footer">Powered by <a href="#">Dramaku</a> &middot; Semua hak cipta milik pemiliknya</div>`;
+}
+let descOn=0;
+function togDesc(){descOn=!descOn;const el=$('#dTxt'),tg=el.nextElementSibling;if(descOn){el.textContent=curDrama.description;tg.textContent=' Sembunyikan'}else{el.textContent=curDrama.description.slice(0,120)+'...';tg.textContent=' Selengkapnya'}}
+function closeDet(){$('#detOv').classList.remove('on');document.body.style.overflow='';curDrama=null;descOn=0}
+
+async function play(did,ep){
+  closeEpModal();$('#plOv').classList.add('on');$('#plName').textContent=curDrama?.drama_name||'';$('#plEp').textContent='Episode '+ep;
+  if(curDrama)saveHistory(curDrama,ep);
+  curPE=ep;const cont=$('#plCont');cont.innerHTML='';const total=curDrama?.episode_count||curEps.length||ep;
+  const ps=Math.max(1,ep-2);for(let i=ps;i<ep;i++)cont.insertAdjacentHTML('beforeend',slideHtml(did,i));
+  for(let i=ep;i<ep+Math.min(3,total-ep+1);i++)cont.insertAdjacentHTML('beforeend',slideHtml(did,i));
+  loadVid(did,ep);
+  requestAnimationFrame(()=>{const t=cont.querySelector(`.v-slide[data-ep="${ep}"]`);if(t)t.scrollIntoView({behavior:'instant'})});
+  cont.onscroll=debounce(()=>{
+    const slides=cont.querySelectorAll('.v-slide');let active=null;
+    slides.forEach(s=>{const r=s.getBoundingClientRect();if(r.top>=-80&&r.top<window.innerHeight/2)active=s});
+    if(!active)return;const ae=+active.dataset.ep;$('#plEp').textContent='Episode '+ae;curPE=ae;showUI();
+    if(curDrama)saveHistory(curDrama,ae);
+    cont.querySelectorAll('video').forEach(v=>{if(v.closest('.v-slide')===active)v.play().catch(()=>{});else v.pause()});
+    if(!active.dataset.ld)loadVid(did,ae);
+    const last=slides[slides.length-1],le=+last.dataset.ep;
+    if(ae>=le-1&&le<total)for(let i=le+1;i<=Math.min(le+2,total);i++)cont.insertAdjacentHTML('beforeend',slideHtml(did,i));
+    const first=slides[0],fe=+first.dataset.ep;
+    if(ae<=fe+1&&fe>1)for(let i=fe-1;i>=Math.max(1,fe-2);i--)cont.insertAdjacentHTML('afterbegin',slideHtml(did,i));
+  },120);
+}
+function slideHtml(did,ep){
+  return`<div class="v-slide" data-ep="${ep}" data-did="${did}"><div class="v-loading"><div class="spinner"></div><span style="color:var(--text3);font-size:10px">Episode ${ep}</span></div>
+  <div class="v-info"><div class="ep-lbl">Episode ${ep}</div><div class="ep-nm">${curDrama?.drama_name||''}</div><div class="ep-ds">${curDrama?.description||''}</div></div>
+  <div class="v-actions"><div class="v-act"><button onclick="this.classList.toggle('liked')"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg></button><span>Suka</span></div>
+  <div class="v-act"><button onclick="openEpModal()"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg></button><span>Episode</span></div>
+  <div class="v-act"><button onclick="nextEp()"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg></button><span>Next</span></div></div>
+  <div class="dbl-heart" id="heart-${ep}"><svg width="80" height="80" viewBox="0 0 24 24" fill="var(--accent)"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg></div>
+  <div class="v-prog"><div class="v-prog-bar" id="prg-${ep}"></div></div></div>`;
+}
+async function loadVid(did,ep){
+  const slide=$(`.v-slide[data-ep="${ep}"][data-did="${did}"]`);if(!slide||slide.dataset.ld)return;slide.dataset.ld='1';
+  let url=null,isHLS=false,subUrl=null;const dp=curDrama?._p||platCache[did]||P;
+  if(dp==='freereels'){try{const d=await fetch(API.freereels+`/stream?dramaId=${did}&episode=${ep}&lang=id`).then(r=>r.json());if(d?.data){let raw=d.data.h264_m3u8||d.data.m3u8_url||d.data.video_url;if(raw){url='https://proxy.sonzaixlab.workers.dev/proxy?url='+encodeURIComponent(raw);isHLS=true};if(d.data.subtitles?.length){const st=d.data.subtitles.find(s=>s.language==='id-ID'||s.language?.startsWith('id'))||d.data.subtitles[0];if(st?.url)subUrl=st.url}}}catch(e){}}
+  else if(dp==='flickreels'){try{const d=await fetch(API.flickreels+`/stream?id=${did}&ep=${ep}`).then(r=>r.json());if(d?.data?.hls_url){url=d.data.hls_url;isHLS=true}}catch(e){}}
+  else if(dp==='reelshort'){try{const d=await fetch(API.reelshort+`/stream?id=${did}&episode_no=${ep}`).then(r=>r.json());if(d?.data){const vl=d.data.videoList||[];const pick=vl.find(v=>v.encode==='H264'&&v.dpi===720)||vl.find(v=>v.encode==='H264')||vl[0];if(pick?.playUrl){url=pick.playUrl;isHLS=true}else if(d.data.play_url){url=d.data.play_url;isHLS=true}}}catch(e){}}
+  else if(dp==='moviebox'){
+    try{
+      const st=curDrama?._subjectType||1;
+      let d;
+      if(st===2){d=await fetch(API.moviebox+`/download-series?subjectId=${did}&se=1&resolution=720`).then(r=>r.json());if(d?.data?.episodes?.length){const epd=d.data.episodes.find(e=>e.ep===ep)||d.data.episodes[0];if(epd?.resourceLink)url=epd.resourceLink;if(epd?.subtitle?.url)subUrl=epd.subtitle.url}}
+      else{d=await fetch(API.moviebox+`/download-movie?subjectId=${did}&resolution=720`).then(r=>r.json());if(d?.data?.files?.length){const f=d.data.files.find(f=>f.resolution===720)||d.data.files[0];if(f?.resourceLink)url=f.resourceLink};if(d?.data?.subtitle?.url)subUrl=d.data.subtitle.url}
+    }catch(e){}
+  }else if(dp==='goodshort'){
+    try{
+      // GoodShort stream returns all episodes. Cache it.
+      if(!window._gsCache||window._gsCache.id!==did){const d=await fetch(API.goodshort+`/stream?bookId=${did}`).then(r=>r.json());if(d?.data?.downloadList)window._gsCache={id:did,list:d.data.downloadList}}
+      if(window._gsCache?.list){const epData=window._gsCache.list[ep-1];if(epData?.multiVideos?.length){const mv=epData.multiVideos.find(v=>v.type==='720p')||epData.multiVideos[0];if(mv?.filePath){url=mv.filePath;isHLS=true}}}
+    }catch(e){}
+  }else if(dp==='dramabox'){
+    try{const d=await fetch(API.dramabox+`/stream?bookId=${did}&chapterIndex=${ep-1}&lang=in`).then(r=>r.json());if(d?.data){url=d.data.videoUrl||null;if(!url&&d.data.qualities?.length){const q=d.data.qualities.find(q=>q.quality===720)||d.data.qualities[0];if(q)url=q.videoPath}}}catch(e){}
+  }else if(dp==='netshort'){
+    try{const d=await fetch(API.netshort+`/streamv2?id=${did}&ep=${ep}`).then(r=>r.json());if(d?.data){url=d.data.play_url||null;if(!url&&d.data.streams?.length){const s=d.data.streams.find(s=>s.encode==='H264')||d.data.streams[0];if(s)url=s.url}}}catch(e){}
+  }else if(dp==='dramanova'){try{const d=await fetch(API.dramanova+`/stream?id=${did}&ep=${ep}`).then(r=>r.json());if(d?.data?.play){url=d.data.play.video_url||d.data.play.backup_url||null;if(!url&&d.data.play.qualities?.length){const q=d.data.play.qualities.find(q=>q.codec==='h264')||d.data.play.qualities[0];url=q.main_url||q.backup_url}};if(d?.data?.info?.subtitle_tracks?.length){const st=d.data.info.subtitle_tracks.find(s=>s.language==='in'||s.language==='id')||d.data.info.subtitle_tracks[0];if(st?.label)subUrl=st.label}}catch(e){}}
+  else{try{const d=await fetch(API.melolo+`/streamv2?id=${did}&ep=${ep}`).then(r=>r.json());if(d?.url&&d.playable!==false)url=d.url}catch(e){}
+    if(!url){try{const d=await fetch(API.melolo+`/stream?id=${did}&ep=${ep}`).then(r=>r.json());if(d?.qualities?.length){const q=d.qualities.find(q=>q.codec==='h264')||d.qualities[d.qualities.length-1];if(q)url=q.url}}catch(e){}}}
+  const loader=slide.querySelector('.v-loading');
+  const vid=document.createElement('video');
+  vid.setAttribute('playsinline','');vid.setAttribute('webkit-playsinline','');vid.setAttribute('preload','auto');
+  if(isHLS&&typeof Hls!=='undefined'&&Hls.isSupported()){const hls=new Hls({maxBufferLength:30,enableWorker:true});hls.loadSource(url);hls.attachMedia(vid);hls.on(Hls.Events.ERROR,(e,d)=>{if(d.fatal&&loader){loader.style.display='flex';loader.innerHTML='<p style="color:var(--text3);font-size:11px">Gagal memutar</p>'}});slide._hls=hls}
+  else if(isHLS&&vid.canPlayType('application/vnd.apple.mpegurl')){vid.src=url}else{vid.src=url}
+  if(subUrl)loadSub(vid,subUrl);
+  vid.addEventListener('loadeddata',()=>{if(loader)loader.style.display='none';if(+slide.dataset.ep===curPE){vid.play().catch(()=>{});scheduleHideUI()}});
+  vid.addEventListener('timeupdate',()=>{const p=$('#prg-'+ep);if(p&&vid.duration)p.style.width=(vid.currentTime/vid.duration*100)+'%'});
+  vid.addEventListener('ended',()=>{const ns=slide.nextElementSibling;if(ns)ns.scrollIntoView({behavior:'smooth'})});
+  vid.addEventListener('error',()=>{if(loader){loader.style.display='flex';loader.innerHTML='<p style="color:var(--text3);font-size:11px">Gagal memutar</p>'}});
+  // Double tap like + single tap pause
+  let lastTap=0;
+  vid.addEventListener('click',e=>{
+    e.preventDefault();const now=Date.now();
+    if(now-lastTap<300){// double tap = like
+      const heart=$('#heart-'+slide.dataset.ep);if(heart){heart.classList.remove('pop');void heart.offsetWidth;heart.classList.add('pop')}
+      const likeBtn=slide.querySelector('.v-act button');if(likeBtn&&!likeBtn.classList.contains('liked'))likeBtn.classList.add('liked');
+      lastTap=0;return;
+    }
+    lastTap=now;
+    setTimeout(()=>{
+      if(Date.now()-lastTap<300)return;// wait for possible double tap
+      const icon=slide.querySelector('.pause-icon')||mkPause(slide);
+      if(vid.paused){vid.play().catch(()=>{});icon.innerHTML='<svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>';icon.classList.add('show');setTimeout(()=>icon.classList.remove('show'),400);scheduleHideUI()}
+      else{if($('#plOv').classList.contains('p-ui-hidden')){showUI();return}vid.pause();icon.innerHTML='<svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>';icon.classList.add('show');showUI()}
+    },300);
+  });
+  slide.insertBefore(vid,slide.firstChild);
+}
+async function loadSub(vid,srtUrl){try{const r=await fetch('https://proxy.sonzaixlab.workers.dev/proxy?url='+encodeURIComponent(srtUrl));if(!r.ok)return;const srt=await r.text();let vtt='WEBVTT\n\n'+srt.replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g,'$1.$2');const b=new Blob([vtt],{type:'text/vtt'});const t=document.createElement('track');t.kind='subtitles';t.label='Indonesia';t.srclang='id';t.src=URL.createObjectURL(b);t.default=true;vid.appendChild(t);vid.textTracks[0].mode='showing'}catch(e){}}
+function mkPause(s){const d=document.createElement('div');d.className='pause-icon';s.appendChild(d);return d}
+let uiTimer=null;
+function showUI(){$('#plOv').classList.remove('p-ui-hidden');const v=$('#plOv').querySelector(`.v-slide[data-ep="${curPE}"] video`);if(v&&!v.paused)scheduleHideUI()}
+function hideUI(){$('#plOv').classList.add('p-ui-hidden')}
+function scheduleHideUI(){clearTimeout(uiTimer);uiTimer=setTimeout(hideUI,3000)}
+function nextEp(){const c=$('#plCont'),cur=c.querySelector(`.v-slide[data-ep="${curPE}"]`);if(cur?.nextElementSibling)cur.nextElementSibling.scrollIntoView({behavior:'smooth'})}
+function closePl(){clearTimeout(uiTimer);closeEpModal();const ov=$('#plOv');ov.classList.remove('on','p-ui-hidden');ov.querySelectorAll('.v-slide').forEach(s=>{if(s._hls){s._hls.destroy();s._hls=null}});ov.querySelectorAll('video').forEach(v=>{v.pause();v.removeAttribute('src');v.load()});$('#plCont').innerHTML=''}
+
+function openEpModal(){
+  showUI();clearTimeout(uiTimer);const total=curDrama?.episode_count||curEps.length||0;
+  const poster=curDrama?._thumb||thumbCache[curDrama?.drama_id]||'';
+  $('#epModPoster').src=poster;$('#epModTitle').textContent=curDrama?.drama_name||'';$('#epModSub').textContent=total+' Episode';
+  const rs=30,rc=Math.ceil(total/rs);let rh='';
+  for(let i=0;i<rc;i++){const s=i*rs+1,e=Math.min((i+1)*rs,total);rh+=`<button class="ep-m-range${i===0?' on':''}" onclick="switchEpRange(${i},${total})" data-ri="${i}">${s}-${e}</button>`}
+  $('#epModRanges').innerHTML=rh;renderEpRange(0,total);$('#epBd').classList.add('on');requestAnimationFrame(()=>$('#epMod').classList.add('on'));
+}
+function renderEpRange(ri,total){const rs=30,s=ri*rs+1,e=Math.min((ri+1)*rs,total);let h='';for(let i=s;i<=e;i++){const p=i===curPE;h+=`<button class="ep-m-btn${p?' on':''}" onclick="playFromModal(${i})">${p?'<svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>':i}</button>`}$('#epModGrid').innerHTML=h}
+function switchEpRange(i,t){$$('.ep-m-range').forEach(e=>e.classList.toggle('on',+e.dataset.ri===i));renderEpRange(i,t)}
+function playFromModal(ep){closeEpModal();const did=curDrama?.drama_id;if(!did)return;const cont=$('#plCont');cont.querySelectorAll('.v-slide').forEach(s=>{if(s._hls){s._hls.destroy();s._hls=null}});cont.querySelectorAll('video').forEach(v=>{v.pause();v.removeAttribute('src');v.load()});cont.innerHTML='';curPE=ep;$('#plEp').textContent='Episode '+ep;const total=curDrama?.episode_count||curEps.length||ep;const ps=Math.max(1,ep-2);for(let i=ps;i<ep;i++)cont.insertAdjacentHTML('beforeend',slideHtml(did,i));for(let i=ep;i<ep+Math.min(3,total-ep+1);i++)cont.insertAdjacentHTML('beforeend',slideHtml(did,i));loadVid(did,ep);requestAnimationFrame(()=>{const t=cont.querySelector(`.v-slide[data-ep="${ep}"]`);if(t)t.scrollIntoView({behavior:'instant'})})}
+function closeEpModal(){$('#epMod').classList.remove('on');$('#epBd').classList.remove('on')}
+
+function openSearch(){$('#sOv').classList.add('on');setTimeout(()=>$('#sInp').focus(),150)}
+function closeSearch(){$('#sOv').classList.remove('on');$('#sInp').value=''}
+function debSearch(){clearTimeout(sto);sto=setTimeout(doSearch,350)}
+async function doSearch(){
+  const q=$('#sInp').value.trim(),box=$('#sRes');
+  if(!q){box.innerHTML='<div class="empty-state" style="padding-top:100px"><svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" opacity=".2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><p>Ketik judul drama untuk mencari</p><p class="empty-sub">Cari dari 9 platform sekaligus</p></div>';return}
+  box.innerHTML=`<div class="grid">${skelHtml(6,1)}</div>`;
+  try{const eq=encodeURIComponent(q);
+    const[r1,r2,r3,r4,r5,r6,r7,r8,r9]=await Promise.allSettled([
+      fetch(API.melolo+`/search?q=${eq}&page=1&lang=id`).then(r=>r.json()),
+      fetch(API.freereels+`/search?q=${eq}&page=1&lang=id`).then(r=>r.json()),
+      fetch(API.flickreels+`/search?q=${eq}`).then(r=>r.json()),
+      fetch(API.dramanova+`/search?q=${eq}&page=1&size=10`).then(r=>r.json()),
+      fetch(API.reelshort+`/search?q=${eq}&page=1&limit=10`).then(r=>r.json()),
+      fetch(API.netshort+`/search?query=${eq}&page=1`).then(r=>r.json()),
+      fetch(API.dramabox+`/search?q=${eq}&page=1&lang=in`).then(r=>r.json()),
+      fetch(API.goodshort+`/search?q=${eq}&page=1`).then(r=>r.json()),
+      fetch(API.moviebox+`/search?q=${eq}&page=1&perPage=10`).then(r=>r.json())
+    ]);
+    const tag=(r,p)=>{const items=r.status==='fulfilled'?flat(r.value.data):[];items.forEach(d=>{if(d.drama_id)platCache[d.drama_id]=p});return items};
+    const a=[...tag(r1,'melolo'),...tag(r2,'freereels'),...tag(r3,'flickreels'),...tag(r4,'dramanova'),...tag(r5,'reelshort'),...tag(r6,'netshort'),...tag(r7,'dramabox'),...tag(r8,'goodshort'),...tag(r9,'moviebox')];
+    if(a.length)box.innerHTML=`<div class="grid">${a.map(cardHtml).join('')}</div>`;
+    else box.innerHTML=emptyHtml('Tidak ditemukan untuk "'+q+'"','Coba kata kunci lain');
+  }catch(e){box.innerHTML='<div class="s-empty">Gagal mencari</div>'}
+}
+
+window.addEventListener('scroll',()=>{
+  // Infinite scroll
+  if(curTab!=='home'){const trg=$('#trg-'+curTab);if(trg&&trg.getBoundingClientRect().top<window.innerHeight+300)loadTab(curTab)}
+  // Scroll to top button
+  const btn=$('#scrollTop');if(btn){if(window.scrollY>400)btn.classList.add('show');else btn.classList.remove('show')}
+});
+function debounce(fn,ms){let t;return function(...a){clearTimeout(t);t=setTimeout(()=>fn.apply(this,a),ms)}}
+/* ===== HISTORY (localStorage) ===== */
+function getHistory(){try{return JSON.parse(localStorage.getItem('dk_history')||'[]')}catch(e){return[]}}
+function saveHistory(drama,ep){
+  let h=getHistory();h=h.filter(x=>x.id!==drama.drama_id);
+  h.unshift({id:drama.drama_id,name:drama.drama_name,thumb:drama._thumb||thumbCache[drama.drama_id]||'',ep:ep,plat:drama._p||P,time:Date.now()});
+  if(h.length>50)h=h.slice(0,50);
+  localStorage.setItem('dk_history',JSON.stringify(h));
+}
+function renderHistory(){
+  const box=$('#v-history'),h=getHistory();
+  if(!h.length){box.innerHTML=emptyHtml('Belum ada riwayat tontonan','Drama yang kamu tonton akan muncul di sini');return}
+  box.innerHTML=`<div class="sec"><div class="sec-hd"><h2 class="sec-tt">Riwayat Tontonan</h2><div class="sec-more" onclick="if(confirm('Hapus semua riwayat?')){localStorage.removeItem('dk_history');renderHistory()}">Hapus</div></div><div class="grid">${h.map(d=>{
+    platCache[d.id]=d.plat;thumbCache[d.id]=d.thumb;
+    return`<div class="card" onclick="openDet('${d.id}','${d.thumb.replace(/'/g,"\\\\'")}')"><div class="card-img"><img src="${d.thumb}" loading="lazy" onerror="this.style.display='none'"/><div class="badge-ep" style="background:var(--accent);color:#fff">Ep ${d.ep}</div></div><div class="card-body"><div class="card-name">${d.name}</div><div class="card-rating" style="color:var(--text3)">Lanjut Ep ${d.ep}</div></div></div>`;
+  }).join('')}</div></div>`;
+}
+
+/* ===== FAVORITES (localStorage) ===== */
+function getFavs(){try{return JSON.parse(localStorage.getItem('dk_favs')||'[]')}catch(e){return[]}}
+function toggleFav(drama){
+  let f=getFavs();const idx=f.findIndex(x=>x.id===drama.drama_id);
+  if(idx>=0){f.splice(idx,1)}else{f.unshift({id:drama.drama_id,name:drama.drama_name,thumb:drama._thumb||thumbCache[drama.drama_id]||'',plat:drama._p||P,ep:drama.episode_count||0})}
+  localStorage.setItem('dk_favs',JSON.stringify(f));return idx<0;
+}
+function isFav(id){return getFavs().some(x=>x.id===id)}
+function toggleFavBtn(btn){if(!curDrama)return;const on=toggleFav(curDrama);btn.classList.toggle('on',on);btn.style.background=on?'var(--accent)':'var(--bg3)'}
+function renderFav(){
+  const box=$('#v-fav'),f=getFavs();
+  if(!f.length){box.innerHTML=emptyHtml('Belum ada drama favorit','Tap bookmark di halaman detail untuk menyimpan');return}
+  box.innerHTML=`<div class="sec"><div class="sec-hd"><h2 class="sec-tt">Drama Favorit</h2></div><div class="grid">${f.map(d=>{
+    platCache[d.id]=d.plat;thumbCache[d.id]=d.thumb;
+    return`<div class="card" onclick="openDet('${d.id}','${d.thumb.replace(/'/g,"\\\\'")}')"><div class="card-img"><img src="${d.thumb}" loading="lazy" onerror="this.style.display='none'"/>${d.ep?`<div class="badge-ep">${d.ep} Ep</div>`:''}</div><div class="card-body"><div class="card-name">${d.name}</div></div></div>`;
+  }).join('')}</div></div>`;
+}
+
+/* ===== RANDOM PICK ===== */
+async function randomPick(){
+  const platforms=['melolo','freereels','flickreels','dramanova','reelshort','netshort','dramabox','goodshort'];
+  const rp=platforms[Math.floor(Math.random()*platforms.length)];
+  const base=API[rp];
+  try{
+    const pg=Math.floor(Math.random()*3)+1;
+    let url=base+'/home?page='+pg;
+    if(rp==='flickreels'||rp==='dramanova'||rp==='netshort'||rp==='goodshort')url=base+'/home';
+    else if(rp==='dramabox')url=base+'/home?page='+pg+'&lang=in';
+    else url=base+'/home?page='+pg+'&lang=id';
+    const d=await fetch(url).then(r=>r.json());
+    const items=flat(d.data);
+    if(items.length){
+      const pick=items[Math.floor(Math.random()*items.length)];
+      if(pick.drama_id){platCache[pick.drama_id]=rp;openDet(pick.drama_id,pick.thumb_url)}
+    }
+  }catch(e){}
+}
+
+/* ===== SHARE ===== */
+function shareDrama(){
+  if(!curDrama)return;
+  const text=`Nonton "${curDrama.drama_name}" di Dramaku!`;
+  if(navigator.share){navigator.share({title:'Dramaku',text,url:location.href}).catch(()=>{})}
+  else{navigator.clipboard?.writeText(text+' '+location.href);alert('Link disalin!')}
+}
+
+loadTab('home');
+</script>
+</body>
+</html>

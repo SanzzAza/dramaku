@@ -1,0 +1,57 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Copy website to assets
+        run: |
+          mkdir -p app/src/main/assets
+          cp index.html app/src/main/assets/index.html
+
+      - name: Create Gradle Wrapper
+        run: |
+          gradle wrapper --gradle-version 8.4
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dramaku-v2.0
+          path: app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: v2.0-${{ github.run_number }}
+          name: Dramaku v2.0 Build ${{ github.run_number }}
+          files: app/build/outputs/apk/debug/app-debug.apk
+          body: |
+            **Dramaku v2.0** - Streaming Drama & Film Terbaik
+            
+            9 Platform: Melolo, FreeReels, FlickReels, DramaNova, ReelShort, NetShort, DramaBox, GoodShort, MovieBox
+            
+            Fitur: Player TikTok-style, Search 9 platform, Riwayat, Favorit, Subtitle, Share
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
