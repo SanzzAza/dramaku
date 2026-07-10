@@ -117,8 +117,8 @@ img{display:block}button{font-family:inherit;-webkit-tap-highlight-color:transpa
 .skel-img{width:100%;padding-top:142%}.skel-t{height:10px;margin:7px 7px 3px;width:75%;border-radius:3px}.skel-t2{height:8px;margin:0 7px 7px;width:50%;border-radius:3px}
 
 /* ===== SEARCH ===== */
-.search-ov{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:rgba(7,11,15,.96);backdrop-filter:blur(20px);display:none;flex-direction:column;padding:16px}
-.search-ov.on{display:flex;animation:fadeIn .15s}
+.search-ov{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:rgba(7,11,15,.96);backdrop-filter:blur(20px);display:flex;flex-direction:column;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s}
+.search-ov.on{opacity:1;pointer-events:auto}
 .s-bar{display:flex;gap:10px;align-items:center;margin-bottom:14px}
 .s-bar input{flex:1;height:44px;border-radius:12px;background:var(--bg3);border:1.5px solid var(--border);color:var(--text);padding:0 16px;font-size:14px;outline:none;font-family:inherit;transition:.2s}
 .s-bar input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
@@ -128,9 +128,8 @@ img{display:block}button{font-family:inherit;-webkit-tap-highlight-color:transpa
 .s-empty{text-align:center;color:var(--text3);padding:80px 20px;font-size:13px}
 
 /* ===== DETAIL ===== */
-.detail-ov{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:150;background:var(--bg);overflow-y:auto}
-.detail-ov.on{display:block;animation:slideU .3s cubic-bezier(.16,1,.3,1)}
-@keyframes slideU{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.detail-ov{position:fixed;top:0;left:0;right:0;bottom:0;z-index:150;background:var(--bg);overflow-y:auto;transform:translateY(100%);opacity:0;pointer-events:none;transition:transform .3s cubic-bezier(.16,1,.3,1),opacity .25s}
+.detail-ov.on{transform:translateY(0);opacity:1;pointer-events:auto}
 .d-hero{position:relative;width:100%;height:230px;overflow:hidden}
 .d-hero img{width:100%;height:100%;object-fit:cover;filter:blur(14px) brightness(.28) saturate(1.3);transform:scale(1.15)}
 .d-hero-grad{position:absolute;bottom:0;left:0;right:0;height:80%;background:linear-gradient(transparent,var(--bg))}
@@ -261,6 +260,64 @@ img{display:block}button{font-family:inherit;-webkit-tap-highlight-color:transpa
 @media(min-width:500px){.grid{grid-template-columns:repeat(4,1fr)}.ep-grid{grid-template-columns:repeat(8,1fr)}}
 @media(min-width:768px){.grid{grid-template-columns:repeat(5,1fr)}}
 @media(min-width:1024px){.grid{grid-template-columns:repeat(6,1fr)}.main{max-width:1100px;margin:0 auto}}
+/* ===== POLISH: Page transitions ===== */
+.main{transition:opacity .2s}
+.main.loading{opacity:.5;pointer-events:none}
+
+/* ===== POLISH: Better card hover/press ===== */
+.card{transition:transform .12s ease,border-color .2s}
+.card:active{transform:scale(.96)}
+
+
+/* ===== POLISH: Platform selector refined ===== */
+.plat-btn{transition:border-color .2s,background .2s}
+.plat-btn:hover,.plat-btn.open{border-color:var(--accent);background:var(--bg4)}
+.plat-opt{transition:background .15s,color .15s}
+.plat-opt:hover{background:var(--bg3)}
+
+/* ===== POLISH: Tab pill refined ===== */
+.tab{transition:all .2s ease;font-size:12px}
+.tab.on{box-shadow:0 2px 8px var(--glow)}
+
+/* ===== POLISH: Bottom nav refined ===== */
+.bnav-item{transition:color .15s,transform .15s}
+.bnav-item:active{transform:scale(.92)}
+.bnav-item.on svg{filter:drop-shadow(0 1px 4px var(--glow))}
+
+/* ===== POLISH: Play button pulse ===== */
+.play-all-btn{transition:transform .15s,box-shadow .2s}
+.play-all-btn:hover{box-shadow:0 6px 24px var(--glow)}
+
+/* ===== POLISH: Detail page smoother ===== */
+.d-poster{transition:transform .3s}
+.d-poster:hover{transform:scale(1.03)}
+.d-tag{transition:background .15s}
+.ep-btn{transition:all .15s ease}
+.ep-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ===== POLISH: Scroll top refined ===== */
+.scroll-top{transition:opacity .3s,transform .3s;opacity:0;transform:translateY(10px)}
+.scroll-top.show{opacity:1;transform:translateY(0)}
+
+/* ===== POLISH: Stats banner gradient border ===== */
+.stats-banner{position:relative;overflow:hidden}
+.stats-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+
+/* ===== POLISH: Continue watching shimmer ===== */
+.cw-btn{transition:transform .15s,box-shadow .2s}
+.cw-btn:hover{box-shadow:0 2px 12px var(--glow)}
+
+/* ===== POLISH: Fav/Share btn ===== */
+.fav-btn{transition:background .2s,transform .15s,border-color .2s}
+.share-btn{transition:background .2s,transform .15s}
+
+/* ===== POLISH: Empty state ===== */
+.empty-state svg{transition:transform .3s}
+.empty-state:hover svg{transform:scale(1.1) rotate(5deg)}
+
+/* ===== POLISH: Loading shimmer for images ===== */
+.card-img img{transition:opacity .3s}
+.card-img img[src=""]{opacity:0}
 </style>
 </head>
 <body>
