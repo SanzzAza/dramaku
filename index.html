@@ -551,7 +551,7 @@ async function loadVid(did,ep){
       const st=curDrama?._subjectType||1;
       let d;
       if(st===2){d=await fetch(API.moviebox+`/download-series?subjectId=${did}&se=1&resolution=720`).then(r=>r.json());if(d?.data?.episodes?.length){const epd=d.data.episodes.find(e=>e.ep===ep)||d.data.episodes[0];if(epd?.resourceLink)url=epd.resourceLink;if(epd?.subtitle?.url)subUrl=epd.subtitle.url}}
-      else{d=await fetch(API.moviebox+`/download-movie?subjectId=${did}&resolution=720`).then(r=>r.json());if(d?.data?.files?.length){const f=d.data.files.find(f=>f.resolution===720)||d.data.files[0];if(f?.resourceLink)url=f.resourceLink};if(d?.data?.subtitle?.url)subUrl=d.data.subtitle.url}
+      else{d=await fetch(API.moviebox+`/download-movie?subjectId=${did}&resolution=720`).then(r=>r.json());if(d?.data?.files?.length){const f=d.data.files.find(f=>f.codecName==='h264')||d.data.files.find(f=>f.resolution===720)||d.data.files[0];if(f?.resourceLink)url=f.resourceLink};if(d?.data?.subtitle?.url)subUrl=d.data.subtitle.url}
     }catch(e){}
   }else if(dp==='goodshort'){
     try{
