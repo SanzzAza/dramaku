@@ -565,7 +565,7 @@ async function loadVid(did,ep){
   vid.addEventListener('loadeddata',()=>{if(loader)loader.style.display='none';if(+slide.dataset.ep===curPE){vid.play().catch(()=>{});scheduleHideUI()}});
   vid.addEventListener('timeupdate',()=>{const p=$('#prg-'+ep);if(p&&vid.duration)p.style.width=(vid.currentTime/vid.duration*100)+'%'});
   vid.addEventListener('ended',()=>{const ns=slide.nextElementSibling;if(ns)ns.scrollIntoView({behavior:'smooth'})});
-  vid.addEventListener('error',()=>{if(loader){loader.style.display='flex';loader.innerHTML='<p style="color:var(--text3);font-size:11px">Gagal memutar</p>'}});
+  vid.addEventListener('error',()=>{if(loader){loader.style.display='flex';loader.innerHTML='<p style="color:var(--text3);font-size:11px">'+(dp==='moviebox'?'Format HEVC - buka di Samsung Internet':'Gagal memutar')+'</p>'}});
   // Double tap like + single tap pause
   let lastTap=0;
   vid.addEventListener('click',e=>{
