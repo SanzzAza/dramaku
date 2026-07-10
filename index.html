@@ -539,9 +539,15 @@ async function loadVid(did,ep){
   else if(dp==='flickreels'){try{const d=await fetch(API.flickreels+`/stream?id=${did}&ep=${ep}`).then(r=>r.json());if(d?.data?.hls_url){url=d.data.hls_url;isHLS=true}}catch(e){}}
   else if(dp==='reelshort'){try{const d=await fetch(API.reelshort+`/stream?id=${did}&episode_no=${ep}`).then(r=>r.json());if(d?.data){const vl=d.data.videoList||[];const pick=vl.find(v=>v.encode==='H264'&&v.dpi===720)||vl.find(v=>v.encode==='H264')||vl[0];if(pick?.playUrl){url=pick.playUrl;isHLS=true}else if(d.data.play_url){url=d.data.play_url;isHLS=true}}}catch(e){}}
   else if(dp==='moviebox'){
-    try{const st=curDrama?._subjectType||1;let d;
-      if(st===2){d=await fetch(API.moviebox+`/download-series?subjectId=${did}&se=1&resolution=720`).then(r=>r.json());if(d?.data?.episodes?.length){const epd=d.data.episodes.find(e=>e.ep===ep)||d.data.episodes[0];if(epd?.resourceLink)url=epd.resourceLink;if(epd?.subtitle?.url)subUrl=epd.subtitle.url}}
-      else{d=await fetch(API.moviebox+`/download-movie?subjectId=${did}&resolution=720`).then(r=>r.json());if(d?.data?.files?.length){const f=d.data.files.find(f=>f.codecName==='h264')||d.data.files[0];if(f?.resourceLink)url=f.resourceLink};if(d?.data?.subtitle?.url)subUrl=d.data.subtitle.url}
+    try{const st=curDrama?._subjectType||1;let d,mvUrl='',mvSub='';
+      if(st===2){d=await fetch(API.moviebox+`/download-series?subjectId=${did}&se=1&resolution=720`).then(r=>r.json());if(d?.data?.episodes?.length){const epd=d.data.episodes.find(e=>e.ep===ep)||d.data.episodes[0];if(epd?.resourceLink)mvUrl=epd.resourceLink;if(epd?.subtitle?.url)mvSub=epd.subtitle.url}}
+      else{d=await fetch(API.moviebox+`/download-movie?subjectId=${did}&resolution=720`).then(r=>r.json());if(d?.data?.files?.length){const f=d.data.files.find(f=>f.codecName==='h264')||d.data.files[0];if(f?.resourceLink)mvUrl=f.resourceLink};if(d?.data?.subtitle?.url)mvSub=d.data.subtitle.url}
+      if(mvUrl){
+        // Coba native player (ExoPlayer di APK) - support HEVC
+        if(typeof NativePlayer!=='undefined'&&NativePlayer.play){NativePlayer.play(mvUrl,mvSub||'',curDrama?.drama_name||'');if(loader)loader.innerHTML='<p style="color:var(--accent);font-size:11px">Membuka player...</p>';return}
+        // Fallback: browser video element (hanya h264)
+        url=mvUrl;subUrl=mvSub;
+      }
     }catch(e){}
   }else if(dp==='goodshort'){
     try{
