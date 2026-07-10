@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,30 +31,26 @@ jobs:
           cp index.html app/src/main/assets/index.html
 
       - name: Create Gradle Wrapper
-        run: |
-          gradle wrapper --gradle-version 8.4
+        run: gradle wrapper --gradle-version 8.4
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug
 
-      - name: Upload APK
+      - name: Rename APK
+        run: mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/Dramaku-v2.0.apk
+
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Dramaku-v2.0
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/Dramaku-v2.0.apk
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
-        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: v2.0-${{ github.run_number }}
-          name: Dramaku v2.0 Build ${{ github.run_number }}
-          files: app/build/outputs/apk/debug/app-debug.apk
+          tag_name: v2.0-build${{ github.run_number }}
+          name: Dramaku v2.0
+          files: app/build/outputs/apk/debug/Dramaku-v2.0.apk
           body: |
             **Dramaku v2.0** - Streaming Drama & Film Terbaik
-            
-            9 Platform: Melolo, FreeReels, FlickReels, DramaNova, ReelShort, NetShort, DramaBox, GoodShort, MovieBox
-            
-            Fitur: Player TikTok-style, Search 9 platform, Riwayat, Favorit, Subtitle, Share
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            9 Platform dalam 1 Aplikasi
