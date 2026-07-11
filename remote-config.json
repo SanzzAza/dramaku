@@ -1,5 +1,5 @@
 {
-  "version": 7,
+  "version": 8,
   "updatedAt": "2026-07-11",
   "minAppVersion": "3.9",
   "message": {
@@ -78,21 +78,25 @@
     "onboarding": true,
     "settings": true
   },
-  "latestVersion": "3.9.2",
+  "latestVersion": "4.0",
   "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
   "changelog": [
-    "Perbaikan kategori DramaBox",
-    "Tab DramaBox ditambah: Kategori, Cina, Korea",
-    "Ranking dan kategori DramaBox tidak duplikat saat scroll"
+    "Home Visual Discovery: Top 10 Hari Ini",
+    "Mood Picker lebih ramai dan premium",
+    "Continue Watching carousel",
+    "Trending search chips",
+    "Tips gesture player pertama kali"
   ],
   "update": {
-    "latestVersion": "3.9.2",
+    "latestVersion": "4.0",
     "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
     "force": false,
     "changelog": [
-      "Perbaikan kategori DramaBox",
-      "Tab DramaBox ditambah: Kategori, Cina, Korea",
-      "Ranking dan kategori DramaBox tidak duplikat saat scroll"
+      "Home Visual Discovery: Top 10 Hari Ini",
+      "Mood Picker lebih ramai dan premium",
+      "Continue Watching carousel",
+      "Trending search chips",
+      "Tips gesture player pertama kali"
     ]
   },
   "support": {

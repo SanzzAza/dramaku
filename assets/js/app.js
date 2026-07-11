@@ -6,7 +6,7 @@ let P='melolo',curTab='home',pg={},busy={},more={},loaded={};
 let curDrama=null,curEps=[],curPE=0,sto=null;
 let fitMode=(()=>{try{return localStorage.getItem('dk_fit_mode')||'cover'}catch(e){return 'cover'}})();
 let lastSearchResults=[],lastSearchQuery='',searchFilter='all',searchSeq=0;
-const APP_VERSION='3.9.2';
+const APP_VERSION='4.0';
 const thumbCache={},platCache={},itemCache={};
 let allItems=[];
 const jsonMemCache={};
@@ -22,7 +22,8 @@ function cleanText(v){const d=document.createElement('div');d.innerHTML=String(v
 function jsStr(v){return esc(String(v??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/[\r\n]+/g,' '))}
 function platformLabel(p){return PLAT_LABELS[p]||p||'Dramaku'}
 function ratingFor(seed){let h=0,s=String(seed||'dramaku');for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return(8.4+(h%16)/10).toFixed(1)}
-function searchEmptyHtml(){return '<div class="empty-state" style="padding-top:100px"><svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" opacity=".22"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><p>Ketik judul drama untuk mencari</p><p class="empty-sub">Cari dari 10 platform sekaligus</p></div>'}
+function searchEmptyHtml(){const chips=['CEO','Balas Dendam','Romantis','Korea','China','Comedy','Cinta','Ongoing'];return '<div class="empty-state search-welcome" style="padding-top:72px"><svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" opacity=".22"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><p>Ketik judul drama untuk mencari</p><p class="empty-sub">Cari dari 10 platform sekaligus</p><div class="trending-search"><b>Lagi dicari</b><div>'+chips.map(q=>`<button class="trend-chip" onclick="quickSearch('${jsStr(q)}')">${esc(q)}</button>`).join('')+'</div></div></div>'}
+function quickSearch(q){openSearch();setTimeout(()=>{const inp=$('#sInp');if(inp){inp.value=q;doSearch()}},80)}
 function toast(msg){let t=$('#dkToast');if(!t){t=document.createElement('div');t.id='dkToast';t.className='toast';document.body.appendChild(t)}t.textContent=msg;t.classList.add('on');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('on'),1800)}
 function nativeCall(name,...args){try{if(window.NativeApp&&typeof NativeApp[name]==='function')NativeApp[name](...args)}catch(e){}}
 function setNativePlayback(on){nativeCall('setFullscreen',!!on);nativeCall('keepAwake',!!on)}
@@ -217,23 +218,15 @@ async function loadTab(t){
       // Hero / stats banner
       h+=`<div class="stats-banner"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg><div class="stats-text"><div class="stats-kicker">Streaming mini drama</div><div class="stats-title">Temukan drama pendek favoritmu</div><div class="stats-sub">5000+ drama & film dari 10 platform. Cari judul, simpan favorit, lalu lanjutkan episode terakhir tanpa ribet.</div><div class="hero-actions"><button class="hero-search" onclick="openSearch()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="6" cy="6" r="4.5"/><path d="M9.5 9.5l3 3"/></svg>Cari Judul</button><button class="random-btn" onclick="randomPick()"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>Acak</button></div></div></div>`;
       const spotlightPool=[...pop,...nw,...rec];
-      h+=spotlightHtml(spotlightPool);
-      h+=moodHtml();
-      h+=platformStatusHtml();
-      // Continue watching card
-      const lastW=getHistory()[0];
       const hr=new Date().getHours();const greet=hr<11?'Selamat pagi':hr<15?'Selamat siang':hr<18?'Selamat sore':'Selamat malam';
-      if(lastW){
-        const lwId=jsStr(lastW.id),lwThumb=jsStr(lastW.thumb),lwPlat=jsStr(lastW.plat),lwEp=parseInt(lastW.ep)||1;
-        const lwPct=Math.max(0,Math.min(100,parseInt(lastW.pct||0)||0));
-        const lwProg=lwPct?`<div class="cw-progress"><span style="width:${lwPct}%"></span></div>`:'';
-        const lwTime=lastW.dur?`<div class="cw-time">Tersimpan ${fmtTime(lastW.pos||0)} / ${fmtTime(lastW.dur||0)}</div>`:'';
-        h+=`<div class="cw-card" onclick="resumeWatch('${lwId}','${lwThumb}','${lwPlat}',${lwEp})"><div class="cw-poster"><img src="${esc(lastW.thumb)}" onerror="this.style.display='none'"/></div><div class="cw-info"><div class="cw-sub">${greet}, lanjut nonton?${lwPct?` · ${lwPct}%`:''}</div><div class="cw-title">${esc(lastW.name)}</div>${lwProg}${lwTime}<button class="cw-btn" onclick="event.stopPropagation();resumeWatch('${lwId}','${lwThumb}','${lwPlat}',${lwEp})"><svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg> Lanjut Episode ${lwEp}</button></div><div class="cw-badge">Terakhir</div></div>`;
-      }
-      if(pop.length)h+=secHtml('Lagi Populer',pop,'populer',1);
+      h+=spotlightHtml(spotlightPool);
+      if(pop.length)h+=top10Html(pop,'Top 10 Hari Ini');
+      h+=moodHtml();
+      h+=continueWatchingHtml(getHistory(),greet);
+      h+=platformStatusHtml();
       if(nw.length)h+=secHtml('Drama Terbaru',nw,'new',1);
       if(rec.length)h+=`<div class="sec"><div class="sec-hd"><h2 class="sec-tt">Rekomendasi</h2></div><div class="grid">${rec.map(cardHtml).join('')}</div></div>`;
-      h+=`<div class="home-footer">Dramaku v3.9 · 10 Platform · Dibuat dengan cinta<br>Semua konten milik platform masing-masing</div>`;
+      h+=`<div class="home-footer">Dramaku v4.0 · 10 Platform · Dibuat dengan cinta<br>Semua konten milik platform masing-masing</div>`;
       box.innerHTML=h||errHtml();loaded.home=1;
     }catch(e){box.innerHTML=errHtml()}
   }else if(t!=='home'){
@@ -277,8 +270,19 @@ function spotlightHtml(items){
   const tag=(Array.isArray(pick.tags)?pick.tags:[]).map(t=>typeof t==='object'?(t.name||t.title||''):t).filter(Boolean)[0]||platformLabel(pl);
   return`<div class="spotlight-wrap"><section class="spotlight-card" onclick="openDet('${sid}','${si}')" aria-label="Spotlight ${esc(nm)}"><img class="spot-bg" src="${esc(img)}" alt="" loading="lazy" decoding="async"><div class="spot-poster"><img src="${esc(img)}" alt="${esc(nm)}" loading="lazy" decoding="async"></div><div class="spot-info"><div class="spot-kicker"><span class="live-dot"></span> Spotlight Hari Ini</div><div class="spot-title">${esc(nm)}</div><div class="spot-desc">${esc(desc)}</div><div class="spot-meta"><span class="spot-pill">⭐ ${r}</span>${ep?`<span class="spot-pill">${esc(ep)} Ep</span>`:''}<span class="spot-pill">${esc(tag)}</span></div><div class="spot-actions"><button class="spot-play" onclick="event.stopPropagation();openDet('${sid}','${si}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Tonton</button><button class="spot-more" onclick="event.stopPropagation();randomPick()">Coba Lain</button></div></div></section></div>`;
 }
+function top10Html(items,title='Top 10 Hari Ini'){
+  const list=(items||[]).filter(d=>d&&d.drama_id&&d.thumb_url).slice(0,10);
+  if(!list.length)return'';
+  return`<section class="top10-section"><div class="sec-hd" style="padding:0 16px;margin-bottom:10px"><h2 class="sec-tt">${esc(title)}</h2><div class="sec-more" onclick="go('populer')">Ranking</div></div><div class="top10-row">${list.map((d,i)=>{const img=fixImg(d.thumb_url||''),id=jsStr(d.drama_id),si=jsStr(img),nm=d.drama_name||'';return`<article class="top10-card" onclick="openDet('${id}','${si}')"><div class="top10-num">${i+1}</div><div class="top10-poster"><img src="${esc(img)}" alt="${esc(nm)}" loading="lazy" decoding="async" onerror="this.style.display='none'"/></div><div class="top10-info"><b>${esc(nm)}</b><span>${esc(platformLabel(d._p||platCache[d.drama_id]||P))}${d.episode_count?` · ${esc(d.episode_count)} Ep`:''}</span></div></article>`}).join('')}</div></section>`
+}
+function continueWatchingHtml(history,greet='Lanjut nonton?'){
+  const list=(history||[]).slice(0,8);
+  if(!list.length)return'';
+  return`<section class="continue-sec"><div class="sec-hd" style="padding:0 16px;margin-bottom:10px"><h2 class="sec-tt">Lanjutkan Tontonan</h2><div class="sec-more" onclick="go('history')">Semua</div></div><div class="cw-row">${list.map((d,idx)=>{const thumb=fixImg(d.thumb||''),ep=parseInt(d.ep)||1,pct=Math.max(0,Math.min(100,parseInt(d.pct||0)||0));return`<article class="cw-item" onclick="resumeWatch('${jsStr(d.id)}','${jsStr(thumb)}','${jsStr(d.plat)}',${ep})"><div class="cw-item-poster"><img src="${esc(thumb)}" alt="${esc(d.name)}" loading="lazy" decoding="async" onerror="this.style.display='none'"/><div class="cw-item-badge">Ep ${ep}</div>${pct?`<div class="cw-item-progress"><span style="width:${pct}%"></span></div>`:''}</div><div class="cw-item-copy"><b>${esc(d.name||'Tanpa Judul')}</b><span>${idx===0?esc(greet):'Lanjut'}${pct?` · ${pct}%`:''}</span></div></article>`}).join('')}</div></section>`
+}
 function moodHtml(){
-  return`<div class="mood-wrap"><div class="mood-row"><button class="mood-card" style="--mood:rgba(239,68,68,.20)" onclick="go('populer')"><span class="mood-ico">🔥</span><span class="mood-title">Lagi Hot</span><span class="mood-sub">Trending</span></button><button class="mood-card" style="--mood:rgba(59,130,246,.20)" onclick="go('new')"><span class="mood-ico">✨</span><span class="mood-title">Baru Rilis</span><span class="mood-sub">Update</span></button><button class="mood-card" style="--mood:rgba(245,158,11,.20)" onclick="randomPick()"><span class="mood-ico">🎲</span><span class="mood-title">Acak Aja</span><span class="mood-sub">Surprise</span></button><button class="mood-card" style="--mood:rgba(16,185,129,.22)" onclick="go('fav')"><span class="mood-ico">🔖</span><span class="mood-title">Favorit</span><span class="mood-sub">Koleksi</span></button></div></div>`;
+  const moods=[['🔥','Balas Dendam','Revenge vibes','Balas Dendam','rgba(239,68,68,.20)'],['💘','Romantis','Baper malam ini','Romantis','rgba(236,72,153,.20)'],['👑','CEO','Billionaire drama','CEO','rgba(245,158,11,.22)'],['😂','Komedi','Ringan & lucu','Comedy','rgba(59,130,246,.20)'],['😭','Sedih','Siap nangis','Sedih','rgba(99,102,241,.20)'],['⚔️','Action','Tegang terus','Action','rgba(239,68,68,.16)'],['🇰🇷','Korea','Drakor terbaru','Korea','rgba(16,185,129,.22)'],['🇨🇳','China','CDrama pilihan','China','rgba(245,158,11,.18)']];
+  return`<div class="mood-wrap mood-premium"><div class="mood-head"><div><span>Mood Picker</span><b>Mau nonton apa malam ini?</b></div><button onclick="openSearch()">Cari bebas</button></div><div class="mood-row premium">${moods.map(m=>`<button class="mood-card" style="--mood:${m[4]}" onclick="quickSearch('${jsStr(m[3])}')"><span class="mood-ico">${m[0]}</span><span class="mood-title">${esc(m[1])}</span><span class="mood-sub">${esc(m[2])}</span></button>`).join('')}</div></div>`;
 }
 function cardHtml(d){
   const img=fixImg(d.thumb_url||''),nm=d.drama_name||'',ep=d.episode_count||'',id=String(d.drama_id||''),vw=d.watch_value||'',isFree=d.free===true;
@@ -378,8 +382,9 @@ let descOn=0;
 function togDesc(){descOn=!descOn;const el=$('#dTxt'),tg=el.nextElementSibling,desc=String(curDrama?.description||'');if(descOn){el.textContent=desc;tg.textContent=' Sembunyikan'}else{el.textContent=desc.slice(0,150)+'...';tg.textContent=' Selengkapnya'}}
 function closeDet(){$('#detOv').classList.remove('on');document.body.style.overflow='';curDrama=null;descOn=0}
 
+function showPlayerHint(){try{if(localStorage.getItem('dk_player_hint_seen'))return;localStorage.setItem('dk_player_hint_seen','1')}catch(e){}const ov=$('#plOv');if(!ov)return;const h=document.createElement('div');h.className='player-hint';h.innerHTML='<div><b>Tips Player</b><span>Double tap kiri/kanan: mundur/maju 10 detik</span><span>Tahan video: speed 2x sementara</span><span>Scroll atas/bawah: pindah episode</span><button>Mengerti</button></div>';ov.appendChild(h);h.querySelector('button').onclick=()=>h.remove();setTimeout(()=>h.remove(),6500)}
 async function play(did,ep){
-  closeEpModal();setNativePlayback(true);$('#plOv').classList.add('on');applyFitMode();$('#plName').textContent=curDrama?.drama_name||'';$('#plEp').textContent='Episode '+ep;
+  closeEpModal();setNativePlayback(true);$('#plOv').classList.add('on');applyFitMode();showPlayerHint();$('#plName').textContent=curDrama?.drama_name||'';$('#plEp').textContent='Episode '+ep;
   if(curDrama)saveHistory(curDrama,ep);
   curPE=ep;const cont=$('#plCont');cont.innerHTML='';const total=curDrama?.episode_count||curEps.length||ep;
   const ps=Math.max(1,ep-2);for(let i=ps;i<ep;i++)cont.insertAdjacentHTML('beforeend',slideHtml(did,i));

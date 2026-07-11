@@ -63,16 +63,16 @@ jobs:
             # Force PKCS12 key password to store password for Gradle signing reliability.
             export ANDROID_KEY_PASSWORD="$ANDROID_KEYSTORE_PASSWORD"
             ./gradlew assembleRelease
-            cp app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/final/Dramaku-v3.9.2-release.apk
-            echo "APK_PATH=app/build/outputs/apk/final/Dramaku-v3.9.2-release.apk" >> "$GITHUB_ENV"
-            echo "APK_NAME=Dramaku-v3.9.2-release" >> "$GITHUB_ENV"
+            cp app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/final/Dramaku-v4.0-release.apk
+            echo "APK_PATH=app/build/outputs/apk/final/Dramaku-v4.0-release.apk" >> "$GITHUB_ENV"
+            echo "APK_NAME=Dramaku-v4.0-release" >> "$GITHUB_ENV"
             echo "APK_KIND=signed release" >> "$GITHUB_ENV"
           else
             echo "Building debug APK fallback..."
             ./gradlew assembleDebug
-            cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/final/Dramaku-v3.9.2-debug.apk
-            echo "APK_PATH=app/build/outputs/apk/final/Dramaku-v3.9.2-debug.apk" >> "$GITHUB_ENV"
-            echo "APK_NAME=Dramaku-v3.9.2-debug" >> "$GITHUB_ENV"
+            cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/final/Dramaku-v4.0-debug.apk
+            echo "APK_PATH=app/build/outputs/apk/final/Dramaku-v4.0-debug.apk" >> "$GITHUB_ENV"
+            echo "APK_NAME=Dramaku-v4.0-debug" >> "$GITHUB_ENV"
             echo "APK_KIND=debug fallback" >> "$GITHUB_ENV"
           fi
 
@@ -85,11 +85,11 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v3.9.2-build${{ github.run_number }}
-          name: Dramaku v3.9.2
+          tag_name: v4.0-build${{ github.run_number }}
+          name: Dramaku v4.0
           files: ${{ env.APK_PATH }}
           body: |
-            **Dramaku v3.9.2** - Streaming Drama & Film Terbaik
+            **Dramaku v4.0** - Streaming Drama & Film Terbaik
             Build type: ${{ env.APK_KIND }}
 
             Untuk signed release APK, set GitHub Secrets:
