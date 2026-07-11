@@ -21,6 +21,7 @@ Nonton drama & film dari 9 platform sekaligus dalam 1 website / APK WebView.
 - Struktur web asset dimodularisasi ke `assets/css/style.css` dan `assets/js/app.js`
 - Skeleton/loading state premium untuk home dan detail
 - Update checker, status platform, About/Disclaimer, dan report episode ke support
+- Player gesture: double tap seek 10 detik dan long press speed 2x
 
 ## Branding
 - Brand kit tersedia di folder `branding/`

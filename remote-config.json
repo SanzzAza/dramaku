@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "updatedAt": "2026-07-11",
   "minAppVersion": "3.6",
   "message": {
@@ -72,23 +72,21 @@
     "onboarding": true,
     "settings": true
   },
-  "latestVersion": "3.7",
+  "latestVersion": "3.8",
   "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
   "changelog": [
-    "Update checker dari remote config",
-    "Laporan episode ke kontak support",
-    "Status platform di beranda",
-    "Tentang & disclaimer aplikasi"
+    "Player gesture: double tap kiri/kanan maju mundur 10 detik",
+    "Long press video untuk speed 2x sementara",
+    "Tombol Next di player dihapus karena sudah bisa scroll episode"
   ],
   "update": {
-    "latestVersion": "3.7",
+    "latestVersion": "3.8",
     "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
     "force": false,
     "changelog": [
-      "Update checker dari remote config",
-      "Laporan episode ke kontak support",
-      "Status platform di beranda",
-      "Tentang & disclaimer aplikasi"
+      "Player gesture: double tap kiri/kanan maju mundur 10 detik",
+      "Long press video untuk speed 2x sementara",
+      "Tombol Next di player dihapus karena sudah bisa scroll episode"
     ]
   },
   "support": {
