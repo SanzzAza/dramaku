@@ -15,6 +15,7 @@ Nonton drama & film dari 9 platform sekaligus dalam 1 website / APK WebView.
 - Cache API ringan untuk performa dan fallback saat koneksi tidak stabil
 - Settings page, error reporting lokal, mode hemat data, dan kontrol cache
 - Native splash screen, onboarding pertama kali, dan laporan episode bermasalah
+- Crash-safe WebView recovery screen dengan reload dan clear cache
 
 ## Branding
 - Brand kit tersedia di folder `branding/`
@@ -32,7 +33,17 @@ Nonton drama & film dari 9 platform sekaligus dalam 1 website / APK WebView.
 ## Build APK
 APK otomatis dibuild melalui GitHub Actions. Download di tab **Releases**.
 
-Build lokal juga otomatis menyalin `index.html` ke asset APK melalui task Gradle `copyIndexHtml`.
+Build lokal juga otomatis menyalin `index.html` dan `branding/` ke asset APK melalui task Gradle `copyIndexHtml`.
+
+### Signed release APK
+GitHub Actions otomatis membuat **signed release APK** jika secrets ini tersedia:
+
+- `ANDROID_KEYSTORE_BASE64`
+- `ANDROID_KEYSTORE_PASSWORD`
+- `ANDROID_KEY_ALIAS`
+- `ANDROID_KEY_PASSWORD`
+
+Jika secrets belum ada, workflow akan membuat debug APK fallback.
 
 ## Disclaimer
 Semua konten milik platform masing-masing. Aplikasi ini hanya sebagai aggregator.

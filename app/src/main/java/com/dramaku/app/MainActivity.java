@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,17 +18,29 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String HOME_URL = "file:///android_asset/index.html";
+
+    private FrameLayout root;
     private WebView webView;
+    private LinearLayout recoveryView;
+    private TextView recoveryMessage;
     private View customView;
     private WebChromeClient.CustomViewCallback customViewCallback;
 
@@ -37,17 +50,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         prepareWindow();
 
-        webView = new WebView(this);
-        webView.setBackgroundColor(Color.rgb(5, 8, 13));
-        setContentView(webView, new FrameLayout.LayoutParams(
+        root = new FrameLayout(this);
+        root.setBackgroundColor(Color.rgb(5, 8, 13));
+        setContentView(root, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
         ));
 
-        configureWebView();
-        webView.addJavascriptInterface(new NativeBridge(), "NativeApp");
-        webView.addJavascriptInterface(new NativePlayerBridge(), "NativePlayer");
-        webView.loadUrl("file:///android_asset/index.html");
+        createWebView();
+        createRecoveryView();
+        loadHome();
     }
 
     private void prepareWindow() {
@@ -59,6 +71,84 @@ public class MainActivity extends AppCompatActivity {
             window.getAttributes().layoutInDisplayCutoutMode =
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
         }
+    }
+
+    @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
+    private void createWebView() {
+        if (webView != null) {
+            try {
+                root.removeView(webView);
+                webView.destroy();
+            } catch (Exception ignored) {}
+            webView = null;
+        }
+
+        webView = new WebView(this);
+        webView.setBackgroundColor(Color.rgb(5, 8, 13));
+        root.addView(webView, 0, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
+
+        configureWebView();
+        webView.addJavascriptInterface(new NativeBridge(), "NativeApp");
+        webView.addJavascriptInterface(new NativePlayerBridge(), "NativePlayer");
+    }
+
+    private void createRecoveryView() {
+        recoveryView = new LinearLayout(this);
+        recoveryView.setOrientation(LinearLayout.VERTICAL);
+        recoveryView.setGravity(Gravity.CENTER);
+        recoveryView.setPadding(dp(24), dp(24), dp(24), dp(24));
+        recoveryView.setBackgroundColor(Color.rgb(5, 8, 13));
+        recoveryView.setVisibility(View.GONE);
+
+        TextView title = new TextView(this);
+        title.setText("Dramaku butuh dimuat ulang");
+        title.setTextColor(Color.rgb(239, 255, 247));
+        title.setTextSize(22);
+        title.setGravity(Gravity.CENTER);
+        title.setTypeface(title.getTypeface(), android.graphics.Typeface.BOLD);
+        recoveryView.addView(title, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        ));
+
+        recoveryMessage = new TextView(this);
+        recoveryMessage.setText("WebView berhenti atau halaman gagal dimuat. Coba muat ulang aplikasi.");
+        recoveryMessage.setTextColor(Color.rgb(145, 164, 186));
+        recoveryMessage.setTextSize(13);
+        recoveryMessage.setGravity(Gravity.CENTER);
+        recoveryMessage.setPadding(0, dp(10), 0, dp(18));
+        recoveryView.addView(recoveryMessage, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        ));
+
+        Button reload = new Button(this);
+        reload.setText("Muat Ulang");
+        reload.setAllCaps(false);
+        reload.setOnClickListener(v -> reloadWebView());
+        recoveryView.addView(reload, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(48)
+        ));
+
+        Button clear = new Button(this);
+        clear.setText("Bersihkan Cache & Muat Ulang");
+        clear.setAllCaps(false);
+        clear.setOnClickListener(v -> clearCacheAndReload());
+        LinearLayout.LayoutParams clearParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(48)
+        );
+        clearParams.topMargin = dp(10);
+        recoveryView.addView(clear, clearParams);
+
+        root.addView(recoveryView, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -74,6 +164,7 @@ public class MainActivity extends AppCompatActivity {
         s.setMediaPlaybackRequiresUserGesture(false);
         s.setLoadWithOverviewMode(true);
         s.setUseWideViewPort(true);
+        s.setSupportZoom(false);
         s.setCacheMode(WebSettings.LOAD_DEFAULT);
         s.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -86,7 +177,35 @@ public class MainActivity extends AppCompatActivity {
         }
         WebView.setWebContentsDebuggingEnabled((getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0);
 
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                hideRecovery();
+            }
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                if (request != null && request.isForMainFrame()) {
+                    String message = "Halaman utama gagal dimuat.";
+                    if (error != null) message = String.valueOf(error.getDescription());
+                    showRecovery(message);
+                }
+            }
+
+            @Override
+            public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+                showRecovery("WebView berhenti tiba-tiba. Tekan Muat Ulang untuk membuka Dramaku lagi.");
+                try {
+                    if (webView != null) {
+                        root.removeView(webView);
+                        webView.destroy();
+                    }
+                } catch (Exception ignored) {}
+                webView = null;
+                return true;
+            }
+        });
+
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onShowCustomView(View view, CustomViewCallback callback) {
@@ -113,6 +232,48 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void loadHome() {
+        if (webView == null) createWebView();
+        hideRecovery();
+        webView.loadUrl(HOME_URL);
+    }
+
+    private void reloadWebView() {
+        runOnUiThread(() -> {
+            if (webView == null) createWebView();
+            loadHome();
+            Toast.makeText(this, "Memuat ulang Dramaku...", Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    private void clearCacheAndReload() {
+        runOnUiThread(() -> {
+            try {
+                if (webView != null) {
+                    webView.clearCache(true);
+                    webView.clearHistory();
+                }
+                CookieManager.getInstance().removeAllCookies(null);
+                CookieManager.getInstance().flush();
+            } catch (Exception ignored) {}
+            reloadWebView();
+        });
+    }
+
+    private void showRecovery(String message) {
+        runOnUiThread(() -> {
+            setImmersiveMode(false);
+            if (recoveryMessage != null && message != null) recoveryMessage.setText(message);
+            if (webView != null) webView.setVisibility(View.GONE);
+            if (recoveryView != null) recoveryView.setVisibility(View.VISIBLE);
+        });
+    }
+
+    private void hideRecovery() {
+        if (recoveryView != null) recoveryView.setVisibility(View.GONE);
+        if (webView != null) webView.setVisibility(View.VISIBLE);
+    }
+
     private void hideCustomView() {
         if (customView == null) return;
         ViewGroup decor = (ViewGroup) getWindow().getDecorView();
@@ -120,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
         customView = null;
         if (customViewCallback != null) customViewCallback.onCustomViewHidden();
         customViewCallback = null;
-        webView.setVisibility(View.VISIBLE);
+        if (webView != null) webView.setVisibility(View.VISIBLE);
         setImmersiveMode(false);
     }
 
@@ -140,10 +301,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private int dp(int value) {
+        return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
+    }
+
     @Override
     public void onBackPressed() {
         if (customView != null) {
             hideCustomView();
+            return;
+        }
+        if (recoveryView != null && recoveryView.getVisibility() == View.VISIBLE) {
+            finish();
             return;
         }
         if (webView == null) {
@@ -170,7 +339,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         if (webView != null) {
-            webView.destroy();
+            try { webView.destroy(); } catch (Exception ignored) {}
             webView = null;
         }
         super.onDestroy();
@@ -217,9 +386,9 @@ public class MainActivity extends AppCompatActivity {
         public String getVersion() {
             try {
                 PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
-                return info.versionName == null ? "3.3" : info.versionName;
+                return info.versionName == null ? "3.4" : info.versionName;
             } catch (Exception e) {
-                return "3.3";
+                return "3.4";
             }
         }
 
@@ -242,11 +411,13 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void clearWebViewCache() {
             runOnUiThread(() -> {
-                if (webView != null) {
-                    webView.clearCache(true);
-                    webView.clearHistory();
+                try {
+                    if (webView != null) {
+                        webView.clearCache(true);
+                        webView.clearHistory();
+                    }
                     Toast.makeText(MainActivity.this, "Cache WebView dibersihkan", Toast.LENGTH_SHORT).show();
-                }
+                } catch (Exception ignored) {}
             });
         }
     }

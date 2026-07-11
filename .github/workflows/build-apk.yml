@@ -25,32 +25,54 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Copy website to assets
-        run: |
-          mkdir -p app/src/main/assets
-          cp index.html app/src/main/assets/index.html
-
       - name: Create Gradle Wrapper
         run: gradle wrapper --gradle-version 8.4
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug
-
-      - name: Rename APK
-        run: mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/Dramaku-v3.3.apk
+      - name: Build APK (signed release if secrets exist)
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -e
+          mkdir -p app/build/outputs/apk/final
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ] && [ -n "$ANDROID_KEYSTORE_PASSWORD" ] && [ -n "$ANDROID_KEY_ALIAS" ] && [ -n "$ANDROID_KEY_PASSWORD" ]; then
+            echo "Building signed release APK..."
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/release.keystore
+            export ANDROID_KEYSTORE_PATH="$PWD/app/release.keystore"
+            ./gradlew assembleRelease
+            cp app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/final/Dramaku-v3.4-release.apk
+            echo "APK_PATH=app/build/outputs/apk/final/Dramaku-v3.4-release.apk" >> "$GITHUB_ENV"
+            echo "APK_NAME=Dramaku-v3.4-release" >> "$GITHUB_ENV"
+            echo "APK_KIND=signed release" >> "$GITHUB_ENV"
+          else
+            echo "Signing secrets not found. Building debug APK fallback..."
+            ./gradlew assembleDebug
+            cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/final/Dramaku-v3.4-debug.apk
+            echo "APK_PATH=app/build/outputs/apk/final/Dramaku-v3.4-debug.apk" >> "$GITHUB_ENV"
+            echo "APK_NAME=Dramaku-v3.4-debug" >> "$GITHUB_ENV"
+            echo "APK_KIND=debug fallback" >> "$GITHUB_ENV"
+          fi
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Dramaku-v3.3
-          path: app/build/outputs/apk/debug/Dramaku-v3.3.apk
+          name: ${{ env.APK_NAME }}
+          path: ${{ env.APK_PATH }}
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v3.3-build${{ github.run_number }}
-          name: Dramaku v3.3
-          files: app/build/outputs/apk/debug/Dramaku-v3.3.apk
+          tag_name: v3.4-build${{ github.run_number }}
+          name: Dramaku v3.4
+          files: ${{ env.APK_PATH }}
           body: |
-            **Dramaku v3.3** - Streaming Drama & Film Terbaik
-            9 Platform dalam 1 Aplikasi
+            **Dramaku v3.4** - Streaming Drama & Film Terbaik
+            Build type: ${{ env.APK_KIND }}
+
+            Untuk signed release APK, set GitHub Secrets:
+            - ANDROID_KEYSTORE_BASE64
+            - ANDROID_KEYSTORE_PASSWORD
+            - ANDROID_KEY_ALIAS
+            - ANDROID_KEY_PASSWORD

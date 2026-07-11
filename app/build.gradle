@@ -2,6 +2,11 @@ plugins {
     id 'com.android.application'
 }
 
+def hasReleaseSigning = System.getenv("ANDROID_KEYSTORE_PATH") &&
+        System.getenv("ANDROID_KEYSTORE_PASSWORD") &&
+        System.getenv("ANDROID_KEY_ALIAS") &&
+        System.getenv("ANDROID_KEY_PASSWORD")
+
 android {
     namespace 'com.dramaku.app'
     compileSdk 34
@@ -10,14 +15,29 @@ android {
         applicationId "com.dramaku.app"
         minSdk 24
         targetSdk 34
-        versionCode 5
-        versionName "3.3"
+        versionCode 6
+        versionName "3.4"
+    }
+
+    signingConfigs {
+        release {
+            if (hasReleaseSigning) {
+                storeFile file(System.getenv("ANDROID_KEYSTORE_PATH"))
+                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 
