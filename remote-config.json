@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "updatedAt": "2026-07-11",
+  "minAppVersion": "3.4",
+  "message": {
+    "enabled": true,
+    "type": "info",
+    "title": "Dramaku siap dipakai",
+    "text": "Remote config aktif. Endpoint dan status platform bisa diperbarui tanpa update APK."
+  },
+  "api": {
+    "melolo": "https://api.sonzaix.indevs.in/melolo",
+    "freereels": "https://api.sonzaix.indevs.in/freereels",
+    "flickreels": "https://api.sonzaix.indevs.in/flickreels",
+    "dramanova": "https://api.sonzaix.indevs.in/dramanova",
+    "reelshort": "https://api.sonzaix.indevs.in/reelshort",
+    "netshort": "https://api.sonzaix.indevs.in/netshort",
+    "dramabox": "https://api.sonzaix.indevs.in/dramabox",
+    "goodshort": "https://api.sonzaix.indevs.in/goodshort",
+    "moviebox": "https://api.sonzaix.indevs.in/moviebox"
+  },
+  "platforms": {
+    "melolo": { "enabled": true },
+    "freereels": { "enabled": true },
+    "flickreels": { "enabled": true },
+    "dramanova": { "enabled": true },
+    "reelshort": { "enabled": true },
+    "netshort": { "enabled": true },
+    "dramabox": { "enabled": true },
+    "goodshort": { "enabled": true },
+    "moviebox": { "enabled": true }
+  },
+  "features": {
+    "reportEpisode": true,
+    "nativePlayer": true,
+    "onboarding": true,
+    "settings": true
+  }
+}

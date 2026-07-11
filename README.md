@@ -16,6 +16,7 @@ Nonton drama & film dari 9 platform sekaligus dalam 1 website / APK WebView.
 - Settings page, error reporting lokal, mode hemat data, dan kontrol cache
 - Native splash screen, onboarding pertama kali, dan laporan episode bermasalah
 - Crash-safe WebView recovery screen dengan reload dan clear cache
+- Remote config untuk endpoint API, status platform, announcement, dan feature flag
 
 ## Branding
 - Brand kit tersedia di folder `branding/`
@@ -46,6 +47,11 @@ GitHub Actions otomatis membuat **signed release APK** jika secrets ini tersedia
 Jika secrets belum ada, workflow akan membuat debug APK fallback.
 
 Panduan lengkap: [`docs/SIGNING.md`](docs/SIGNING.md).
+
+## Remote Config
+File default: [`remote-config.json`](remote-config.json).
+
+Panduan: [`docs/REMOTE_CONFIG.md`](docs/REMOTE_CONFIG.md).
 
 ## Disclaimer
 Semua konten milik platform masing-masing. Aplikasi ini hanya sebagai aggregator.
