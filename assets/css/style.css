@@ -553,3 +553,12 @@ button:focus-visible,.tab:focus-visible,.card:focus-visible,input:focus-visible{
 .spotlight-wrap{margin:10px 0 20px}.spotlight-card{min-height:248px}.spot-info{min-height:248px}.spot-poster{width:124px}.spot-title{font-size:24px}.top10-section{margin-top:2px}
 @media(max-width:380px){.spotlight-card{min-height:226px}.spot-info{min-height:226px}.spot-poster{width:104px}.spot-title{font-size:21px}}
 @media(min-width:768px){.spotlight-card{min-height:280px}.spot-info{min-height:280px}.spot-poster{width:168px}.spot-title{font-size:34px}}
+
+
+/* ===== PERFORMANCE MODE PATCH v4.1 ===== */
+html.perf-mode *,html.perf-mode *::before,html.perf-mode *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+html.perf-mode body::before,html.perf-mode .spotlight-card::after,html.perf-mode .logo-icon::after,html.perf-mode .splash-logo::after,html.perf-mode .stats-banner::after,html.perf-mode .spot-bg,html.perf-mode .dl-bg{display:none!important}
+html.perf-mode .hdr,html.perf-mode .plat-bar,html.perf-mode .tabs,html.perf-mode .bnav,html.perf-mode .search-ov,html.perf-mode .badge-ep,html.perf-mode .badge-views,html.perf-mode .badge-plat,html.perf-mode .v-act button,html.perf-mode .dl-card{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html.perf-mode .card,html.perf-mode .spotlight-card,html.perf-mode .top10-poster,html.perf-mode .cw-item-poster,html.perf-mode .mood-card,html.perf-mode .settings-card,html.perf-mode .profile-section,html.perf-mode .bnav,html.perf-mode .plat-dd,html.perf-mode .detail-panel,html.perf-mode .profile-stats div{box-shadow:none!important}
+html.perf-mode .spotlight-card{min-height:210px}html.perf-mode .spot-info{min-height:210px}html.perf-mode .spot-poster{width:96px}html.perf-mode .top10-row,html.perf-mode .cw-row{padding-bottom:2px}html.perf-mode .top10-card:nth-child(n+7),html.perf-mode .cw-item:nth-child(n+6),html.perf-mode .scroll-r .card:nth-child(n+9){display:none!important}
+html.perf-mode .card:hover,html.perf-mode .card:hover .card-img img{transform:none!important}html.perf-mode .skel{animation:none!important;background:var(--bg3)!important}

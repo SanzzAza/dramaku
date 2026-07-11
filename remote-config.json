@@ -1,5 +1,5 @@
 {
-  "version": 9,
+  "version": 10,
   "updatedAt": "2026-07-11",
   "minAppVersion": "4.0",
   "message": {
@@ -78,21 +78,25 @@
     "onboarding": true,
     "settings": true
   },
-  "latestVersion": "4.0.1",
+  "latestVersion": "4.1",
   "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
   "changelog": [
-    "Beranda lebih compact: banner remote config dan hero teks dihapus",
-    "Spotlight dibuat lebih besar agar layar lebih penuh",
-    "Home langsung fokus ke Spotlight, Top 10, Mood, dan Continue Watching"
+    "Mode Performa otomatis untuk HP low-end",
+    "Render Home lebih ringan dan jumlah card dibatasi",
+    "Player preload dikurangi dan video jauh di-unload",
+    "Cache API lama dibersihkan otomatis",
+    "Efek blur, shadow, dan animasi berat dimatikan saat Mode Performa aktif"
   ],
   "update": {
-    "latestVersion": "4.0.1",
+    "latestVersion": "4.1",
     "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
     "force": false,
     "changelog": [
-      "Beranda lebih compact: banner remote config dan hero teks dihapus",
-      "Spotlight dibuat lebih besar agar layar lebih penuh",
-      "Home langsung fokus ke Spotlight, Top 10, Mood, dan Continue Watching"
+      "Mode Performa otomatis untuk HP low-end",
+      "Render Home lebih ringan dan jumlah card dibatasi",
+      "Player preload dikurangi dan video jauh di-unload",
+      "Cache API lama dibersihkan otomatis",
+      "Efek blur, shadow, dan animasi berat dimatikan saat Mode Performa aktif"
     ]
   },
   "support": {
