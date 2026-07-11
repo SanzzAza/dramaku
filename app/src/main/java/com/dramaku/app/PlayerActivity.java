@@ -28,7 +28,7 @@ public class PlayerActivity extends AppCompatActivity {
         getWindow().setStatusBarColor(Color.BLACK);
         getWindow().setNavigationBarColor(Color.BLACK);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setImmersive(true);
+        setImmersiveMode(true);
 
         playerView = new PlayerView(this);
         playerView.setBackgroundColor(Color.BLACK);
@@ -69,7 +69,7 @@ public class PlayerActivity extends AppCompatActivity {
         return builder.build();
     }
 
-    private void setImmersive(boolean enabled) {
+    private void setImmersiveMode(boolean enabled) {
         if (!enabled) {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
             return;

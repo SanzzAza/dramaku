@@ -2,6 +2,7 @@ package com.dramaku.app;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -78,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
         }
-        WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
+        WebView.setWebContentsDebuggingEnabled((getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0);
 
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient() {
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
                         ViewGroup.LayoutParams.MATCH_PARENT
                 ));
                 webView.setVisibility(View.GONE);
-                setImmersive(true);
+                setImmersiveMode(true);
             }
 
             @Override
@@ -115,10 +116,10 @@ public class MainActivity extends AppCompatActivity {
         if (customViewCallback != null) customViewCallback.onCustomViewHidden();
         customViewCallback = null;
         webView.setVisibility(View.VISIBLE);
-        setImmersive(false);
+        setImmersiveMode(false);
     }
 
-    private void setImmersive(boolean enabled) {
+    private void setImmersiveMode(boolean enabled) {
         View decor = getWindow().getDecorView();
         if (enabled) {
             decor.setSystemUiVisibility(
@@ -173,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
     public class NativeBridge {
         @JavascriptInterface
         public void setFullscreen(boolean enabled) {
-            runOnUiThread(() -> setImmersive(enabled));
+            runOnUiThread(() -> setImmersiveMode(enabled));
         }
 
         @JavascriptInterface
