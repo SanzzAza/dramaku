@@ -4,8 +4,7 @@ plugins {
 
 def hasReleaseSigning = System.getenv("ANDROID_KEYSTORE_PATH") &&
         System.getenv("ANDROID_KEYSTORE_PASSWORD") &&
-        System.getenv("ANDROID_KEY_ALIAS") &&
-        System.getenv("ANDROID_KEY_PASSWORD")
+        System.getenv("ANDROID_KEY_ALIAS")
 
 android {
     namespace 'com.dramaku.app'
@@ -25,7 +24,9 @@ android {
                 storeFile file(System.getenv("ANDROID_KEYSTORE_PATH"))
                 storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
                 keyAlias System.getenv("ANDROID_KEY_ALIAS")
-                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+                // The helper script creates a PKCS12 keystore. Android/Gradle reads it most reliably
+                // when keyPassword equals storePassword, even if ANDROID_KEY_PASSWORD was set differently.
+                keyPassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
             }
         }
     }

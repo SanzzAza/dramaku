@@ -39,15 +39,15 @@ jobs:
           mkdir -p app/build/outputs/apk/final
 
           SIGNING_OK=false
-          if [ -n "$ANDROID_KEYSTORE_BASE64" ] && [ -n "$ANDROID_KEYSTORE_PASSWORD" ] && [ -n "$ANDROID_KEY_ALIAS" ] && [ -n "$ANDROID_KEY_PASSWORD" ]; then
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ] && [ -n "$ANDROID_KEYSTORE_PASSWORD" ] && [ -n "$ANDROID_KEY_ALIAS" ]; then
             echo "Signing secrets found. Validating keystore..."
             if echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/release.keystore; then
               export ANDROID_KEYSTORE_PATH="$PWD/app/release.keystore"
-              if keytool -list                     -keystore "$ANDROID_KEYSTORE_PATH"                     -storepass "$ANDROID_KEYSTORE_PASSWORD"                     -alias "$ANDROID_KEY_ALIAS" >/tmp/keytool-list.log 2>&1 &&                  keytool -certreq                     -keystore "$ANDROID_KEYSTORE_PATH"                     -storepass "$ANDROID_KEYSTORE_PASSWORD"                     -keypass "$ANDROID_KEY_PASSWORD"                     -alias "$ANDROID_KEY_ALIAS"                     -file /tmp/dramaku-signing-test.csr >/tmp/keytool-certreq.log 2>&1; then
+              if keytool -list                     -keystore "$ANDROID_KEYSTORE_PATH"                     -storepass "$ANDROID_KEYSTORE_PASSWORD"                     -alias "$ANDROID_KEY_ALIAS" >/tmp/keytool-list.log 2>&1 &&                  keytool -certreq                     -keystore "$ANDROID_KEYSTORE_PATH"                     -storepass "$ANDROID_KEYSTORE_PASSWORD"                     -keypass "$ANDROID_KEYSTORE_PASSWORD"                     -alias "$ANDROID_KEY_ALIAS"                     -file /tmp/dramaku-signing-test.csr >/tmp/keytool-certreq.log 2>&1; then
                 SIGNING_OK=true
               else
                 echo "::warning::Signing secrets are present but invalid. Falling back to debug APK."
-                echo "::warning::Most common fix: set ANDROID_KEY_PASSWORD equal to ANDROID_KEYSTORE_PASSWORD for PKCS12 keystores, or regenerate using scripts/create-release-keystore.sh."
+                echo "::warning::Most common fix: regenerate using scripts/create-release-keystore.sh, then update ANDROID_KEYSTORE_BASE64 / PASSWORD / ALIAS."
                 cat /tmp/keytool-list.log 2>/dev/null || true
                 cat /tmp/keytool-certreq.log 2>/dev/null || true
               fi
@@ -60,6 +60,8 @@ jobs:
 
           if [ "$SIGNING_OK" = "true" ]; then
             echo "Building signed release APK..."
+            # Force PKCS12 key password to store password for Gradle signing reliability.
+            export ANDROID_KEY_PASSWORD="$ANDROID_KEYSTORE_PASSWORD"
             ./gradlew assembleRelease
             cp app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/final/Dramaku-v3.6-release.apk
             echo "APK_PATH=app/build/outputs/apk/final/Dramaku-v3.6-release.apk" >> "$GITHUB_ENV"
