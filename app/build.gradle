@@ -38,7 +38,10 @@ dependencies {
 
 // Keep APK builds reproducible locally and in CI: always package latest root index.html.
 tasks.register('copyIndexHtml', Copy) {
-    from "${rootDir}/index.html"
+    from(rootDir) {
+        include 'index.html'
+        include 'branding/**'
+    }
     into "$projectDir/src/main/assets"
 }
 

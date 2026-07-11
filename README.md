@@ -15,6 +15,11 @@ Nonton drama & film dari 9 platform sekaligus dalam 1 website / APK WebView.
 - Cache API ringan untuk performa dan fallback saat koneksi tidak stabil
 - Settings page, error reporting lokal, mode hemat data, dan kontrol cache
 
+## Branding
+- Brand kit tersedia di folder `branding/`
+- Launcher icon Android sudah diganti dengan monogram Dramaku baru
+- Header, splash, favicon, dan app icon memakai identitas visual yang sama
+
 ## APK / WebView
 - WebView native dengan JavaScript bridge
 - Immersive fullscreen saat player aktif
