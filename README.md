@@ -1,6 +1,6 @@
 # Dramaku - Streaming Drama & Film Terbaik
 
-Nonton drama & film dari 9 platform sekaligus dalam 1 website / APK WebView.
+Nonton drama & film dari 10 platform sekaligus dalam 1 website / APK WebView.
 
 ## Platform
 - Melolo, FreeReels, FlickReels, DramaNova, ReelShort
@@ -10,7 +10,7 @@ Nonton drama & film dari 9 platform sekaligus dalam 1 website / APK WebView.
 - Home cinematic dengan Spotlight Harian, mood shortcut, rekomendasi, populer, dan terbaru
 - Halaman detail ala aplikasi film: resume episode, info tiles, sinopsis, episode grid, favorit/share, dan rekomendasi mirip
 - Player TikTok-style: scroll vertikal episode, full/asli fit toggle, seek bar drag, progress tersimpan, subtitle otomatis, dan double-tap like
-- Search gabungan 9 platform dengan recent search dan filter platform
+- Search gabungan 10 platform dengan recent search dan filter platform
 - Riwayat tontonan & Favorit via localStorage
 - Cache API ringan untuk performa dan fallback saat koneksi tidak stabil
 - Settings page, error reporting lokal, mode hemat data, dan kontrol cache

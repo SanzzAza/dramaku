@@ -230,7 +230,7 @@ async function loadTab(t){
       if(pop.length)h+=secHtml('Lagi Populer',pop,'populer',1);
       if(nw.length)h+=secHtml('Drama Terbaru',nw,'new',1);
       if(rec.length)h+=`<div class="sec"><div class="sec-hd"><h2 class="sec-tt">Rekomendasi</h2></div><div class="grid">${rec.map(cardHtml).join('')}</div></div>`;
-      h+=`<div class="home-footer">Dramaku v2.0 · 9 Platform · Dibuat dengan cinta<br>Semua konten milik platform masing-masing</div>`;
+      h+=`<div class="home-footer">Dramaku v3.9 · 10 Platform · Dibuat dengan cinta<br>Semua konten milik platform masing-masing</div>`;
       box.innerHTML=h||errHtml();loaded.home=1;
     }catch(e){box.innerHTML=errHtml()}
   }else if(t!=='home'){
