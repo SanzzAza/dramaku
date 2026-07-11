@@ -14,6 +14,7 @@ Nonton drama & film dari 9 platform sekaligus dalam 1 website / APK WebView.
 - Riwayat tontonan & Favorit via localStorage
 - Cache API ringan untuk performa dan fallback saat koneksi tidak stabil
 - Settings page, error reporting lokal, mode hemat data, dan kontrol cache
+- Native splash screen, onboarding pertama kali, dan laporan episode bermasalah
 
 ## Branding
 - Brand kit tersedia di folder `branding/`
