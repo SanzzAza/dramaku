@@ -1,0 +1,113 @@
+# Dramaku Android Release Signing
+
+Dramaku's GitHub Actions workflow can build either:
+
+- `Dramaku-v3.4-release.apk` when signing secrets are configured.
+- `Dramaku-v3.4-debug.apk` as a fallback when signing secrets are missing.
+
+Use a signed release APK when sharing the app publicly.
+
+## 1. Generate a release keystore
+
+Run this locally on your machine, not inside GitHub:
+
+```bash
+bash scripts/create-release-keystore.sh
+```
+
+The script creates:
+
+```txt
+local/dramaku-release.jks
+```
+
+It then prints four GitHub secret values.
+
+> Important: back up `local/dramaku-release.jks` and the printed passwords. If you lose the keystore, you cannot publish updates signed with the same identity.
+
+## 2. Add GitHub Actions secrets
+
+Open your repository:
+
+```txt
+Settings > Secrets and variables > Actions > New repository secret
+```
+
+Create these secrets exactly:
+
+```txt
+ANDROID_KEYSTORE_BASE64
+ANDROID_KEYSTORE_PASSWORD
+ANDROID_KEY_ALIAS
+ANDROID_KEY_PASSWORD
+```
+
+Paste the values printed by the script.
+
+## 3. Build signed APK
+
+Go to:
+
+```txt
+Actions > Build APK > Run workflow
+```
+
+If secrets are correct, the workflow will build:
+
+```txt
+Dramaku-v3.4-release.apk
+```
+
+The GitHub Release body will show:
+
+```txt
+Build type: signed release
+```
+
+If it says `debug fallback`, one or more signing secrets are missing or invalid.
+
+## 4. Manual keytool command
+
+If you do not want to use the helper script, you can generate a keystore manually:
+
+```bash
+mkdir -p local
+keytool -genkeypair \
+  -v \
+  -keystore local/dramaku-release.jks \
+  -storetype PKCS12 \
+  -alias dramaku \
+  -keyalg RSA \
+  -keysize 2048 \
+  -validity 10000 \
+  -dname "CN=Dramaku, OU=Mobile, O=SanzzAza, L=Jakarta, ST=Jakarta, C=ID"
+```
+
+Then convert it to one-line base64:
+
+Linux:
+
+```bash
+base64 -w 0 local/dramaku-release.jks
+```
+
+macOS:
+
+```bash
+base64 local/dramaku-release.jks | tr -d '\n'
+```
+
+## 5. Files that must never be committed
+
+The repository `.gitignore` excludes:
+
+```txt
+local/
+*.jks
+*.keystore
+keystore.properties
+release-secrets.txt
+app/release.keystore
+```
+
+Keep it that way.

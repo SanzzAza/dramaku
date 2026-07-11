@@ -45,5 +45,7 @@ GitHub Actions otomatis membuat **signed release APK** jika secrets ini tersedia
 
 Jika secrets belum ada, workflow akan membuat debug APK fallback.
 
+Panduan lengkap: [`docs/SIGNING.md`](docs/SIGNING.md).
+
 ## Disclaimer
 Semua konten milik platform masing-masing. Aplikasi ini hanya sebagai aggregator.
