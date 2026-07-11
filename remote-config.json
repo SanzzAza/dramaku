@@ -1,7 +1,7 @@
 {
-  "version": 4,
+  "version": 5,
   "updatedAt": "2026-07-11",
-  "minAppVersion": "3.6",
+  "minAppVersion": "3.8",
   "message": {
     "enabled": true,
     "type": "info",
@@ -17,7 +17,8 @@
     "netshort": "https://api.sonzaix.indevs.in/netshort",
     "dramabox": "https://api.sonzaix.indevs.in/dramabox",
     "goodshort": "https://api.sonzaix.indevs.in/goodshort",
-    "moviebox": "https://api.sonzaix.indevs.in/moviebox"
+    "moviebox": "https://api.sonzaix.indevs.in/moviebox",
+    "drakor": "https://api.sonzaix.indevs.in/drama"
   },
   "platforms": {
     "melolo": {
@@ -64,6 +65,11 @@
       "enabled": true,
       "status": "active",
       "reason": "Aktif"
+    },
+    "drakor": {
+      "enabled": true,
+      "status": "active",
+      "reason": "Aktif"
     }
   },
   "features": {
@@ -72,21 +78,21 @@
     "onboarding": true,
     "settings": true
   },
-  "latestVersion": "3.8",
+  "latestVersion": "3.9",
   "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
   "changelog": [
-    "Player gesture: double tap kiri/kanan maju mundur 10 detik",
-    "Long press video untuk speed 2x sementara",
-    "Tombol Next di player dihapus karena sudah bisa scroll episode"
+    "Tambah platform Drakor",
+    "Tab Korea, China, Terbaru, Trending, Ongoing",
+    "Search, detail, dan stream Drakor"
   ],
   "update": {
-    "latestVersion": "3.8",
+    "latestVersion": "3.9",
     "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
     "force": false,
     "changelog": [
-      "Player gesture: double tap kiri/kanan maju mundur 10 detik",
-      "Long press video untuk speed 2x sementara",
-      "Tombol Next di player dihapus karena sudah bisa scroll episode"
+      "Tambah platform Drakor",
+      "Tab Korea, China, Terbaru, Trending, Ongoing",
+      "Search, detail, dan stream Drakor"
     ]
   },
   "support": {

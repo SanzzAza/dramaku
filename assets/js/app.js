@@ -1,12 +1,12 @@
-const API={melolo:'https://api.sonzaix.indevs.in/melolo',freereels:'https://api.sonzaix.indevs.in/freereels',flickreels:'https://api.sonzaix.indevs.in/flickreels',dramanova:'https://api.sonzaix.indevs.in/dramanova',reelshort:'https://api.sonzaix.indevs.in/reelshort',netshort:'https://api.sonzaix.indevs.in/netshort',dramabox:'https://api.sonzaix.indevs.in/dramabox',goodshort:'https://api.sonzaix.indevs.in/goodshort',moviebox:'https://api.sonzaix.indevs.in/moviebox'};
-const PLAT_LABELS={melolo:'Melolo',freereels:'FreeReels',flickreels:'FlickReels',dramanova:'DramaNova',reelshort:'ReelShort',netshort:'NetShort',dramabox:'DramaBox',goodshort:'GoodShort',moviebox:'MovieBox'};
+const API={melolo:'https://api.sonzaix.indevs.in/melolo',freereels:'https://api.sonzaix.indevs.in/freereels',flickreels:'https://api.sonzaix.indevs.in/flickreels',dramanova:'https://api.sonzaix.indevs.in/dramanova',reelshort:'https://api.sonzaix.indevs.in/reelshort',netshort:'https://api.sonzaix.indevs.in/netshort',dramabox:'https://api.sonzaix.indevs.in/dramabox',goodshort:'https://api.sonzaix.indevs.in/goodshort',moviebox:'https://api.sonzaix.indevs.in/moviebox',drakor:'https://api.sonzaix.indevs.in/drama'};
+const PLAT_LABELS={melolo:'Melolo',freereels:'FreeReels',flickreels:'FlickReels',dramanova:'DramaNova',reelshort:'ReelShort',netshort:'NetShort',dramabox:'DramaBox',goodshort:'GoodShort',moviebox:'MovieBox',drakor:'Drakor'};
 const REMOTE_CONFIG_URL='https://raw.githubusercontent.com/SanzzAza/dramaku/main/remote-config.json';
 let remoteConfig=null,remoteConfigMeta={source:'default',updated:0,url:REMOTE_CONFIG_URL};
 let P='melolo',curTab='home',pg={},busy={},more={},loaded={};
 let curDrama=null,curEps=[],curPE=0,sto=null;
 let fitMode=(()=>{try{return localStorage.getItem('dk_fit_mode')||'cover'}catch(e){return 'cover'}})();
 let lastSearchResults=[],lastSearchQuery='',searchFilter='all',searchSeq=0;
-const APP_VERSION='3.8';
+const APP_VERSION='3.9';
 const thumbCache={},platCache={},itemCache={};
 let allItems=[];
 const jsonMemCache={};
@@ -18,10 +18,11 @@ function resetState(){pg={home:1,populer:1,new:1,t4:1,t5:1,t6:1,t7:1};busy={};mo
 function $(s,p){return(p||document).querySelector(s)}
 function $$(s,p){return(p||document).querySelectorAll(s)}
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function cleanText(v){const d=document.createElement('div');d.innerHTML=String(v||'').replace(/&nbsp;/g,' ');return (d.textContent||d.innerText||'').replace(/\s+/g,' ').trim()}
 function jsStr(v){return esc(String(v??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/[\r\n]+/g,' '))}
 function platformLabel(p){return PLAT_LABELS[p]||p||'Dramaku'}
 function ratingFor(seed){let h=0,s=String(seed||'dramaku');for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return(8.4+(h%16)/10).toFixed(1)}
-function searchEmptyHtml(){return '<div class="empty-state" style="padding-top:100px"><svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" opacity=".22"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><p>Ketik judul drama untuk mencari</p><p class="empty-sub">Cari dari 9 platform sekaligus</p></div>'}
+function searchEmptyHtml(){return '<div class="empty-state" style="padding-top:100px"><svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" opacity=".22"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><p>Ketik judul drama untuk mencari</p><p class="empty-sub">Cari dari 10 platform sekaligus</p></div>'}
 function toast(msg){let t=$('#dkToast');if(!t){t=document.createElement('div');t.id='dkToast';t.className='toast';document.body.appendChild(t)}t.textContent=msg;t.classList.add('on');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('on'),1800)}
 function nativeCall(name,...args){try{if(window.NativeApp&&typeof NativeApp[name]==='function')NativeApp[name](...args)}catch(e){}}
 function setNativePlayback(on){nativeCall('setFullscreen',!!on);nativeCall('keepAwake',!!on)}
@@ -164,6 +165,8 @@ function setPlatform(p){
     tabEl.innerHTML='<div class="tab on" data-t="home" onclick="go(\'home\')">Indonesia</div><div class="tab" data-t="populer" onclick="go(\'populer\')">Global</div><div class="tab" data-t="new" onclick="go(\'new\')">Horror</div><div class="tab" data-t="t4" onclick="go(\'t4\')">Asia</div><div class="tab" data-t="t5" onclick="go(\'t5\')">Anime</div><div class="tab" data-t="t6" onclick="go(\'t6\')">CDrama</div><div class="tab" data-t="t7" onclick="go(\'t7\')">Reality</div>';
   }else if(p==='dramabox'){
     tabEl.innerHTML='<div class="tab on" data-t="home" onclick="go(\'home\')">Beranda</div><div class="tab" data-t="populer" onclick="go(\'populer\')">Populer</div><div class="tab" data-t="new" onclick="go(\'new\')">Terbaru</div><div class="tab" data-t="t4" onclick="go(\'t4\')">Ranking</div><div class="tab" data-t="t5" onclick="go(\'t5\')">Cina</div>';
+  }else if(p==='drakor'){
+    tabEl.innerHTML='<div class="tab on" data-t="home" onclick="go(\'home\')">Korea</div><div class="tab" data-t="populer" onclick="go(\'populer\')">Trending</div><div class="tab" data-t="new" onclick="go(\'new\')">Terbaru</div><div class="tab" data-t="t4" onclick="go(\'t4\')">China</div><div class="tab" data-t="t5" onclick="go(\'t5\')">Ongoing</div><div class="tab" data-t="t6" onclick="go(\'t6\')">Comedy</div>';
   }else{
     tabEl.innerHTML=defTabs;
   }
@@ -175,7 +178,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!handleNativeBac
 function fixImg(u){if(!u)return'';if(u.includes('fizzopic.org')&&u.includes('.heic')){const m=u.match(/novel-images-apsoutheast\/([a-f0-9]+)~/);if(m&&m[1])return'https://p19-novel-sg.ibyteimg.com/img/novel-images-sg/'+m[1]+'~tplv-resize:570:810.jpg'}return u}
 function flat(data){
   if(!data||typeof data!=='object')return[];let out=[];
-  if(Array.isArray(data)){data.forEach(g=>{if(g.books&&Array.isArray(g.books))out.push(...g.books);else if(g.drama_id)out.push(g)})}
+  if(Array.isArray(data)){data.forEach(g=>{if(g.books&&Array.isArray(g.books))out.push(...g.books);else if(g.drama_id)out.push(g);else if(g.id&&g.title)out.push({drama_id:g.id,drama_name:g.title,description:cleanText(g.meta_description||g.shoot||''),episode_count:g.meta_episode||g.episode_number||'',watch_value:g.hits||'',thumb_url:g.image||'',tags:g.category?String(g.category).split(',').map(x=>x.trim()).filter(Boolean):[],is_new_book:'0',_p:'drakor',_raw:g})})}
   else if(data.items&&Array.isArray(data.items)){out=data.items.map(d=>({drama_id:d.drama_id,drama_name:d.title||d.drama_name||'',description:d.description||d.synopsis||'',episode_count:d.total_episodes||d.episode_count||'',watch_value:d.view_count?String(d.view_count):'',thumb_url:d.poster||d.raw?.coverImage||d.raw?.posterImg||'',tags:d.categories?d.categories.map(c=>c.name||c):(d.raw?.categoryNames||[]),free:d.free||false,is_new_book:d.is_new_book||'0'}))}
   // MovieBox: data.subjects[] or data.results[].subjects[]
   else if(data.subjects&&Array.isArray(data.subjects)){out=data.subjects.map(d=>({drama_id:d.subjectId,drama_name:d.title||'',description:d.description||'',episode_count:'',watch_value:d.viewers?String(d.viewers):'',thumb_url:d.cover?.url||'',tags:d.genre?d.genre.split(', '):[],is_new_book:'0',_subjectType:d.subjectType}))}
@@ -203,12 +206,13 @@ async function loadTab(t){
       else if(P==='dramabox'){hU=base+'/home?page=1&lang=in';pU=base+'/populer?page=1&lang=in';nU=base+'/new?page=1&lang=in'}
       else if(P==='goodshort'){hU=base+'/home';pU=base+'/populer?page=1';nU=base+'/new?page=1&channelId=563'}
       else if(P==='moviebox'){hU=base+'/indonesia?page=1&perPage=10';pU=base+'/indonesia?page=1&perPage=10';nU=base+'/global?page=1&perPage=10'}
+      else if(P==='drakor'){hU=base+'/home/korea?page=1&limit=30&sort=LATEST';pU=base+'/trending?page=1&limit=30&days=30';nU=base+'/terbaru?page=1&limit=30'}
       const[hd,pd,nd]=await Promise.all([cachedJson(hU,180000),cachedJson(pU,180000),cachedJson(nU,180000)]);
       const pop=flat(pd.data).slice(0,10),nw=flat(nd.data).slice(0,10),rec=flat(hd.data);
       let h='';
       h+=remoteMessageHtml();
       // Hero / stats banner
-      h+=`<div class="stats-banner"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg><div class="stats-text"><div class="stats-kicker">Streaming mini drama</div><div class="stats-title">Temukan drama pendek favoritmu</div><div class="stats-sub">5000+ drama & film dari 9 platform. Cari judul, simpan favorit, lalu lanjutkan episode terakhir tanpa ribet.</div><div class="hero-actions"><button class="hero-search" onclick="openSearch()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="6" cy="6" r="4.5"/><path d="M9.5 9.5l3 3"/></svg>Cari Judul</button><button class="random-btn" onclick="randomPick()"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>Acak</button></div></div></div>`;
+      h+=`<div class="stats-banner"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg><div class="stats-text"><div class="stats-kicker">Streaming mini drama</div><div class="stats-title">Temukan drama pendek favoritmu</div><div class="stats-sub">5000+ drama & film dari 10 platform. Cari judul, simpan favorit, lalu lanjutkan episode terakhir tanpa ribet.</div><div class="hero-actions"><button class="hero-search" onclick="openSearch()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="6" cy="6" r="4.5"/><path d="M9.5 9.5l3 3"/></svg>Cari Judul</button><button class="random-btn" onclick="randomPick()"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>Acak</button></div></div></div>`;
       const spotlightPool=[...pop,...nw,...rec];
       h+=spotlightHtml(spotlightPool);
       h+=moodHtml();
@@ -246,6 +250,7 @@ async function loadTab(t){
         ep=dbMap[t]||'/home';qp=(t==='t4'?'?lang=in':t==='t5'?'&page='+pg[t]+'&lang=in':'?page='+pg[t]+'&lang=in');
       }
       else if(P==='goodshort'){ep=t==='populer'?'/populer':'/new';qp=t==='populer'?`?page=${pg[t]}`:`?page=${pg[t]}&channelId=563`}
+      else if(P==='drakor'){const dkMap={home:'/home/korea',populer:'/trending',new:'/terbaru',t4:'/home/china',t5:'/ongoing',t6:'/category'};ep=dkMap[t]||'/home/korea';qp=t==='populer'?`?page=${pg[t]}&limit=30&days=30`:(t==='new'||t==='t5'?`?page=${pg[t]}&limit=30`:(t==='t6'?`?category_name=Comedy&page=${pg[t]}&limit=30&sort=LATEST`:`?page=${pg[t]}&limit=30&sort=LATEST`))}
       else if(P==='moviebox'){
         const mbMap={home:'/indonesia',populer:'/global',new:'/horror',t4:'/asia',t5:'/series/anime',t6:'/series/cdrama',t7:'/series/reality'};
         ep=mbMap[t]||'/indonesia';qp=`?page=${pg[t]}&perPage=10`;
@@ -293,6 +298,7 @@ function getDetailUrl(dp,id){
   if(dp==='dramabox')return API[dp]+`/detail?bookId=${id}&lang=in`;
   if(dp==='goodshort')return API[dp]+`/detail?bookId=${id}`;
   if(dp==='moviebox')return API[dp]+`/detail?subjectId=${id}`;
+  if(dp==='drakor')return API[dp]+`/detail?id=${id}`;
   const nl=dp==='flickreels'||dp==='dramanova'||dp==='reelshort'||dp==='netshort';
   return API[dp]+`/detail?id=${id}`+(nl?'':'&lang=id');
 }
@@ -303,11 +309,12 @@ async function resumeWatch(id,img,plat,ep){
   $('#detOv').classList.add('on');$('#detBody').innerHTML=detailLoadingHtml(img);document.body.style.overflow='hidden';
   const dp=plat||platCache[id]||P;
   try{
-    const d=await cachedJson(getDetailUrl(dp,id),600000);if(!d?.data)throw 0;
-    let dd=d.data;
+    const d=await cachedJson(getDetailUrl(dp,id),600000);if(dp==='drakor'?!d?.info:!d?.data)throw 0;
+    let dd=dp==='drakor'?d.info:d.data;
     // GoodShort: data.book + data.list
     if(dp==='goodshort'&&d.data.book){dd={...d.data.book,drama_id:d.data.book.bookId,drama_name:d.data.book.bookName,description:d.data.book.introduction,episode_count:d.data.book.chapterCount,thumb_url:d.data.book.cover,tags:d.data.book.labels||[],watch_value:d.data.book.viewCountDisplay||''};curEps=d.data.list||[]}
     if(dp==='moviebox'){dd={drama_id:d.data.subjectId,drama_name:d.data.title,description:d.data.description||"",episode_count:d.data.subjectType===2?d.data.resourceDetectors?.[0]?.totalEpisode||1:1,thumb_url:d.data.cover?.url||"",tags:d.data.genre?d.data.genre.split(", "):[],watch_value:d.data.imdbRatingValue?"IMDb "+d.data.imdbRatingValue:"",_subjectType:d.data.subjectType};curEps=[]}
+    if(dp==='drakor'&&d.info){const info=d.info,eps=d.episodes?.data||[];dd={...info,drama_id:info.id,drama_name:info.title,description:cleanText(info.meta_sinopsis||info.shoot||info.content||info.meta_description||''),episode_count:eps.length||info.meta_episode||0,thumb_url:info.image,tags:info.category?String(info.category).split(',').map(x=>x.trim()).filter(Boolean):[],watch_value:info.hits||'',_subjectType:2};curEps=eps}
     curDrama=dd;curDrama._p=dp;curDrama._thumb=fixImg(dd.thumb_url||dd.cover||dd.bookCover||thumbCache[id]||'');
     if(!curEps.length)curEps=dd.video_list||dd.episode_list||dd.episodes||dd.chapterList||[];
     renderDet(dd);setTimeout(()=>play(id,ep),300);
@@ -320,10 +327,11 @@ async function openDet(id,img){
   $('#detOv').classList.add('on');$('#detBody').innerHTML=detailLoadingHtml(img);document.body.style.overflow='hidden';
   const dp=platCache[id]||P;
   try{
-    const d=await cachedJson(getDetailUrl(dp,id),600000);if(!d?.data)throw 0;
-    let dd=d.data;
+    const d=await cachedJson(getDetailUrl(dp,id),600000);if(dp==='drakor'?!d?.info:!d?.data)throw 0;
+    let dd=dp==='drakor'?d.info:d.data;
     if(dp==='goodshort'&&d.data.book){dd={...d.data.book,drama_id:d.data.book.bookId,drama_name:d.data.book.bookName,description:d.data.book.introduction,episode_count:d.data.book.chapterCount,thumb_url:d.data.book.cover,tags:d.data.book.labels||[],watch_value:d.data.book.viewCountDisplay||''};curEps=d.data.list||[]}
     if(dp==='moviebox'){dd={drama_id:d.data.subjectId,drama_name:d.data.title,description:d.data.description||"",episode_count:d.data.subjectType===2?d.data.resourceDetectors?.[0]?.totalEpisode||1:1,thumb_url:d.data.cover?.url||"",tags:d.data.genre?d.data.genre.split(", "):[],watch_value:d.data.imdbRatingValue?"IMDb "+d.data.imdbRatingValue:"",_subjectType:d.data.subjectType};curEps=[]}
+    if(dp==='drakor'&&d.info){const info=d.info,eps=d.episodes?.data||[];dd={...info,drama_id:info.id,drama_name:info.title,description:cleanText(info.meta_sinopsis||info.shoot||info.content||info.meta_description||''),episode_count:eps.length||info.meta_episode||0,thumb_url:info.image,tags:info.category?String(info.category).split(',').map(x=>x.trim()).filter(Boolean):[],watch_value:info.hits||'',_subjectType:2};curEps=eps}
     curDrama=dd;curDrama._p=dp;curDrama._thumb=fixImg(dd.thumb_url||dd.cover||dd.bookCover||thumbCache[id]||'');
     if(dd.thumb_url||dd.cover||dd.bookCover)thumbCache[id]=curDrama._thumb;
     if(!curEps.length)curEps=dd.video_list||dd.episode_list||dd.episodes||dd.chapterList||[];renderDet(dd);
@@ -414,7 +422,9 @@ async function loadVid(did,ep){
   if(dp==='freereels'){try{const d=await fetch(API.freereels+`/stream?dramaId=${did}&episode=${ep}&lang=id`).then(r=>r.json());if(d?.data){let raw=d.data.h264_m3u8||d.data.m3u8_url||d.data.video_url;if(raw){url='https://proxy.sonzaixlab.workers.dev/proxy?url='+encodeURIComponent(raw);isHLS=true};if(d.data.subtitles?.length){const st=d.data.subtitles.find(s=>s.language==='id-ID'||s.language?.startsWith('id'))||d.data.subtitles[0];if(st?.url)subUrl=st.url}}}catch(e){}}
   else if(dp==='flickreels'){try{const d=await fetch(API.flickreels+`/stream?id=${did}&ep=${ep}`).then(r=>r.json());if(d?.data?.hls_url){url=d.data.hls_url;isHLS=true}}catch(e){}}
   else if(dp==='reelshort'){try{const d=await fetch(API.reelshort+`/stream?id=${did}&episode_no=${ep}`).then(r=>r.json());if(d?.data){const vl=d.data.videoList||[];const pick=vl.find(v=>v.encode==='H264'&&v.dpi===720)||vl.find(v=>v.encode==='H264')||vl[0];if(pick?.playUrl){url=pick.playUrl;isHLS=true}else if(d.data.play_url){url=d.data.play_url;isHLS=true}}}catch(e){}}
-  else if(dp==='moviebox'){
+  else if(dp==='drakor'){
+    try{const epData=(curEps||[]).find(e=>Number(e.episode_number)===Number(ep))||(curEps||[])[ep-1];const sid=epData?.streaming;if(sid){const d=await fetch(API.drakor+`/stream?streaming=${sid}`).then(r=>r.json());url=(Settings.get().dataSaver?(d['480p']||d['360p']||d['720p']):(d['720p']||d['480p']||d['360p']));isHLS=!!url}}catch(e){}
+  }else if(dp==='moviebox'){
     try{const st=curDrama?._subjectType||1;let d,mvUrl='',mvSub='';
       if(st===2){d=await fetch(API.moviebox+`/download-series?subjectId=${did}&se=1&resolution=${Settings.get().dataSaver?480:720}`).then(r=>r.json());if(d?.data?.episodes?.length){const epd=d.data.episodes.find(e=>e.ep===ep)||d.data.episodes[0];if(epd?.resourceLink)mvUrl=epd.resourceLink;if(epd?.subtitle?.url)mvSub=epd.subtitle.url}}
       else{d=await fetch(API.moviebox+`/download-movie?subjectId=${did}&resolution=${Settings.get().dataSaver?480:720}`).then(r=>r.json());if(d?.data?.files?.length){const f=d.data.files.find(f=>f.codecName==='h264')||d.data.files[0];if(f?.resourceLink)mvUrl=f.resourceLink};if(d?.data?.subtitle?.url)mvSub=d.data.subtitle.url}
@@ -496,7 +506,7 @@ async function doSearch(){
   const seq=++searchSeq;lastSearchQuery=q;searchFilter='all';saveRecentSearch(q);renderSearchTools();
   box.innerHTML=`<div class="grid">${skelHtml(6,1)}</div>`;
   try{const eq=encodeURIComponent(q);
-    const[r1,r2,r3,r4,r5,r6,r7,r8,r9]=await Promise.allSettled([
+    const[r1,r2,r3,r4,r5,r6,r7,r8,r9,r10]=await Promise.allSettled([
       cachedJson(API.melolo+`/search?q=${eq}&page=1&lang=id`,120000),
       cachedJson(API.freereels+`/search?q=${eq}&page=1&lang=id`,120000),
       cachedJson(API.flickreels+`/search?q=${eq}`,120000),
@@ -506,11 +516,12 @@ async function doSearch(){
       cachedJson(API.dramabox+`/search?q=${eq}&page=1&lang=in`,120000),
       cachedJson(API.goodshort+`/search?q=${eq}&page=1`,120000),
       cachedJson(API.moviebox+`/search?q=${eq}&page=1&perPage=10`,120000),
+      cachedJson(API.drakor+`/search?q=${eq}&page=1&limit=30&type=1&order=1`,120000),
     ]);
     if(seq!==searchSeq)return;
     const tag=(r,p)=>{if(!platformEnabled(p))return[];const items=r.status==='fulfilled'?flat(r.value.data):[];items.forEach(d=>{if(d.drama_id){platCache[d.drama_id]=p;d._p=p}});return items};
     const seen=new Set();
-    const a=[...tag(r1,'melolo'),...tag(r2,'freereels'),...tag(r3,'flickreels'),...tag(r4,'dramanova'),...tag(r5,'reelshort'),...tag(r6,'netshort'),...tag(r7,'dramabox'),...tag(r8,'goodshort'),...tag(r9,'moviebox')].filter(d=>{const k=(d._p||'')+'-'+(d.drama_id||d.drama_name);if(seen.has(k))return false;seen.add(k);return true});
+    const a=[...tag(r1,'melolo'),...tag(r2,'freereels'),...tag(r3,'flickreels'),...tag(r4,'dramanova'),...tag(r5,'reelshort'),...tag(r6,'netshort'),...tag(r7,'dramabox'),...tag(r8,'goodshort'),...tag(r9,'moviebox'),...tag(r10,'drakor')].filter(d=>{const k=(d._p||'')+'-'+(d.drama_id||d.drama_name);if(seen.has(k))return false;seen.add(k);return true});
     lastSearchResults=a;renderSearchResults(a,q);
     if(!a.length)box.innerHTML=emptyHtml('Tidak ditemukan untuk "'+q+'"','Coba kata kunci lain');
   }catch(e){if(seq===searchSeq)box.innerHTML='<div class="s-empty">Gagal mencari</div>'}
@@ -589,13 +600,14 @@ function renderProfile(){
 
 /* ===== RANDOM PICK ===== */
 async function randomPick(){
-  const platforms=['melolo','freereels','flickreels','dramanova','reelshort','netshort','dramabox','goodshort','moviebox'].filter(platformEnabled);
+  const platforms=['melolo','freereels','flickreels','dramanova','reelshort','netshort','dramabox','goodshort','moviebox','drakor'].filter(platformEnabled);
   const rp=platforms[Math.floor(Math.random()*platforms.length)];
   const base=API[rp];
   try{
     const pg=Math.floor(Math.random()*3)+1;
     let url=base+'/home?page='+pg;
     if(rp==='moviebox')url=base+'/indonesia?page='+pg+'&perPage=10';
+    else if(rp==='drakor')url=base+'/home/korea?page='+pg+'&limit=30&sort=LATEST';
     else if(rp==='flickreels'||rp==='dramanova'||rp==='netshort'||rp==='goodshort')url=base+'/home';
     else if(rp==='dramabox')url=base+'/home?page='+pg+'&lang=in';
     else url=base+'/home?page='+pg+'&lang=id';

@@ -4,7 +4,7 @@ Nonton drama & film dari 9 platform sekaligus dalam 1 website / APK WebView.
 
 ## Platform
 - Melolo, FreeReels, FlickReels, DramaNova, ReelShort
-- NetShort, DramaBox, GoodShort, MovieBox
+- NetShort, DramaBox, GoodShort, MovieBox, Drakor
 
 ## Fitur Utama
 - Home cinematic dengan Spotlight Harian, mood shortcut, rekomendasi, populer, dan terbaru
@@ -22,6 +22,7 @@ Nonton drama & film dari 9 platform sekaligus dalam 1 website / APK WebView.
 - Skeleton/loading state premium untuk home dan detail
 - Update checker, status platform, About/Disclaimer, dan report episode ke support
 - Player gesture: double tap seek 10 detik dan long press speed 2x
+- Platform Drakor: Korea, China, terbaru, trending, ongoing, search, detail, stream
 
 ## Branding
 - Brand kit tersedia di folder `branding/`
