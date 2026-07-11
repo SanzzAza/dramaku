@@ -37,20 +37,20 @@ jobs:
         run: ./gradlew assembleDebug
 
       - name: Rename APK
-        run: mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/Dramaku-v2.0.apk
+        run: mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/Dramaku-v3.0.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Dramaku-v2.0
-          path: app/build/outputs/apk/debug/Dramaku-v2.0.apk
+          name: Dramaku-v3.0
+          path: app/build/outputs/apk/debug/Dramaku-v3.0.apk
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v2.0-build${{ github.run_number }}
-          name: Dramaku v2.0
-          files: app/build/outputs/apk/debug/Dramaku-v2.0.apk
+          tag_name: v3.0-build${{ github.run_number }}
+          name: Dramaku v3.0
+          files: app/build/outputs/apk/debug/Dramaku-v3.0.apk
           body: |
-            **Dramaku v2.0** - Streaming Drama & Film Terbaik
+            **Dramaku v3.0** - Streaming Drama & Film Terbaik
             9 Platform dalam 1 Aplikasi
