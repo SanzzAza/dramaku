@@ -15,8 +15,8 @@ android {
         applicationId "com.dramaku.app"
         minSdk 24
         targetSdk 34
-        versionCode 7
-        versionName "3.5"
+        versionCode 8
+        versionName "3.6"
     }
 
     signingConfigs {
@@ -61,6 +61,7 @@ tasks.register('copyIndexHtml', Copy) {
     from(rootDir) {
         include 'index.html'
         include 'branding/**'
+        include 'assets/**'
     }
     into "$projectDir/src/main/assets"
 }

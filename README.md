@@ -17,6 +17,9 @@ Nonton drama & film dari 9 platform sekaligus dalam 1 website / APK WebView.
 - Native splash screen, onboarding pertama kali, dan laporan episode bermasalah
 - Crash-safe WebView recovery screen dengan reload dan clear cache
 - Remote config untuk endpoint API, status platform, announcement, dan feature flag
+- Profile Center “Saya” untuk riwayat, favorit, tools cepat, dan statistik lokal
+- Struktur web asset dimodularisasi ke `assets/css/style.css` dan `assets/js/app.js`
+- Skeleton/loading state premium untuk home dan detail
 
 ## Branding
 - Brand kit tersedia di folder `branding/`

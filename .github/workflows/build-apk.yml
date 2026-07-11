@@ -42,16 +42,16 @@ jobs:
             echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/release.keystore
             export ANDROID_KEYSTORE_PATH="$PWD/app/release.keystore"
             ./gradlew assembleRelease
-            cp app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/final/Dramaku-v3.5-release.apk
-            echo "APK_PATH=app/build/outputs/apk/final/Dramaku-v3.5-release.apk" >> "$GITHUB_ENV"
-            echo "APK_NAME=Dramaku-v3.5-release" >> "$GITHUB_ENV"
+            cp app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/final/Dramaku-v3.6-release.apk
+            echo "APK_PATH=app/build/outputs/apk/final/Dramaku-v3.6-release.apk" >> "$GITHUB_ENV"
+            echo "APK_NAME=Dramaku-v3.6-release" >> "$GITHUB_ENV"
             echo "APK_KIND=signed release" >> "$GITHUB_ENV"
           else
             echo "Signing secrets not found. Building debug APK fallback..."
             ./gradlew assembleDebug
-            cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/final/Dramaku-v3.5-debug.apk
-            echo "APK_PATH=app/build/outputs/apk/final/Dramaku-v3.5-debug.apk" >> "$GITHUB_ENV"
-            echo "APK_NAME=Dramaku-v3.5-debug" >> "$GITHUB_ENV"
+            cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/final/Dramaku-v3.6-debug.apk
+            echo "APK_PATH=app/build/outputs/apk/final/Dramaku-v3.6-debug.apk" >> "$GITHUB_ENV"
+            echo "APK_NAME=Dramaku-v3.6-debug" >> "$GITHUB_ENV"
             echo "APK_KIND=debug fallback" >> "$GITHUB_ENV"
           fi
 
@@ -64,11 +64,11 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v3.5-build${{ github.run_number }}
-          name: Dramaku v3.5
+          tag_name: v3.6-build${{ github.run_number }}
+          name: Dramaku v3.6
           files: ${{ env.APK_PATH }}
           body: |
-            **Dramaku v3.5** - Streaming Drama & Film Terbaik
+            **Dramaku v3.6** - Streaming Drama & Film Terbaik
             Build type: ${{ env.APK_KIND }}
 
             Untuk signed release APK, set GitHub Secrets:
