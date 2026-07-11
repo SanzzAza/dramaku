@@ -6,7 +6,7 @@ let P='melolo',curTab='home',pg={},busy={},more={},loaded={};
 let curDrama=null,curEps=[],curPE=0,sto=null;
 let fitMode=(()=>{try{return localStorage.getItem('dk_fit_mode')||'cover'}catch(e){return 'cover'}})();
 let lastSearchResults=[],lastSearchQuery='',searchFilter='all',searchSeq=0;
-const APP_VERSION='3.9.1';
+const APP_VERSION='3.9.2';
 const thumbCache={},platCache={},itemCache={};
 let allItems=[];
 const jsonMemCache={};
@@ -164,7 +164,7 @@ function setPlatform(p){
   if(p==='moviebox'){
     tabEl.innerHTML='<div class="tab on" data-t="home" onclick="go(\'home\')">Indonesia</div><div class="tab" data-t="populer" onclick="go(\'populer\')">Global</div><div class="tab" data-t="new" onclick="go(\'new\')">Horror</div><div class="tab" data-t="t4" onclick="go(\'t4\')">Asia</div><div class="tab" data-t="t5" onclick="go(\'t5\')">Anime</div><div class="tab" data-t="t6" onclick="go(\'t6\')">CDrama</div><div class="tab" data-t="t7" onclick="go(\'t7\')">Reality</div>';
   }else if(p==='dramabox'){
-    tabEl.innerHTML='<div class="tab on" data-t="home" onclick="go(\'home\')">Beranda</div><div class="tab" data-t="populer" onclick="go(\'populer\')">Populer</div><div class="tab" data-t="new" onclick="go(\'new\')">Terbaru</div><div class="tab" data-t="t4" onclick="go(\'t4\')">Ranking</div><div class="tab" data-t="t5" onclick="go(\'t5\')">Cina</div>';
+    tabEl.innerHTML='<div class="tab on" data-t="home" onclick="go(\'home\')">Beranda</div><div class="tab" data-t="populer" onclick="go(\'populer\')">Populer</div><div class="tab" data-t="new" onclick="go(\'new\')">Terbaru</div><div class="tab" data-t="t4" onclick="go(\'t4\')">Ranking</div><div class="tab" data-t="t5" onclick="go(\'t5\')">Kategori</div><div class="tab" data-t="t6" onclick="go(\'t6\')">Cina</div><div class="tab" data-t="t7" onclick="go(\'t7\')">Korea</div>';
   }else if(p==='drakor'){
     tabEl.innerHTML='<div class="tab on" data-t="home" onclick="go(\'home\')">Korea</div><div class="tab" data-t="populer" onclick="go(\'populer\')">Trending</div><div class="tab" data-t="new" onclick="go(\'new\')">Terbaru</div><div class="tab" data-t="t4" onclick="go(\'t4\')">China</div><div class="tab" data-t="t5" onclick="go(\'t5\')">Ongoing</div><div class="tab" data-t="t6" onclick="go(\'t6\')">Comedy</div>';
   }else{
@@ -249,8 +249,8 @@ async function loadTab(t){
       else if(P==='reelshort'){ep=t==='populer'?'/populer':'/new';qp=t==='populer'?`?page=${pg[t]}&limit=20&period=0&rule=0`:`?page=${pg[t]}&limit=20`}
       else if(P==='netshort'){ep=t==='populer'?'/populer':'/new';qp=''}
       else if(P==='dramabox'){
-        const dbMap={home:'/home',populer:'/populer',new:'/new',t4:'/rank',t5:'/category?category=cina'};
-        ep=dbMap[t]||'/home';qp=(t==='t4'?'?lang=in':t==='t5'?'&page='+pg[t]+'&lang=in':'?page='+pg[t]+'&lang=in');
+        const dbMap={home:'/home',populer:'/populer',new:'/new',t4:'/rank',t5:'/category',t6:'/category?category=cina',t7:'/category?category=korea'};
+        ep=dbMap[t]||'/home';qp=(t==='t4'?'?lang=in':(t==='t6'||t==='t7'?'&page='+pg[t]+'&lang=in':'?page='+pg[t]+'&lang=in'));
       }
       else if(P==='goodshort'){ep=t==='populer'?'/populer':'/new';qp=t==='populer'?`?page=${pg[t]}`:`?page=${pg[t]}&channelId=563`}
       else if(P==='drakor'){const dkMap={home:'/home/korea',populer:'/trending',new:'/terbaru',t4:'/home/china',t5:'/ongoing',t6:'/category'};ep=dkMap[t]||'/home/korea';qp=t==='populer'?`?page=${pg[t]}&limit=30&days=30`:(t==='new'||t==='t5'?`?page=${pg[t]}&limit=30`:(t==='t6'?`?category_name=Comedy&page=${pg[t]}&limit=30&sort=LATEST`:`?page=${pg[t]}&limit=30&sort=LATEST`))}
@@ -261,7 +261,7 @@ async function loadTab(t){
       else{ep=t==='populer'?'/populer':'/new';qp=`?page=${pg[t]}&lang=id`}
       const d=await cachedJson(base+ep+qp,180000);const items=flat(d.data??d);
       if(pg[t]===1&&g)g.innerHTML='';
-      if(items.length){if(g)g.insertAdjacentHTML('beforeend',items.map(cardHtml).join(''));pg[t]++;if(d.has_more===false||items.length<8||(P==='dramanova'&&t==='populer')||(P==='flickreels'&&t==='populer'))more[t]=0}else more[t]=0;
+      if(items.length){if(g)g.insertAdjacentHTML('beforeend',items.map(cardHtml).join(''));pg[t]++;if(d.has_more===false||items.length<8||(P==='dramanova'&&t==='populer')||(P==='flickreels'&&t==='populer')||(P==='dramabox'&&['t4','t5','t6','t7'].includes(t)))more[t]=0}else more[t]=0;
     }catch(e){if(pg[t]===1&&g)g.innerHTML=errHtml()}
   }
   busy[t]=0;

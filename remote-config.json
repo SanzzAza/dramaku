@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "updatedAt": "2026-07-11",
   "minAppVersion": "3.9",
   "message": {
@@ -78,21 +78,21 @@
     "onboarding": true,
     "settings": true
   },
-  "latestVersion": "3.9.1",
+  "latestVersion": "3.9.2",
   "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
   "changelog": [
-    "Perbaikan DramaBox Ranking yang kosong",
-    "Perbaikan parsing kategori DramaBox Cina",
-    "Ranking DramaBox kini membaca trending/popular/newest"
+    "Perbaikan kategori DramaBox",
+    "Tab DramaBox ditambah: Kategori, Cina, Korea",
+    "Ranking dan kategori DramaBox tidak duplikat saat scroll"
   ],
   "update": {
-    "latestVersion": "3.9.1",
+    "latestVersion": "3.9.2",
     "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
     "force": false,
     "changelog": [
-      "Perbaikan DramaBox Ranking yang kosong",
-      "Perbaikan parsing kategori DramaBox Cina",
-      "Ranking DramaBox kini membaca trending/popular/newest"
+      "Perbaikan kategori DramaBox",
+      "Tab DramaBox ditambah: Kategori, Cina, Korea",
+      "Ranking dan kategori DramaBox tidak duplikat saat scroll"
     ]
   },
   "support": {
