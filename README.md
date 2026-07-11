@@ -13,6 +13,7 @@ Nonton drama & film dari 9 platform sekaligus dalam 1 website / APK WebView.
 - Search gabungan 9 platform dengan recent search dan filter platform
 - Riwayat tontonan & Favorit via localStorage
 - Cache API ringan untuk performa dan fallback saat koneksi tidak stabil
+- Settings page, error reporting lokal, mode hemat data, dan kontrol cache
 
 ## APK / WebView
 - WebView native dengan JavaScript bridge
@@ -20,6 +21,7 @@ Nonton drama & film dari 9 platform sekaligus dalam 1 website / APK WebView.
 - Keep screen awake saat nonton
 - Back button Android menutup modal/player/detail sesuai state
 - Native ExoPlayer activity untuk format video yang butuh player native
+- Native bridge untuk haptic feedback, share sheet, versi APK, dan clear cache WebView
 
 ## Build APK
 APK otomatis dibuild melalui GitHub Actions. Download di tab **Releases**.

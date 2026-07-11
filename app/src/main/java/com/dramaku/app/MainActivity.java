@@ -1,11 +1,16 @@
 package com.dramaku.app;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -188,6 +193,61 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void toast(String message) {
             runOnUiThread(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show());
+        }
+
+        @JavascriptInterface
+        public void haptic(String type) {
+            runOnUiThread(() -> {
+                try {
+                    getWindow().getDecorView().performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                    Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                    if (vibrator != null) {
+                        long ms = "heavy".equals(type) ? 28L : 12L;
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            vibrator.vibrate(VibrationEffect.createOneShot(ms, VibrationEffect.DEFAULT_AMPLITUDE));
+                        } else {
+                            vibrator.vibrate(ms);
+                        }
+                    }
+                } catch (Exception ignored) {}
+            });
+        }
+
+        @JavascriptInterface
+        public String getVersion() {
+            try {
+                PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
+                return info.versionName == null ? "3.1" : info.versionName;
+            } catch (Exception e) {
+                return "3.1";
+            }
+        }
+
+        @JavascriptInterface
+        public void share(String title, String text, String url) {
+            runOnUiThread(() -> {
+                try {
+                    Intent send = new Intent(Intent.ACTION_SEND);
+                    send.setType("text/plain");
+                    send.putExtra(Intent.EXTRA_SUBJECT, title == null ? "Dramaku" : title);
+                    String body = (text == null ? "" : text) + ((url == null || url.isEmpty()) ? "" : "\n" + url);
+                    send.putExtra(Intent.EXTRA_TEXT, body);
+                    startActivity(Intent.createChooser(send, title == null ? "Bagikan" : title));
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Tidak ada aplikasi untuk berbagi", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void clearWebViewCache() {
+            runOnUiThread(() -> {
+                if (webView != null) {
+                    webView.clearCache(true);
+                    webView.clearHistory();
+                    Toast.makeText(MainActivity.this, "Cache WebView dibersihkan", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 
