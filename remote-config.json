@@ -1,7 +1,7 @@
 {
-  "version": 2,
+  "version": 3,
   "updatedAt": "2026-07-11",
-  "minAppVersion": "3.5",
+  "minAppVersion": "3.6",
   "message": {
     "enabled": true,
     "type": "info",
@@ -20,20 +20,80 @@
     "moviebox": "https://api.sonzaix.indevs.in/moviebox"
   },
   "platforms": {
-    "melolo": { "enabled": true },
-    "freereels": { "enabled": true },
-    "flickreels": { "enabled": true },
-    "dramanova": { "enabled": true },
-    "reelshort": { "enabled": true },
-    "netshort": { "enabled": true },
-    "dramabox": { "enabled": true },
-    "goodshort": { "enabled": true },
-    "moviebox": { "enabled": true }
+    "melolo": {
+      "enabled": true,
+      "status": "active",
+      "reason": "Aktif"
+    },
+    "freereels": {
+      "enabled": true,
+      "status": "active",
+      "reason": "Aktif"
+    },
+    "flickreels": {
+      "enabled": true,
+      "status": "active",
+      "reason": "Aktif"
+    },
+    "dramanova": {
+      "enabled": true,
+      "status": "active",
+      "reason": "Aktif"
+    },
+    "reelshort": {
+      "enabled": true,
+      "status": "active",
+      "reason": "Aktif"
+    },
+    "netshort": {
+      "enabled": true,
+      "status": "active",
+      "reason": "Aktif"
+    },
+    "dramabox": {
+      "enabled": true,
+      "status": "active",
+      "reason": "Aktif"
+    },
+    "goodshort": {
+      "enabled": true,
+      "status": "active",
+      "reason": "Aktif"
+    },
+    "moviebox": {
+      "enabled": true,
+      "status": "active",
+      "reason": "Aktif"
+    }
   },
   "features": {
     "reportEpisode": true,
     "nativePlayer": true,
     "onboarding": true,
     "settings": true
+  },
+  "latestVersion": "3.7",
+  "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
+  "changelog": [
+    "Update checker dari remote config",
+    "Laporan episode ke kontak support",
+    "Status platform di beranda",
+    "Tentang & disclaimer aplikasi"
+  ],
+  "update": {
+    "latestVersion": "3.7",
+    "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
+    "force": false,
+    "changelog": [
+      "Update checker dari remote config",
+      "Laporan episode ke kontak support",
+      "Status platform di beranda",
+      "Tentang & disclaimer aplikasi"
+    ]
+  },
+  "support": {
+    "whatsapp": "",
+    "telegram": "",
+    "email": ""
   }
 }

@@ -20,6 +20,7 @@ Nonton drama & film dari 9 platform sekaligus dalam 1 website / APK WebView.
 - Profile Center “Saya” untuk riwayat, favorit, tools cepat, dan statistik lokal
 - Struktur web asset dimodularisasi ke `assets/css/style.css` dan `assets/js/app.js`
 - Skeleton/loading state premium untuk home dan detail
+- Update checker, status platform, About/Disclaimer, dan report episode ke support
 
 ## Branding
 - Brand kit tersedia di folder `branding/`

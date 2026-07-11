@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
@@ -386,9 +387,9 @@ public class MainActivity extends AppCompatActivity {
         public String getVersion() {
             try {
                 PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
-                return info.versionName == null ? "3.6" : info.versionName;
+                return info.versionName == null ? "3.7" : info.versionName;
             } catch (Exception e) {
-                return "3.6";
+                return "3.7";
             }
         }
 
@@ -404,6 +405,18 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(Intent.createChooser(send, title == null ? "Bagikan" : title));
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, "Tidak ada aplikasi untuk berbagi", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void openUrl(String url) {
+            runOnUiThread(() -> {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Tidak bisa membuka link", Toast.LENGTH_SHORT).show();
                 }
             });
         }

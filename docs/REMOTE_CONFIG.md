@@ -89,3 +89,36 @@ Setelan > Remote Config > Refresh remote config
 ```
 
 This manually fetches the latest JSON.
+
+
+## Support contact / report episode
+
+Remote config can route the **Lapor** button to WhatsApp, Telegram, or email.
+
+```json
+{
+  "support": {
+    "whatsapp": "6281234567890",
+    "telegram": "username",
+    "email": "admin@example.com"
+  }
+}
+```
+
+Priority: WhatsApp > Telegram > email > native share/clipboard fallback.
+
+## Update checker
+
+```json
+{
+  "latestVersion": "3.7",
+  "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
+  "changelog": [
+    "Update checker",
+    "Status platform",
+    "Report episode ke support"
+  ]
+}
+```
+
+If `latestVersion` is newer than `APP_VERSION`, the app shows an update prompt.
