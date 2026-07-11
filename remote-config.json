@@ -1,12 +1,12 @@
 {
-  "version": 8,
+  "version": 9,
   "updatedAt": "2026-07-11",
-  "minAppVersion": "3.9",
+  "minAppVersion": "4.0",
   "message": {
-    "enabled": true,
+    "enabled": false,
     "type": "info",
-    "title": "Dramaku siap dipakai",
-    "text": "Remote config aktif. Endpoint dan status platform bisa diperbarui tanpa update APK."
+    "title": "",
+    "text": ""
   },
   "api": {
     "melolo": "https://api.sonzaix.indevs.in/melolo",
@@ -78,25 +78,21 @@
     "onboarding": true,
     "settings": true
   },
-  "latestVersion": "4.0",
+  "latestVersion": "4.0.1",
   "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
   "changelog": [
-    "Home Visual Discovery: Top 10 Hari Ini",
-    "Mood Picker lebih ramai dan premium",
-    "Continue Watching carousel",
-    "Trending search chips",
-    "Tips gesture player pertama kali"
+    "Beranda lebih compact: banner remote config dan hero teks dihapus",
+    "Spotlight dibuat lebih besar agar layar lebih penuh",
+    "Home langsung fokus ke Spotlight, Top 10, Mood, dan Continue Watching"
   ],
   "update": {
-    "latestVersion": "4.0",
+    "latestVersion": "4.0.1",
     "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
     "force": false,
     "changelog": [
-      "Home Visual Discovery: Top 10 Hari Ini",
-      "Mood Picker lebih ramai dan premium",
-      "Continue Watching carousel",
-      "Trending search chips",
-      "Tips gesture player pertama kali"
+      "Beranda lebih compact: banner remote config dan hero teks dihapus",
+      "Spotlight dibuat lebih besar agar layar lebih penuh",
+      "Home langsung fokus ke Spotlight, Top 10, Mood, dan Continue Watching"
     ]
   },
   "support": {

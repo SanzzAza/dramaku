@@ -23,7 +23,7 @@ Nonton drama & film dari 10 platform sekaligus dalam 1 website / APK WebView.
 - Update checker, status platform, About/Disclaimer, dan report episode ke support
 - Player gesture: double tap seek 10 detik dan long press speed 2x
 - Platform Drakor: Korea, China, terbaru, trending, ongoing, search, detail, stream
-- Visual Discovery v4.0: Top 10, Mood Picker, Continue Watching carousel, trending search chips
+- Visual Discovery v4.0.1: Top 10, Mood Picker, Continue Watching carousel, trending search chips
 
 ## Branding
 - Brand kit tersedia di folder `branding/`

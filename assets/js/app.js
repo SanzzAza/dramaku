@@ -6,7 +6,7 @@ let P='melolo',curTab='home',pg={},busy={},more={},loaded={};
 let curDrama=null,curEps=[],curPE=0,sto=null;
 let fitMode=(()=>{try{return localStorage.getItem('dk_fit_mode')||'cover'}catch(e){return 'cover'}})();
 let lastSearchResults=[],lastSearchQuery='',searchFilter='all',searchSeq=0;
-const APP_VERSION='4.0';
+const APP_VERSION='4.0.1';
 const thumbCache={},platCache={},itemCache={};
 let allItems=[];
 const jsonMemCache={};
@@ -214,9 +214,6 @@ async function loadTab(t){
       const[hd,pd,nd]=await Promise.all([cachedJson(hU,180000),cachedJson(pU,180000),cachedJson(nU,180000)]);
       const pop=flat(pd.data??pd).slice(0,10),nw=flat(nd.data??nd).slice(0,10),rec=flat(hd.data??hd);
       let h='';
-      h+=remoteMessageHtml();
-      // Hero / stats banner
-      h+=`<div class="stats-banner"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg><div class="stats-text"><div class="stats-kicker">Streaming mini drama</div><div class="stats-title">Temukan drama pendek favoritmu</div><div class="stats-sub">5000+ drama & film dari 10 platform. Cari judul, simpan favorit, lalu lanjutkan episode terakhir tanpa ribet.</div><div class="hero-actions"><button class="hero-search" onclick="openSearch()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="6" cy="6" r="4.5"/><path d="M9.5 9.5l3 3"/></svg>Cari Judul</button><button class="random-btn" onclick="randomPick()"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>Acak</button></div></div></div>`;
       const spotlightPool=[...pop,...nw,...rec];
       const hr=new Date().getHours();const greet=hr<11?'Selamat pagi':hr<15?'Selamat siang':hr<18?'Selamat sore':'Selamat malam';
       h+=spotlightHtml(spotlightPool);
@@ -226,7 +223,7 @@ async function loadTab(t){
       h+=platformStatusHtml();
       if(nw.length)h+=secHtml('Drama Terbaru',nw,'new',1);
       if(rec.length)h+=`<div class="sec"><div class="sec-hd"><h2 class="sec-tt">Rekomendasi</h2></div><div class="grid">${rec.map(cardHtml).join('')}</div></div>`;
-      h+=`<div class="home-footer">Dramaku v4.0 · 10 Platform · Dibuat dengan cinta<br>Semua konten milik platform masing-masing</div>`;
+      h+=`<div class="home-footer">Dramaku v4.0.1 · 10 Platform · Dibuat dengan cinta<br>Semua konten milik platform masing-masing</div>`;
       box.innerHTML=h||errHtml();loaded.home=1;
     }catch(e){box.innerHTML=errHtml()}
   }else if(t!=='home'){
