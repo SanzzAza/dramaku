@@ -6,7 +6,7 @@ let P='melolo',curTab='home',pg={},busy={},more={},loaded={};
 let curDrama=null,curEps=[],curPE=0,sto=null;
 let fitMode=(()=>{try{return localStorage.getItem('dk_fit_mode')||'cover'}catch(e){return 'cover'}})();
 let lastSearchResults=[],lastSearchQuery='',searchFilter='all',searchSeq=0;
-const APP_VERSION='3.9';
+const APP_VERSION='3.9.1';
 const thumbCache={},platCache={},itemCache={};
 let allItems=[];
 const jsonMemCache={};
@@ -176,9 +176,12 @@ document.addEventListener('click',e=>{if(!e.target.closest('.plat-sel')){$('#pla
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!handleNativeBack()){$('#platDd')?.classList.remove('on');$('#platBtn')?.classList.remove('open')}}});
 
 function fixImg(u){if(!u)return'';if(u.includes('fizzopic.org')&&u.includes('.heic')){const m=u.match(/novel-images-apsoutheast\/([a-f0-9]+)~/);if(m&&m[1])return'https://p19-novel-sg.ibyteimg.com/img/novel-images-sg/'+m[1]+'~tplv-resize:570:810.jpg'}return u}
+function normalizeDramaBoxBook(d){return{drama_id:String(d.bookId||d.drama_id||''),drama_name:d.bookName||d.drama_name||d.title||'',description:d.introduction||d.description||'',episode_count:d.chapterCount||d.episode_count||'',watch_value:d.rankVo?.hotCode||d.watch_value||d.hotCode||'',thumb_url:d.coverWap||d.thumb_url||d.cover||'',tags:Array.isArray(d.tags)?d.tags:(d.tagV3s?d.tagV3s.map(t=>t.tagName).filter(Boolean):[]),is_new_book:'0',_p:'dramabox',_raw:d}}
 function flat(data){
   if(!data||typeof data!=='object')return[];let out=[];
-  if(Array.isArray(data)){data.forEach(g=>{if(g.books&&Array.isArray(g.books))out.push(...g.books);else if(g.drama_id)out.push(g);else if(g.id&&g.title)out.push({drama_id:g.id,drama_name:g.title,description:cleanText(g.meta_description||g.shoot||''),episode_count:g.meta_episode||g.episode_number||'',watch_value:g.hits||'',thumb_url:g.image||'',tags:g.category?String(g.category).split(',').map(x=>x.trim()).filter(Boolean):[],is_new_book:'0',_p:'drakor',_raw:g})})}
+  if(Array.isArray(data)){data.forEach(g=>{if(g.books&&Array.isArray(g.books))out.push(...g.books);else if(g.drama_id)out.push(g);else if(g.bookId)out.push(normalizeDramaBoxBook(g));else if(g.id&&g.title)out.push({drama_id:g.id,drama_name:g.title,description:cleanText(g.meta_description||g.shoot||''),episode_count:g.meta_episode||g.episode_number||'',watch_value:g.hits||'',thumb_url:g.image||'',tags:g.category?String(g.category).split(',').map(x=>x.trim()).filter(Boolean):[],is_new_book:'0',_p:'drakor',_raw:g})})}
+  else if(data.trending||data.popular||data.newest){const seen=new Set();['trending','popular','newest'].forEach(k=>(data[k]||[]).forEach(d=>{const id=String(d.bookId||'');if(id&&!seen.has(id)){seen.add(id);out.push(normalizeDramaBoxBook(d))}}))}
+  else if(data.classifyBookList?.records&&Array.isArray(data.classifyBookList.records)){out=data.classifyBookList.records.map(normalizeDramaBoxBook)}
   else if(data.items&&Array.isArray(data.items)){out=data.items.map(d=>({drama_id:d.drama_id,drama_name:d.title||d.drama_name||'',description:d.description||d.synopsis||'',episode_count:d.total_episodes||d.episode_count||'',watch_value:d.view_count?String(d.view_count):'',thumb_url:d.poster||d.raw?.coverImage||d.raw?.posterImg||'',tags:d.categories?d.categories.map(c=>c.name||c):(d.raw?.categoryNames||[]),free:d.free||false,is_new_book:d.is_new_book||'0'}))}
   // MovieBox: data.subjects[] or data.results[].subjects[]
   else if(data.subjects&&Array.isArray(data.subjects)){out=data.subjects.map(d=>({drama_id:d.subjectId,drama_name:d.title||'',description:d.description||'',episode_count:'',watch_value:d.viewers?String(d.viewers):'',thumb_url:d.cover?.url||'',tags:d.genre?d.genre.split(', '):[],is_new_book:'0',_subjectType:d.subjectType}))}
@@ -208,7 +211,7 @@ async function loadTab(t){
       else if(P==='moviebox'){hU=base+'/indonesia?page=1&perPage=10';pU=base+'/indonesia?page=1&perPage=10';nU=base+'/global?page=1&perPage=10'}
       else if(P==='drakor'){hU=base+'/home/korea?page=1&limit=30&sort=LATEST';pU=base+'/trending?page=1&limit=30&days=30';nU=base+'/terbaru?page=1&limit=30'}
       const[hd,pd,nd]=await Promise.all([cachedJson(hU,180000),cachedJson(pU,180000),cachedJson(nU,180000)]);
-      const pop=flat(pd.data).slice(0,10),nw=flat(nd.data).slice(0,10),rec=flat(hd.data);
+      const pop=flat(pd.data??pd).slice(0,10),nw=flat(nd.data??nd).slice(0,10),rec=flat(hd.data??hd);
       let h='';
       h+=remoteMessageHtml();
       // Hero / stats banner
@@ -256,7 +259,7 @@ async function loadTab(t){
         ep=mbMap[t]||'/indonesia';qp=`?page=${pg[t]}&perPage=10`;
       }
       else{ep=t==='populer'?'/populer':'/new';qp=`?page=${pg[t]}&lang=id`}
-      const d=await cachedJson(base+ep+qp,180000);const items=flat(d.data);
+      const d=await cachedJson(base+ep+qp,180000);const items=flat(d.data??d);
       if(pg[t]===1&&g)g.innerHTML='';
       if(items.length){if(g)g.insertAdjacentHTML('beforeend',items.map(cardHtml).join(''));pg[t]++;if(d.has_more===false||items.length<8||(P==='dramanova'&&t==='populer')||(P==='flickreels'&&t==='populer'))more[t]=0}else more[t]=0;
     }catch(e){if(pg[t]===1&&g)g.innerHTML=errHtml()}

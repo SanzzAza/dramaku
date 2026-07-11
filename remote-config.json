@@ -1,7 +1,7 @@
 {
-  "version": 5,
+  "version": 6,
   "updatedAt": "2026-07-11",
-  "minAppVersion": "3.8",
+  "minAppVersion": "3.9",
   "message": {
     "enabled": true,
     "type": "info",
@@ -78,21 +78,21 @@
     "onboarding": true,
     "settings": true
   },
-  "latestVersion": "3.9",
+  "latestVersion": "3.9.1",
   "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
   "changelog": [
-    "Tambah platform Drakor",
-    "Tab Korea, China, Terbaru, Trending, Ongoing",
-    "Search, detail, dan stream Drakor"
+    "Perbaikan DramaBox Ranking yang kosong",
+    "Perbaikan parsing kategori DramaBox Cina",
+    "Ranking DramaBox kini membaca trending/popular/newest"
   ],
   "update": {
-    "latestVersion": "3.9",
+    "latestVersion": "3.9.1",
     "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
     "force": false,
     "changelog": [
-      "Tambah platform Drakor",
-      "Tab Korea, China, Terbaru, Trending, Ongoing",
-      "Search, detail, dan stream Drakor"
+      "Perbaikan DramaBox Ranking yang kosong",
+      "Perbaikan parsing kategori DramaBox Cina",
+      "Ranking DramaBox kini membaca trending/popular/newest"
     ]
   },
   "support": {
