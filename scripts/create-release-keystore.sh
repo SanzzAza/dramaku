@@ -44,7 +44,13 @@ base64_one_line() {
 }
 
 if [ -z "$STORE_PASS" ]; then STORE_PASS="$(rand_secret)"; fi
-if [ -z "$KEY_PASS" ]; then KEY_PASS="$(rand_secret)"; fi
+
+# PKCS12 keystores should use the same store and key password for Android/Gradle signing.
+# If they differ, Gradle may fail with: "Given final block not properly padded".
+if [ -n "$KEY_PASS" ] && [ "$KEY_PASS" != "$STORE_PASS" ]; then
+  echo "WARNING: PKCS12 uses the store password as key password. ANDROID_KEY_PASSWORD will be set equal to ANDROID_KEYSTORE_PASSWORD." >&2
+fi
+KEY_PASS="$STORE_PASS"
 
 mkdir -p "$(dirname "$KEYSTORE_PATH")"
 

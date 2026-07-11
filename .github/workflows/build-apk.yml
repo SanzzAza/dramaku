@@ -28,7 +28,7 @@ jobs:
       - name: Create Gradle Wrapper
         run: gradle wrapper --gradle-version 8.4
 
-      - name: Build APK (signed release if secrets exist)
+      - name: Build APK (signed release if secrets are valid)
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -37,17 +37,36 @@ jobs:
         run: |
           set -e
           mkdir -p app/build/outputs/apk/final
+
+          SIGNING_OK=false
           if [ -n "$ANDROID_KEYSTORE_BASE64" ] && [ -n "$ANDROID_KEYSTORE_PASSWORD" ] && [ -n "$ANDROID_KEY_ALIAS" ] && [ -n "$ANDROID_KEY_PASSWORD" ]; then
+            echo "Signing secrets found. Validating keystore..."
+            if echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/release.keystore; then
+              export ANDROID_KEYSTORE_PATH="$PWD/app/release.keystore"
+              if keytool -list                     -keystore "$ANDROID_KEYSTORE_PATH"                     -storepass "$ANDROID_KEYSTORE_PASSWORD"                     -alias "$ANDROID_KEY_ALIAS" >/tmp/keytool-list.log 2>&1 &&                  keytool -certreq                     -keystore "$ANDROID_KEYSTORE_PATH"                     -storepass "$ANDROID_KEYSTORE_PASSWORD"                     -keypass "$ANDROID_KEY_PASSWORD"                     -alias "$ANDROID_KEY_ALIAS"                     -file /tmp/dramaku-signing-test.csr >/tmp/keytool-certreq.log 2>&1; then
+                SIGNING_OK=true
+              else
+                echo "::warning::Signing secrets are present but invalid. Falling back to debug APK."
+                echo "::warning::Most common fix: set ANDROID_KEY_PASSWORD equal to ANDROID_KEYSTORE_PASSWORD for PKCS12 keystores, or regenerate using scripts/create-release-keystore.sh."
+                cat /tmp/keytool-list.log 2>/dev/null || true
+                cat /tmp/keytool-certreq.log 2>/dev/null || true
+              fi
+            else
+              echo "::warning::ANDROID_KEYSTORE_BASE64 could not be decoded. Falling back to debug APK."
+            fi
+          else
+            echo "Signing secrets not found. Building debug APK fallback..."
+          fi
+
+          if [ "$SIGNING_OK" = "true" ]; then
             echo "Building signed release APK..."
-            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/release.keystore
-            export ANDROID_KEYSTORE_PATH="$PWD/app/release.keystore"
             ./gradlew assembleRelease
             cp app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/final/Dramaku-v3.6-release.apk
             echo "APK_PATH=app/build/outputs/apk/final/Dramaku-v3.6-release.apk" >> "$GITHUB_ENV"
             echo "APK_NAME=Dramaku-v3.6-release" >> "$GITHUB_ENV"
             echo "APK_KIND=signed release" >> "$GITHUB_ENV"
           else
-            echo "Signing secrets not found. Building debug APK fallback..."
+            echo "Building debug APK fallback..."
             ./gradlew assembleDebug
             cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/final/Dramaku-v3.6-debug.apk
             echo "APK_PATH=app/build/outputs/apk/final/Dramaku-v3.6-debug.apk" >> "$GITHUB_ENV"
