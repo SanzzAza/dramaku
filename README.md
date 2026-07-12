@@ -20,10 +20,11 @@ Nonton drama & film dari 10 platform sekaligus dalam 1 website / APK WebView.
 - Profile Center “Saya” untuk riwayat, favorit, tools cepat, dan statistik lokal
 - Struktur web asset dimodularisasi ke `assets/css/style.css` dan `assets/js/app.js`
 - Skeleton/loading state premium untuk home dan detail
+- Cuplikan feed: grid dua kolom, quick chips, mini continue player, dan tombol play langsung
 - Update checker, status platform, About/Disclaimer, dan report episode ke support
 - Player gesture: double tap seek 10 detik dan long press speed 2x
 - Platform Drakor: Korea, China, terbaru, trending, ongoing, search, detail, stream
-- Visual Discovery v4.1: Top 10, Mood Picker, Continue Watching carousel, trending search chips
+- Visual Discovery v4.2: Top 10, Mood Picker, Continue Watching carousel, trending search chips
 
 ## Branding
 - Brand kit tersedia di folder `branding/`

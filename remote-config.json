@@ -1,5 +1,5 @@
 {
-  "version": 10,
+  "version": 11,
   "updatedAt": "2026-07-11",
   "minAppVersion": "4.0",
   "message": {
@@ -78,25 +78,23 @@
     "onboarding": true,
     "settings": true
   },
-  "latestVersion": "4.1",
+  "latestVersion": "4.2",
   "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
   "changelog": [
-    "Mode Performa otomatis untuk HP low-end",
-    "Render Home lebih ringan dan jumlah card dibatasi",
-    "Player preload dikurangi dan video jauh di-unload",
-    "Cache API lama dibersihkan otomatis",
-    "Efek blur, shadow, dan animasi berat dimatikan saat Mode Performa aktif"
+    "Tambah tab Cuplikan seperti feed discovery",
+    "Cuplikan grid dua kolom dengan tombol play langsung",
+    "Mini continue player di halaman Cuplikan",
+    "Cuplikan tetap ringan saat Mode Performa aktif"
   ],
   "update": {
-    "latestVersion": "4.1",
+    "latestVersion": "4.2",
     "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
     "force": false,
     "changelog": [
-      "Mode Performa otomatis untuk HP low-end",
-      "Render Home lebih ringan dan jumlah card dibatasi",
-      "Player preload dikurangi dan video jauh di-unload",
-      "Cache API lama dibersihkan otomatis",
-      "Efek blur, shadow, dan animasi berat dimatikan saat Mode Performa aktif"
+      "Tambah tab Cuplikan seperti feed discovery",
+      "Cuplikan grid dua kolom dengan tombol play langsung",
+      "Mini continue player di halaman Cuplikan",
+      "Cuplikan tetap ringan saat Mode Performa aktif"
     ]
   },
   "support": {
