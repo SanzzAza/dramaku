@@ -387,9 +387,9 @@ public class MainActivity extends AppCompatActivity {
         public String getVersion() {
             try {
                 PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
-                return info.versionName == null ? "4.2" : info.versionName;
+                return info.versionName == null ? "4.2.1" : info.versionName;
             } catch (Exception e) {
-                return "4.2";
+                return "4.2.1";
             }
         }
 

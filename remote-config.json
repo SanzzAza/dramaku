@@ -1,5 +1,5 @@
 {
-  "version": 11,
+  "version": 12,
   "updatedAt": "2026-07-11",
   "minAppVersion": "4.0",
   "message": {
@@ -78,23 +78,21 @@
     "onboarding": true,
     "settings": true
   },
-  "latestVersion": "4.2",
+  "latestVersion": "4.2.1",
   "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
   "changelog": [
-    "Tambah tab Cuplikan seperti feed discovery",
-    "Cuplikan grid dua kolom dengan tombol play langsung",
-    "Mini continue player di halaman Cuplikan",
-    "Cuplikan tetap ringan saat Mode Performa aktif"
+    "Cuplikan kini hanya memutar Episode 1 sebagai preview",
+    "Tombol Tonton Semua Episode ditambahkan di player cuplikan",
+    "Tombol play di card Cuplikan diberi label Ep1"
   ],
   "update": {
-    "latestVersion": "4.2",
+    "latestVersion": "4.2.1",
     "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
     "force": false,
     "changelog": [
-      "Tambah tab Cuplikan seperti feed discovery",
-      "Cuplikan grid dua kolom dengan tombol play langsung",
-      "Mini continue player di halaman Cuplikan",
-      "Cuplikan tetap ringan saat Mode Performa aktif"
+      "Cuplikan kini hanya memutar Episode 1 sebagai preview",
+      "Tombol Tonton Semua Episode ditambahkan di player cuplikan",
+      "Tombol play di card Cuplikan diberi label Ep1"
     ]
   },
   "support": {

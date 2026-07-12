@@ -3,10 +3,10 @@ const PLAT_LABELS={melolo:'Melolo',freereels:'FreeReels',flickreels:'FlickReels'
 const REMOTE_CONFIG_URL='https://raw.githubusercontent.com/SanzzAza/dramaku/main/remote-config.json';
 let remoteConfig=null,remoteConfigMeta={source:'default',updated:0,url:REMOTE_CONFIG_URL};
 let P='melolo',curTab='home',pg={},busy={},more={},loaded={};
-let curDrama=null,curEps=[],curPE=0,sto=null;
+let curDrama=null,curEps=[],curPE=0,sto=null,clipPreviewMode=false;
 let fitMode=(()=>{try{return localStorage.getItem('dk_fit_mode')||'cover'}catch(e){return 'cover'}})();
 let lastSearchResults=[],lastSearchQuery='',searchFilter='all',searchSeq=0;
-const APP_VERSION='4.2';
+const APP_VERSION='4.2.1';
 const thumbCache={},platCache={},itemCache={};
 let allItems=[];
 const jsonMemCache={};
@@ -314,10 +314,10 @@ function getDetailUrl(dp,id){
   return API[dp]+`/detail?id=${id}`+(nl?'':'&lang=id');
 }
 
-async function resumeWatch(id,img,plat,ep){
+async function resumeWatch(id,img,plat,ep,clip=false){
   curEps=[];
   if(img)thumbCache[id]=fixImg(img);if(plat)platCache[id]=plat;closeSearch();
-  $('#detOv').classList.add('on');$('#detBody').innerHTML=detailLoadingHtml(img);document.body.style.overflow='hidden';
+  if(!clip){$('#detOv').classList.add('on');$('#detBody').innerHTML=detailLoadingHtml(img);document.body.style.overflow='hidden'}else{closeDet();toast('Memuat cuplikan Episode 1...')}
   const dp=plat||platCache[id]||P;
   try{
     const d=await cachedJson(getDetailUrl(dp,id),600000);if(dp==='drakor'?!d?.info:!d?.data)throw 0;
@@ -328,7 +328,7 @@ async function resumeWatch(id,img,plat,ep){
     if(dp==='drakor'&&d.info){const info=d.info,eps=d.episodes?.data||[];dd={...info,drama_id:info.id,drama_name:info.title,description:cleanText(info.meta_sinopsis||info.shoot||info.content||info.meta_description||''),episode_count:eps.length||info.meta_episode||0,thumb_url:info.image,tags:info.category?String(info.category).split(',').map(x=>x.trim()).filter(Boolean):[],watch_value:info.hits||'',_subjectType:2};curEps=eps}
     curDrama=dd;curDrama._p=dp;curDrama._thumb=fixImg(dd.thumb_url||dd.cover||dd.bookCover||thumbCache[id]||'');
     if(!curEps.length)curEps=dd.video_list||dd.episode_list||dd.episodes||dd.chapterList||[];
-    renderDet(dd);setTimeout(()=>play(id,ep),300);
+    if(!clip){renderDet(dd);setTimeout(()=>play(id,ep),300)}else{play(id,1,{clip:true})}
   }catch(e){$('#detBody').innerHTML=`<div style="padding-top:100px">${errHtml()}</div>`}
 }
 
@@ -389,18 +389,20 @@ function closeDet(){$('#detOv').classList.remove('on');document.body.style.overf
 function showPlayerHint(){try{if(localStorage.getItem('dk_player_hint_seen'))return;localStorage.setItem('dk_player_hint_seen','1')}catch(e){}const ov=$('#plOv');if(!ov)return;const h=document.createElement('div');h.className='player-hint';h.innerHTML='<div><b>Tips Player</b><span>Double tap kiri/kanan: mundur/maju 10 detik</span><span>Tahan video: speed 2x sementara</span><span>Scroll atas/bawah: pindah episode</span><button>Mengerti</button></div>';ov.appendChild(h);h.querySelector('button').onclick=()=>h.remove();setTimeout(()=>h.remove(),6500)}
 function unloadSlideMedia(s){try{if(s._hls){s._hls.destroy();s._hls=null}const v=s.querySelector('video');if(v){v.pause();v.removeAttribute('src');v.load();v.remove()}delete s.dataset.ld;const loader=s.querySelector('.v-loading');if(loader){loader.style.display='flex';loader.innerHTML='<div class="spinner"></div><span style="color:var(--text3);font-size:10px">Episode '+s.dataset.ep+'</span>'}}catch(e){}}
 function trimPlayerMedia(cont,activeEp){if(!isPerformanceMode())return;cont.querySelectorAll('.v-slide').forEach(s=>{const e=+s.dataset.ep;if(Math.abs(e-activeEp)>1)unloadSlideMedia(s)})}
-async function play(did,ep){
-  closeEpModal();setNativePlayback(true);$('#plOv').classList.add('on');applyFitMode();showPlayerHint();$('#plName').textContent=curDrama?.drama_name||'';$('#plEp').textContent='Episode '+ep;
-  if(curDrama)saveHistory(curDrama,ep);
+async function play(did,ep,opts={}){
+  const clipOnly=!!opts.clip;clipPreviewMode=clipOnly;
+  closeEpModal();setNativePlayback(true);$('#plOv').classList.add('on');applyFitMode();showPlayerHint();$('#plName').textContent=curDrama?.drama_name||'';$('#plEp').textContent=(clipOnly?'Cuplikan · ':'')+'Episode '+ep;
+  if(curDrama&&!clipOnly)saveHistory(curDrama,ep);
   curPE=ep;const cont=$('#plCont');cont.innerHTML='';const total=curDrama?.episode_count||curEps.length||ep;
-  const back=isPerformanceMode()?0:2,forward=isPerformanceMode()?2:3;const ps=Math.max(1,ep-back);for(let i=ps;i<ep;i++)cont.insertAdjacentHTML('beforeend',slideHtml(did,i));
+  const back=clipOnly?0:(isPerformanceMode()?0:2),forward=clipOnly?1:(isPerformanceMode()?2:3);const ps=Math.max(1,ep-back);for(let i=ps;i<ep;i++)cont.insertAdjacentHTML('beforeend',slideHtml(did,i));
   for(let i=ep;i<ep+Math.min(forward,total-ep+1);i++)cont.insertAdjacentHTML('beforeend',slideHtml(did,i));
   loadVid(did,ep);
   requestAnimationFrame(()=>{const t=cont.querySelector(`.v-slide[data-ep="${ep}"]`);if(t)t.scrollIntoView({behavior:'instant'})});
   cont.onscroll=debounce(()=>{
     const slides=cont.querySelectorAll('.v-slide');let active=null;
     slides.forEach(s=>{const r=s.getBoundingClientRect();if(r.top>=-80&&r.top<window.innerHeight/2)active=s});
-    if(!active)return;const ae=+active.dataset.ep;$('#plEp').textContent='Episode '+ae;curPE=ae;showUI();
+    if(!active)return;const ae=+active.dataset.ep;$('#plEp').textContent=(clipPreviewMode?'Cuplikan · ':'Episode ')+ (clipPreviewMode?'Episode '+ae:ae);curPE=ae;showUI();
+    if(clipPreviewMode)return;
     if(curDrama)saveHistory(curDrama,ae);
     cont.querySelectorAll('video').forEach(v=>{if(v.closest('.v-slide')===active)v.play().catch(()=>{});else v.pause()});
     if(!active.dataset.ld)loadVid(did,ae);
@@ -422,7 +424,7 @@ function seekBy(vid,slide,delta){if(!vid.duration||!isFinite(vid.duration))retur
 function slideHtml(did,ep){
   const nm=esc(curDrama?.drama_name||''),ds=esc(curDrama?.description||'');
   return`<div class="v-slide" data-ep="${ep}" data-did="${esc(did)}"><div class="v-loading"><div class="spinner"></div><span style="color:var(--text3);font-size:10px">Episode ${ep}</span></div>
-  <div class="v-info"><div class="ep-lbl">Episode ${ep}</div><div class="ep-nm">${nm}</div><div class="ep-ds">${ds}</div></div>
+  <div class="v-info"><div class="ep-lbl">${clipPreviewMode?'Cuplikan':'Episode'} ${ep}</div><div class="ep-nm">${nm}</div><div class="ep-ds">${ds}</div>${clipPreviewMode?'<button class="clip-full-watch" onclick="playFullFromClip()">Tonton Semua Episode</button>':''}</div>
   <div class="v-actions"><div class="v-act"><button onclick="this.classList.toggle('liked')" aria-label="Suka"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg></button><span>Suka</span></div>
   <div class="v-act"><button onclick="openEpModal()" aria-label="Daftar episode"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg></button><span>Episode</span></div>
   <div class="v-act"><button onclick="toggleFitMode()" aria-label="Ubah ukuran video"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg></button><span class="fit-label">${fitMode==='contain'?'Asli':'Full'}</span></div>
@@ -473,7 +475,7 @@ async function loadVid(did,ep){
   vid.addEventListener('loadeddata',()=>{if(loader)loader.style.display='none';if(+slide.dataset.ep===curPE){vid.play().catch(()=>{});scheduleHideUI()}});
   vid.addEventListener('timeupdate',()=>{const p=$('#prg-'+ep);if(p&&vid.duration)p.style.width=(vid.currentTime/vid.duration*100)+'%';if(vid.duration&&Date.now()-(vid._lastSave||0)>2200){saveWatchProgress(did,ep,vid.currentTime,vid.duration);vid._lastSave=Date.now()}});
   bindSeekBar(slide,vid,did,ep);
-  vid.addEventListener('ended',()=>{clearWatchProgress(did,ep);const ns=slide.nextElementSibling;if(Settings.get().autoNext&&ns)ns.scrollIntoView({behavior:'smooth'})});
+  vid.addEventListener('ended',()=>{if(clipPreviewMode){flashGesture(slide,'Cuplikan selesai','center');showUI();return}clearWatchProgress(did,ep);const ns=slide.nextElementSibling;if(Settings.get().autoNext&&ns)ns.scrollIntoView({behavior:'smooth'})});
   vid.addEventListener('error',()=>{if(loader){loader.style.display='flex';loader.innerHTML='<p style="color:var(--text3);font-size:11px">'+(dp==='moviebox'?'Format HEVC - buka di Samsung Internet':'Gagal memutar')+'</p>'}});
   // Tap controls: single tap play/pause, double tap left/right seek, double tap center like, long press 2x speed.
   let lastTap=0,suppressClickUntil=0,longPressTimer=null,speedHold=false;
@@ -497,7 +499,8 @@ function showUI(){$('#plOv').classList.remove('p-ui-hidden');const v=$('#plOv').
 function hideUI(){$('#plOv').classList.add('p-ui-hidden')}
 function scheduleHideUI(){clearTimeout(uiTimer);uiTimer=setTimeout(hideUI,3000)}
 function nextEp(){const c=$('#plCont'),cur=c.querySelector(`.v-slide[data-ep="${curPE}"]`);if(cur?.nextElementSibling)cur.nextElementSibling.scrollIntoView({behavior:'smooth'})}
-function closePl(){setNativePlayback(false);clearTimeout(uiTimer);closeEpModal();const ov=$('#plOv');ov.classList.remove('on','p-ui-hidden');ov.querySelectorAll('.v-slide').forEach(unloadSlideMedia);$('#plCont').innerHTML=''}
+function playFullFromClip(){if(!curDrama)return;toast('Memutar semua episode...');play(curDrama.drama_id||curDrama.bookId,1,{clip:false})}
+function closePl(){clipPreviewMode=false;setNativePlayback(false);clearTimeout(uiTimer);closeEpModal();const ov=$('#plOv');ov.classList.remove('on','p-ui-hidden');ov.querySelectorAll('.v-slide').forEach(unloadSlideMedia);$('#plCont').innerHTML=''}
 
 function openEpModal(){
   showUI();clearTimeout(uiTimer);const total=curDrama?.episode_count||curEps.length||0;
@@ -615,7 +618,7 @@ function renderProfile(){
 
 function clipFeedUrl(p,page=1){const base=API[p];if(p==='drakor')return base+`/trending?page=${page}&limit=30&days=30`;if(p==='dramabox')return base+'/rank?lang=in';if(p==='moviebox')return base+`/global?page=${page}&perPage=20`;if(p==='goodshort')return base+`/populer?page=${page}`;if(p==='reelshort')return base+`/populer?page=${page}&limit=20&period=0&rule=0`;if(p==='dramanova')return base+`/discovery?size=20&page=${page}`;if(p==='netshort')return base+'/populer';if(p==='flickreels')return base+'/populer';return base+`/populer?page=${page}&lang=id`}
 function clipSkeleton(){return`<div class="clips-page"><div class="clips-hero skel"></div><div class="clip-chip-row"><div class="skel clip-chip-skel"></div><div class="skel clip-chip-skel"></div><div class="skel clip-chip-skel"></div></div><div class="clip-grid">${skelHtml(8,1)}</div></div>`}
-function clipCardHtml(d,i){const img=fixImg(d.thumb_url||''),id=jsStr(d.drama_id),si=jsStr(img),pl=d._p||platCache[d.drama_id]||P,nm=d.drama_name||'Tanpa Judul',tags=(d.tags||[]).slice(0,2).map(t=>typeof t==='object'?(t.name||t.title||''):t).filter(Boolean).join(' • '),views=d.watch_value?fmtV(d.watch_value):'',ep=d.episode_count||'';return`<article class="clip-card" onclick="openDet('${id}','${si}')"><div class="clip-poster"><img src="${esc(img)}" alt="${esc(nm)}" loading="lazy" decoding="async" onerror="this.style.display='none'"/><div class="clip-rank">${i+1}</div>${views?`<div class="clip-views">🔥 ${esc(views)}</div>`:''}<button class="clip-play" onclick="event.stopPropagation();resumeWatch('${id}','${si}','${jsStr(pl)}',1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button></div><div class="clip-copy"><b>${esc(nm)}</b><span>${esc(tags||platformLabel(pl))}${ep?` | ${esc(ep)} episode`:''}</span></div></article>`}
+function clipCardHtml(d,i){const img=fixImg(d.thumb_url||''),id=jsStr(d.drama_id),si=jsStr(img),pl=d._p||platCache[d.drama_id]||P,nm=d.drama_name||'Tanpa Judul',tags=(d.tags||[]).slice(0,2).map(t=>typeof t==='object'?(t.name||t.title||''):t).filter(Boolean).join(' • '),views=d.watch_value?fmtV(d.watch_value):'',ep=d.episode_count||'';return`<article class="clip-card" onclick="openDet('${id}','${si}')"><div class="clip-poster"><img src="${esc(img)}" alt="${esc(nm)}" loading="lazy" decoding="async" onerror="this.style.display='none'"/><div class="clip-rank">${i+1}</div>${views?`<div class="clip-views">🔥 ${esc(views)}</div>`:''}<button class="clip-play" onclick="event.stopPropagation();resumeWatch('${id}','${si}','${jsStr(pl)}',1,true)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><span>Ep1</span></button></div><div class="clip-copy"><b>${esc(nm)}</b><span>${esc(tags||platformLabel(pl))}${ep?` | ${esc(ep)} episode`:''}</span></div></article>`}
 function clipMiniPlayerHtml(){const last=getHistory()[0];if(!last)return'';const thumb=fixImg(last.thumb||''),ep=parseInt(last.ep)||1;return`<div class="clip-mini-player" id="clipMini"><img src="${esc(thumb)}" onerror="this.style.display='none'"/><div><b>${esc(last.name||'Lanjut nonton')}</b><span>Lanjut: Ep.${ep}${last.dur?` / ${fmtTime(last.dur)}`:''}</span></div><button onclick="resumeWatch('${jsStr(last.id)}','${jsStr(thumb)}','${jsStr(last.plat)}',${ep})"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button><button class="mini-close" onclick="event.stopPropagation();$('#clipMini')?.remove()">×</button></div>`}
 async function renderClips(){const box=$('#v-clips');if(!box)return;box.innerHTML=clipSkeleton();try{const d=await cachedJson(clipFeedUrl(P,1),180000);let items=flat(d.data??d).filter(x=>x&&x.drama_id&&x.thumb_url);if(!items.length)items=allItems.filter(x=>(x._p||platCache[x.drama_id]||P)===P&&x.thumb_url);items=items.slice(0,isPerformanceMode()?8:16);const chips=['Populer','CEO','Balas Dendam','Romantis','Korea','China','Comedy','Ongoing'];box.innerHTML=`<div class="clips-page"><section class="clips-hero"><div><span>Cuplikan</span><h1>${esc(platformLabel(P))} Picks</h1><p>Potongan pilihan buat cari tontonan cepat. Tap poster untuk detail, tombol play untuk langsung mulai episode pertama.</p></div><button onclick="renderClips()">Refresh</button></section><div class="clip-chip-row">${chips.map((q,i)=>`<button class="clip-chip ${i===0?'on':''}" onclick="${i===0?'renderClips()':`quickSearch('${jsStr(q)}')`}">${esc(q)}</button>`).join('')}</div><div class="clip-grid">${items.map(clipCardHtml).join('')}</div>${items.length?'':emptyHtml('Cuplikan belum tersedia','Coba pilih platform lain atau refresh')}</div>${clipMiniPlayerHtml()}`;}catch(e){ErrorLog.capture('clips','Gagal load cuplikan',{platform:P,error:String(e?.message||e)});box.innerHTML=errHtml()}}
 
