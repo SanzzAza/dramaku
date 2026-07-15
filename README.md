@@ -1,6 +1,6 @@
 # Dramaku - Streaming Drama & Film Terbaik
 
-Nonton drama & film dari 10 platform sekaligus dalam 1 website / APK WebView.
+Nonton drama & film dari 10 platform sekaligus dalam 1 app Android native / web demo.
 
 **Versi saat ini: 4.5.2**
 
@@ -40,15 +40,16 @@ Nonton drama & film dari 10 platform sekaligus dalam 1 website / APK WebView.
 - Launcher icon Android sudah diganti dengan monogram Dramaku baru
 - Header, splash, favicon, dan app icon memakai identitas visual yang sama
 
-## APK / WebView
-- WebView native dengan JavaScript bridge (hardened)
-- Immersive fullscreen saat player aktif
-- Keep screen awake saat nonton
-- Back button Android menutup modal/player/detail sesuai state
-- Native ExoPlayer activity untuk format video yang butuh player native
-- Native bridge untuk haptic feedback, share sheet, versi APK, dan clear cache WebView
-- Release build memakai R8 minify + resource shrink
+## APK / Native Android
+- Main app sudah mulai dipindahkan ke full native: Kotlin + Jetpack Compose
+- Beranda, search, detail, koleksi/favorit/riwayat, settings, dan episode grid native
+- Native ExoPlayer activity untuk pemutaran video
+- Stream resolver 10 platform dipindahkan ke Kotlin repository
+- WebView lama masih disimpan sebagai `LegacyWebViewActivity` untuk referensi migrasi
+- Release build memakai R8-ready config
 - HTTPS-only network config (cleartext diblokir)
+
+Panduan migrasi: [`docs/NATIVE_MIGRATION.md`](docs/NATIVE_MIGRATION.md).
 
 ## Versioning
 Sumber versi terpusat: [`version.properties`](version.properties)
