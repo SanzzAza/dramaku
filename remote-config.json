@@ -1,5 +1,5 @@
 {
-  "version": 16,
+  "version": 17,
   "updatedAt": "2026-07-15",
   "minAppVersion": "4.0",
   "message": {
@@ -78,25 +78,23 @@
     "onboarding": true,
     "settings": true
   },
-  "latestVersion": "4.4.1",
+  "latestVersion": "4.5.0",
   "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
   "changelog": [
-    "Fix build APK: illegal unicode escape di MainActivity",
-    "Struktur JS dimodularisasi (core/search/home/detail/player/library/app)",
-    "Halaman Privasi & Disclaimer di Setelan",
-    "Label platform dibersihkan (tanpa angka marketing palsu)",
-    "Lanjutan stabilitas: rating asli, search dedupe, native progress sync"
+    "Tampilan lebih cinematic: glass nav, card depth, spotlight premium",
+    "Typography & accent hijau mint lebih tajam",
+    "Splash, tabs, bottom bar, detail & settings dipoles",
+    "Mode performa tetap meredam animasi di HP low-end"
   ],
   "update": {
-    "latestVersion": "4.4.1",
+    "latestVersion": "4.5.0",
     "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
     "force": false,
     "changelog": [
-      "Fix build APK: illegal unicode escape di MainActivity",
-      "Struktur JS dimodularisasi (core/search/home/detail/player/library/app)",
-      "Halaman Privasi & Disclaimer di Setelan",
-      "Label platform dibersihkan (tanpa angka marketing palsu)",
-      "Lanjutan stabilitas: rating asli, search dedupe, native progress sync"
+      "Tampilan lebih cinematic: glass nav, card depth, spotlight premium",
+      "Typography & accent hijau mint lebih tajam",
+      "Splash, tabs, bottom bar, detail & settings dipoles",
+      "Mode performa tetap meredam animasi di HP low-end"
     ]
   },
   "support": {

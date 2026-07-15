@@ -7,7 +7,7 @@ let P='melolo',curTab='home',pg={},busy={},more={},loaded={};
 let curDrama=null,curEps=[],curPE=0,sto=null,clipPreviewMode=false;
 let fitMode=(()=>{try{return localStorage.getItem('dk_fit_mode')||'cover'}catch(e){return 'cover'}})();
 let lastSearchResults=[],lastSearchQuery='',searchFilter='all',searchSeq=0;
-const APP_VERSION='4.4.1';
+const APP_VERSION='4.5.0';
 const thumbCache={},platCache={},itemCache={};
 let allItems=[];
 const jsonMemCache={};
