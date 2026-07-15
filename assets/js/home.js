@@ -3,7 +3,7 @@ function platformStatusHtml(){const keys=Object.keys(API);if(!keys.length)return
 function togglePlat(){$('#platDd').classList.toggle('on');$('#platBtn').classList.toggle('open')}
 function setPlatform(p){
   if(!platformEnabled(p)){toast(platformLabel(p)+' nonaktif: '+platformReason(p));return}
-  P=p;$('#platLabel').textContent=platformLabel(p);try{localStorage.setItem('dk_platform',p)}catch(e){}
+  P=p;$('#platLabel').textContent=platformLabel(p);try{localStorage.setItem('dk_platform',p)}catch(e){};bumpEl($('#platBtn'));haptic('light')
   $$('.plat-opt').forEach(e=>e.classList.toggle('on',e.dataset.p===p));$('#platDd').classList.remove('on');$('#platBtn').classList.remove('open');
   // Dynamic tabs per platform
   const tabEl=document.querySelector('.tabs');
@@ -37,7 +37,75 @@ function flat(data){
   return out;
 }
 
-function go(t){curTab=t;$$('.tab').forEach(e=>e.classList.toggle('on',e.dataset.t===t));$$('.bnav-item').forEach(e=>{const n=e.dataset.n;e.classList.toggle('on',n===t||(n==='profile'&&['profile','settings','fav'].includes(t)))});['home','clips','populer','new','t4','t5','t6','t7','history','fav','settings','profile'].forEach(k=>{const el=$('#v-'+k);if(el)el.style.display=k===t?'block':'none'});
+
+let ptrBound=false, ptrState={pulling:false,startY:0,dy:0};
+function bindPullToRefresh(){
+  const root=$('#ptrRoot'), ind=$('#ptrInd');
+  if(!root||!ind)return;
+  // rebind each home render
+  const content=root.querySelector('.ptr-content');
+  if(!content)return;
+  const onStart=(e)=>{
+    if(curTab!=='home')return;
+    if(window.scrollY>8)return;
+    const y=e.touches?e.touches[0].clientY:e.clientY;
+    ptrState={pulling:true,startY:y,dy:0};
+  };
+  const onMove=(e)=>{
+    if(!ptrState.pulling)return;
+    if(window.scrollY>8){ptrState.pulling=false;root.style.transform='';ind.classList.remove('on','ready');return}
+    const y=e.touches?e.touches[0].clientY:e.clientY;
+    let dy=Math.max(0,y-ptrState.startY);
+    if(dy<=0)return;
+    if(dy>120)dy=120;
+    ptrState.dy=dy;
+    root.style.transition='none';
+    root.style.transform=`translateY(${dy*0.45}px)`;
+    ind.classList.add('on');
+    ind.classList.toggle('ready', dy>70);
+    ind.querySelector('.ptr-text').textContent=dy>70?'Lepas untuk refresh':'Tarik untuk refresh';
+    if(dy>20&&e.cancelable)e.preventDefault();
+  };
+  const onEnd=async()=>{
+    if(!ptrState.pulling)return;
+    const should=ptrState.dy>70;
+    ptrState.pulling=false;ptrState.dy=0;
+    root.style.transition='transform .25s cubic-bezier(.16,1,.3,1)';
+    if(should){
+      ind.classList.add('ready');
+      ind.querySelector('.ptr-text').textContent='Menyegarkan...';
+      root.style.transform='translateY(42px)';
+      haptic('light');
+      try{await refreshHome()}catch(e){}
+      root.style.transform='';
+      ind.classList.remove('on','ready');
+    }else{
+      root.style.transform='';
+      ind.classList.remove('on','ready');
+    }
+  };
+  // clone node to drop old listeners simply by replacing handlers via property once markers
+  if(root._ptrBound){
+    root.removeEventListener('touchstart', root._ptrStart, {passive:true});
+    root.removeEventListener('touchmove', root._ptrMove, {passive:false});
+    root.removeEventListener('touchend', root._ptrEnd);
+  }
+  root._ptrStart=onStart; root._ptrMove=onMove; root._ptrEnd=onEnd; root._ptrBound=true;
+  root.addEventListener('touchstart', onStart, {passive:true});
+  root.addEventListener('touchmove', onMove, {passive:false});
+  root.addEventListener('touchend', onEnd);
+}
+async function refreshHome(){
+  try{
+    // clear home api cache keys lightly
+    Object.keys(jsonMemCache).forEach(k=>{if(String(k).includes('/home')||String(k).includes('/populer')||String(k).includes('/new')||String(k).includes('/recommend')||String(k).includes('/discovery')||String(k).includes('/indonesia')||String(k).includes('/trending'))delete jsonMemCache[k]});
+  }catch(e){}
+  loaded.home=0; busy.home=0; more.home=1; pg.home=1;
+  await loadTab('home');
+  toast('Beranda disegarkan');
+}
+
+function go(t){curTab=t;$$('.tab').forEach(e=>{const on=e.dataset.t===t;e.classList.toggle('on',on);if(on)bumpEl(e)});$$('.bnav-item').forEach(e=>{const n=e.dataset.n;const on=n===t||(n==='profile'&&['profile','settings','fav'].includes(t));e.classList.toggle('on',on);if(on)bumpEl(e)});['home','clips','populer','new','t4','t5','t6','t7','history','fav','settings','profile'].forEach(k=>{const el=$('#v-'+k);if(el)el.style.display=k===t?'block':'none'});
   if(t==='history'){renderHistory()}else if(t==='fav'){renderFav()}else if(t==='settings'){renderSettings()}else if(t==='profile'){renderProfile()}else if(t==='clips'){renderClips()}else if(!$('#v-'+t).innerHTML.trim())loadTab(t);window.scrollTo(0,0)}
 function goHome(){closeDet();closePl();go('home')}
 
@@ -71,12 +139,13 @@ async function loadTab(t){
       if(pop.length)h+=top10Html(pop,'Top 10 Hari Ini');
       h+=moodHtml();
       h+=continueWatchingHtml(getHistory(),greet);
+      h+=forYouHtml(spotlightPool);
       h+=platformStatusHtml();
       if(nw.length)h+=secHtml('Drama Terbaru',nw,'new',1);
       if(rec.length)h+=`<div class="sec"><div class="sec-hd"><h2 class="sec-tt">Rekomendasi</h2></div><div class="grid">${rec.map(cardHtml).join('')}</div></div>`;
       h+=`<div class="home-footer">Dramaku v${APP_VERSION} · 10 Platform · Dibuat dengan cinta<br>Semua konten milik platform masing-masing</div>`;
       if(!pop.length&&!nw.length&&!rec.length){box.innerHTML=errHtml('Data platform kosong atau gagal dimuat');}
-      else{box.innerHTML=h||errHtml();loaded.home=1;if([hd,pd,nd].filter(Boolean).length<3)toast('Sebagian data gagal dimuat');}
+      else{box.innerHTML=`<div class="ptr-root" id="ptrRoot"><div class="ptr-indicator" id="ptrInd"><span class="ptr-spinner"></span><span class="ptr-text">Tarik untuk refresh</span></div><div class="ptr-content">${h||errHtml()}</div></div>`;loaded.home=1;bindPullToRefresh();if([hd,pd,nd].filter(Boolean).length<3)toast('Sebagian data gagal dimuat');}
     }catch(e){ErrorLog.capture('home',String(e?.message||e),{platform:P});box.innerHTML=errHtml(e?.message||e)}
   }else if(t!=='home'){
     const tabNames={populer:'Paling Populer',new:'Paling Baru',t4:'',t5:'',t6:'',t7:''};
@@ -111,6 +180,43 @@ async function loadTab(t){
 }
 
 
+
+function tokenizeInterest(s){
+  return String(s||'').toLowerCase()
+    .replace(/[^a-z0-9\u00c0-\u024f\u0400-\u04ff\u4e00-\u9fff\s]/gi,' ')
+    .split(/\s+/).filter(w=>w.length>2 && !/^(the|and|untuk|dengan|yang|dari|this|drama|episode|full|indo|sub)$/.test(w));
+}
+function forYouHtml(pool){
+  const hist=typeof getHistory==='function'?getHistory():[];
+  if(!hist.length||!pool||!pool.length)return'';
+  const seen=new Set(hist.map(h=>String(h.id)));
+  const bag={};
+  hist.slice(0,12).forEach(h=>{
+    tokenizeInterest(h.name).forEach(w=>{bag[w]=(bag[w]||0)+2});
+    if(h.plat)bag['plat:'+h.plat]=(bag['plat:'+h.plat]||0)+3;
+  });
+  const scored=(pool||[]).filter(d=>d&&d.drama_id&&!seen.has(String(d.drama_id))).map(d=>{
+    let s=0;
+    const title=tokenizeInterest(d.drama_name||d.title||'');
+    title.forEach(w=>{if(bag[w])s+=bag[w]});
+    const pl=d._p||platCache[d.drama_id]||'';
+    if(bag['plat:'+pl])s+=bag['plat:'+pl];
+    if(extractRealRating(d))s+=1;
+    if(d.thumb_url)s+=1;
+    return {d,s};
+  }).filter(x=>x.s>0).sort((a,b)=>b.s-a.s);
+  let picks=scored.slice(0,isPerformanceMode()?6:9).map(x=>x.d);
+  if(picks.length<3){
+    // fallback: same platforms as history
+    const plats=new Set(hist.map(h=>h.plat).filter(Boolean));
+    const extra=(pool||[]).filter(d=>d&&d.drama_id&&!seen.has(String(d.drama_id))&&plats.has(d._p||platCache[d.drama_id]));
+    picks=[...picks,...extra].filter((d,i,arr)=>arr.findIndex(x=>String(x.drama_id)===String(d.drama_id))===i).slice(0,isPerformanceMode()?6:9);
+  }
+  if(picks.length<3)return'';
+  const chips=Object.entries(bag).filter(([k,v])=>!k.startsWith('plat:')&&v>=2).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k])=>k);
+  return`<section class="sec foryou-sec"><div class="sec-hd"><h2 class="sec-tt">Buat Kamu</h2><div class="sec-more" onclick="go('history')">Dari riwayat</div></div>${chips.length?`<div class="foryou-chips">${chips.map(c=>`<span class="fy-chip">#${esc(c)}</span>`).join('')}</div>`:''}<div class="grid">${picks.map(cardHtml).join('')}</div></section>`;
+}
+
 function spotlightHtml(items){
   const pool=(items||[]).filter(d=>d&&d.drama_id&&d.thumb_url);
   if(!pool.length)return '';
@@ -128,7 +234,7 @@ function top10Html(items,title='Top 10 Hari Ini'){
 function continueWatchingHtml(history,greet='Lanjut nonton?'){
   const list=(history||[]).slice(0,isPerformanceMode()?5:8);
   if(!list.length)return'';
-  return`<section class="continue-sec"><div class="sec-hd" style="padding:0 16px;margin-bottom:10px"><h2 class="sec-tt">Lanjutkan Tontonan</h2><div class="sec-more" onclick="go('history')">Semua</div></div><div class="cw-row">${list.map((d,idx)=>{const thumb=fixImg(d.thumb||''),ep=parseInt(d.ep)||1,pct=Math.max(0,Math.min(100,parseInt(d.pct||0)||0));return`<article class="cw-item" onclick="resumeWatch('${jsStr(d.id)}','${jsStr(thumb)}','${jsStr(d.plat)}',${ep})"><div class="cw-item-poster"><img src="${esc(thumb)}" alt="${esc(d.name)}" loading="lazy" decoding="async" onerror="this.style.display='none'"/><div class="cw-item-badge">Ep ${ep}</div>${pct?`<div class="cw-item-progress"><span style="width:${pct}%"></span></div>`:''}</div><div class="cw-item-copy"><b>${esc(d.name||'Tanpa Judul')}</b><span>${idx===0?esc(greet):'Lanjut'}${pct?` · ${pct}%`:''}</span></div></article>`}).join('')}</div></section>`
+  return`<section class="continue-sec"><div class="sec-hd" style="padding:0 16px;margin-bottom:10px"><h2 class="sec-tt">Lanjutkan Tontonan</h2><div class="sec-more" onclick="go('history')">Semua</div></div><div class="cw-row">${list.map((d,idx)=>{const thumb=fixImg(d.thumb||''),ep=parseInt(d.ep)||1,pct=Math.max(0,Math.min(100,parseInt(d.pct||0)||0));return`<article class="cw-item" onclick="resumeWatch('${jsStr(d.id)}','${jsStr(thumb)}','${jsStr(d.plat)}',${ep})"><div class="cw-item-poster"><img src="${esc(thumb)}" alt="${esc(d.name)}" loading="lazy" decoding="async" onerror="this.style.display='none'"/><div class="cw-item-badge">Ep ${ep}</div>${pct?`<div class="cw-item-progress"><span style="width:${pct}%"></span></div>`:''}${pct?progressRingHtml(pct,32):''}</div><div class="cw-item-copy"><b>${esc(d.name||'Tanpa Judul')}</b><span>${idx===0?esc(greet):'Lanjut'}${pct?` · ${pct}%`:''}</span></div></article>`}).join('')}</div></section>`
 }
 function moodHtml(){
   const moods=[['🔥','Balas Dendam','Revenge vibes','Balas Dendam','rgba(239,68,68,.20)'],['💘','Romantis','Baper malam ini','Romantis','rgba(236,72,153,.20)'],['👑','CEO','Billionaire drama','CEO','rgba(245,158,11,.22)'],['😂','Komedi','Ringan & lucu','Comedy','rgba(59,130,246,.20)'],['😭','Sedih','Siap nangis','Sedih','rgba(99,102,241,.20)'],['⚔️','Action','Tegang terus','Action','rgba(239,68,68,.16)'],['🇰🇷','Korea','Drakor terbaru','Korea','rgba(16,185,129,.22)'],['🇨🇳','China','CDrama pilihan','China','rgba(245,158,11,.18)']];
@@ -138,8 +244,13 @@ function moodHtml(){
 function cardHtml(d){
   const img=fixImg(d.thumb_url||''),nm=d.drama_name||'',ep=d.episode_count||'',id=String(d.drama_id||''),vw=d.watch_value||'',isFree=d.free===true;
   const pl=platCache[id]||d._p||P,si=jsStr(img),sid=jsStr(id);
+  const wm=watchMetaFor(id);
   const views=vw&&vw!=='0'&&!/imdb/i.test(String(vw))?`<div class="badge-views">${esc(fmtV(vw))}</div>`:'';
-  return`<article class="card" role="button" tabindex="0" onclick="openDet('${sid}','${si}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDet('${sid}','${si}')}" aria-label="Buka ${esc(nm)}"><div class="card-img"><img src="${esc(img)}" alt="${esc(nm)}" loading="lazy" decoding="async" onerror="this.onerror=null;this.style.display='none'"/>${ep&&ep!=='0'&&ep!==0?`<div class="badge-ep">${esc(ep)} Ep</div>`:''}${isFree?'<div class="badge-free">FREE</div>':''}${views}<div class="badge-plat">${esc(platformLabel(pl))}</div></div><div class="card-body"><div class="card-name">${esc(nm)}</div>${ratingBadgeHtml(d)}</div></article>`;
+  const cont=wm&&(wm.pct>0||wm.ep>1)?`<div class="badge-cont">LANJUT${wm.pct?` ${wm.pct}%`:''}</div>`:'';
+  const neu=!cont&&isFreshItem(d)?'<div class="badge-new">BARU</div>':'';
+  const prog=wm&&wm.pct?`<div class="card-progress"><span style="width:${wm.pct}%"></span></div>`:'';
+  const ring=wm&&wm.pct?progressRingHtml(wm.pct,30):'';
+  return`<article class="card" role="button" tabindex="0" onclick="openDet('${sid}','${si}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDet('${sid}','${si}')}" aria-label="Buka ${esc(nm)}"><div class="card-img"><img src="${esc(img)}" alt="${esc(nm)}" loading="lazy" decoding="async" onerror="this.onerror=null;this.style.display='none'"/>${ep&&ep!=='0'&&ep!==0?`<div class="badge-ep">${esc(ep)} Ep</div>`:''}${isFree?'<div class="badge-free">FREE</div>':''}${views}${cont}${neu}<div class="badge-plat">${esc(platformLabel(pl))}</div>${prog}${ring}</div><div class="card-body"><div class="card-name">${esc(nm)}</div>${ratingBadgeHtml(d)}${wm?`<div class="card-sub">Ep ${wm.ep}${wm.pct?` · ${wm.pct}%`:''}</div>`:''}</div></article>`;
 }
 function fmtV(v){if(!v)return'';const n=parseInt(v);if(isNaN(n))return v;if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return v}
 function secHtml(title,items,tab,scroll){

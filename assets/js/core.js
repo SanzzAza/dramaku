@@ -7,7 +7,7 @@ let P='melolo',curTab='home',pg={},busy={},more={},loaded={};
 let curDrama=null,curEps=[],curPE=0,sto=null,clipPreviewMode=false;
 let fitMode=(()=>{try{return localStorage.getItem('dk_fit_mode')||'cover'}catch(e){return 'cover'}})();
 let lastSearchResults=[],lastSearchQuery='',searchFilter='all',searchSeq=0;
-const APP_VERSION='4.5.0';
+const APP_VERSION='4.5.1';
 const thumbCache={},platCache={},itemCache={};
 let allItems=[];
 const jsonMemCache={};
@@ -209,6 +209,32 @@ const Settings={
   set(k,v){const s=this.get();s[k]=v;try{localStorage.setItem('dk_settings',JSON.stringify(s))}catch(e){};applyPerformanceMode();renderSettings()}
 };
 function haptic(type='light'){try{if(Settings.get().haptic&&window.NativeApp?.haptic)NativeApp.haptic(type)}catch(e){}}
+function bumpEl(el){if(!el||isPerformanceMode())return;el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump');setTimeout(()=>el.classList.remove('bump'),280)}
+function watchMetaFor(id){
+  const hid=String(id||'');
+  if(!hid)return null;
+  try{
+    const h=(typeof getHistory==='function'?getHistory():[]).find(x=>String(x.id)===hid);
+    if(h)return {ep:parseInt(h.ep)||1,pct:Math.max(0,Math.min(100,parseInt(h.pct||0)||0)),plat:h.plat||'',time:h.time||0};
+  }catch(e){}
+  return null;
+}
+function isFreshItem(d){
+  // heuristic: free flag / "new" fields / recent tags
+  if(!d)return false;
+  if(d.is_new_book==='1'||d.is_new===true||d.isNew===true)return true;
+  const tags=(Array.isArray(d.tags)?d.tags:[]).map(t=>String(typeof t==='object'?(t.name||t.title||''):t).toLowerCase());
+  if(tags.some(t=>/\b(new|baru|latest|hot|trending)\b/.test(t)))return true;
+  const name=String(d.drama_name||d.title||'').toLowerCase();
+  return /\b(new|baru)\b/.test(name);
+}
+function progressRingHtml(pct,size=34){
+  pct=Math.max(0,Math.min(100,parseInt(pct)||0));
+  if(!pct)return '';
+  const r=13,c=2*Math.PI*r,off=c*(1-pct/100);
+  return `<div class="prog-ring" style="width:${size}px;height:${size}px" aria-label="Progress ${pct}%"><svg viewBox="0 0 32 32"><circle class="pr-bg" cx="16" cy="16" r="${r}"/><circle class="pr-fg" cx="16" cy="16" r="${r}" style="stroke-dasharray:${c.toFixed(2)};stroke-dashoffset:${off.toFixed(2)}"/></svg><span>${pct}%</span></div>`;
+}
+
 function appVersion(){try{return window.NativeApp?.getVersion?.()||APP_VERSION}catch(e){return APP_VERSION}}
 function clearApiCache(){try{Object.keys(localStorage).filter(k=>k.startsWith('dk_api_')).forEach(k=>localStorage.removeItem(k));Object.keys(jsonMemCache).forEach(k=>delete jsonMemCache[k]);toast('Cache API dibersihkan')}catch(e){toast('Gagal membersihkan cache')}}
 function clearWebViewCache(){clearApiCache();nativeCall('clearWebViewCache');toast('Cache WebView dibersihkan')}

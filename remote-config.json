@@ -1,5 +1,5 @@
 {
-  "version": 17,
+  "version": 18,
   "updatedAt": "2026-07-15",
   "minAppVersion": "4.0",
   "message": {
@@ -78,23 +78,23 @@
     "onboarding": true,
     "settings": true
   },
-  "latestVersion": "4.5.0",
+  "latestVersion": "4.5.1",
   "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
   "changelog": [
-    "Tampilan lebih cinematic: glass nav, card depth, spotlight premium",
-    "Typography & accent hijau mint lebih tajam",
-    "Splash, tabs, bottom bar, detail & settings dipoles",
-    "Mode performa tetap meredam animasi di HP low-end"
+    "Paket Gacor A: Buat Kamu dari riwayat tontonan",
+    "Progress ring + bar di poster (lanjut nonton)",
+    "Badge LANJUT / BARU di card",
+    "Pull-to-refresh di beranda + micro-animasi tab"
   ],
   "update": {
-    "latestVersion": "4.5.0",
+    "latestVersion": "4.5.1",
     "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
     "force": false,
     "changelog": [
-      "Tampilan lebih cinematic: glass nav, card depth, spotlight premium",
-      "Typography & accent hijau mint lebih tajam",
-      "Splash, tabs, bottom bar, detail & settings dipoles",
-      "Mode performa tetap meredam animasi di HP low-end"
+      "Paket Gacor A: Buat Kamu dari riwayat tontonan",
+      "Progress ring + bar di poster (lanjut nonton)",
+      "Badge LANJUT / BARU di card",
+      "Pull-to-refresh di beranda + micro-animasi tab"
     ]
   },
   "support": {

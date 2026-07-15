@@ -433,7 +433,7 @@ public class MainActivity extends AppCompatActivity {
                 PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
                 return info.versionName == null ? "4.3.0" : info.versionName;
             } catch (Exception e) {
-                return "4.5.0";
+                return "4.5.1";
             }
         }
 

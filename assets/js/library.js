@@ -27,8 +27,11 @@ function renderHistory(){
   if(!h.length){box.innerHTML=emptyHtml('Belum ada riwayat tontonan','Drama yang kamu tonton akan muncul di sini');return}
   box.innerHTML=`<div class="sec"><div class="sec-hd"><h2 class="sec-tt">Riwayat Tontonan</h2><div class="sec-more" onclick="clearAllHistory()">Hapus</div></div><div class="grid">${h.map(d=>{
     const thumb=fixImg(d.thumb||'');platCache[d.id]=d.plat;thumbCache[d.id]=thumb;
-    const pct=Math.max(0,Math.min(100,parseInt(d.pct||0)||0)),prog=pct?`<div class="card-progress"><span style="width:${pct}%"></span></div>`:'';
-    return`<article class="card" role="button" tabindex="0" onclick="openDet('${jsStr(d.id)}','${jsStr(thumb)}')"><div class="card-img"><img src="${esc(thumb)}" alt="${esc(d.name)}" loading="lazy" decoding="async" onerror="this.style.display='none'"/><div class="badge-ep" style="background:var(--accent);color:#fff">Ep ${parseInt(d.ep)||1}</div><div class="badge-plat">${esc(platformLabel(d.plat))}</div>${prog}</div><div class="card-body"><div class="card-name">${esc(d.name)}</div><div class="card-rating" style="color:var(--text3);background:rgba(255,255,255,.055)">${pct?`Progress ${pct}%`:`Lanjut Ep ${parseInt(d.ep)||1}`}</div></div></article>`;
+    const pct=Math.max(0,Math.min(100,parseInt(d.pct||0)||0));
+    const ep=parseInt(d.ep)||1;
+    const prog=pct?`<div class="card-progress"><span style="width:${pct}%"></span></div>`:'';
+    const ring=pct?progressRingHtml(pct,30):'';
+    return`<article class="card" role="button" tabindex="0" onclick="openDet('${jsStr(d.id)}','${jsStr(thumb)}')"><div class="card-img"><img src="${esc(thumb)}" alt="${esc(d.name)}" loading="lazy" decoding="async" onerror="this.style.display='none'"/><div class="badge-ep">Ep ${ep}</div><div class="badge-cont">LANJUT${pct?` ${pct}%`:''}</div><div class="badge-plat">${esc(platformLabel(d.plat))}</div>${prog}${ring}</div><div class="card-body"><div class="card-name">${esc(d.name)}</div><div class="card-sub">Episode ${ep}${pct?` · ${pct}% ditonton`:''}</div></div></article>`;
   }).join('')}</div></div>`;
 }
 
@@ -40,7 +43,7 @@ function toggleFav(drama){
   localStorage.setItem('dk_favs',JSON.stringify(f));return idx<0;
 }
 function isFav(id){return getFavs().some(x=>x.id===id)}
-function toggleFavBtn(btn){if(!curDrama)return;const on=toggleFav(curDrama);btn.classList.toggle('on',on);btn.style.background=on?'var(--accent)':'var(--bg3)';toast(on?'Ditambahkan ke favorit':'Dihapus dari favorit')}
+function toggleFavBtn(btn){if(!curDrama)return;const on=toggleFav(curDrama);bumpEl(btn);haptic(on?'heavy':'light');btn.classList.toggle('on',on);btn.style.background=on?'var(--accent)':'var(--bg3)';toast(on?'Ditambahkan ke favorit':'Dihapus dari favorit')}
 function renderFav(){
   const box=$('#v-fav'),f=getFavs();
   if(!f.length){box.innerHTML=emptyHtml('Belum ada drama favorit','Tap bookmark di halaman detail untuk menyimpan');return}
