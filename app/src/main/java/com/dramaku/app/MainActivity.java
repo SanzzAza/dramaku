@@ -433,7 +433,7 @@ public class MainActivity extends AppCompatActivity {
                 PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
                 return info.versionName == null ? "4.3.0" : info.versionName;
             } catch (Exception e) {
-                return "4.4.0";
+                return "4.4.1";
             }
         }
 
@@ -547,31 +547,30 @@ public class MainActivity extends AppCompatActivity {
 
     private String toJsString(String value) {
         if (value == null) value = "";
-        StringBuilder sb = new StringBuilder("\"");
+        StringBuilder sb = new StringBuilder(value.length() + 16);
+        sb.append('"');
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
-            switch (c) {
-                case '\\':
-                    sb.append("\\\\");
-                    break;
-                case '"':
-                    sb.append("\\\"");
-                    break;
-                case '\n':
-                    sb.append("\n");
-                    break;
-                case '\r':
-                    sb.append("\r");
-                    break;
-                case '\t':
-                    sb.append("\t");
-                    break;
-                default:
-                    if (c < 0x20) sb.append(String.format("\u%04x", (int) c));
-                    else sb.append(c);
+            if (c == '\\') {
+                sb.append('\\').append('\\');
+            } else if (c == '"') {
+                sb.append('\\').append('"');
+            } else if (c == '\n') {
+                sb.append('\\').append('n');
+            } else if (c == '\r') {
+                sb.append('\\').append('r');
+            } else if (c == '\t') {
+                sb.append('\\').append('t');
+            } else if (c < 0x20) {
+                sb.append('\\').append('u');
+                String hex = Integer.toHexString(c);
+                for (int z = hex.length(); z < 4; z++) sb.append('0');
+                sb.append(hex);
+            } else {
+                sb.append(c);
             }
         }
-        sb.append("\"");
+        sb.append('"');
         return sb.toString();
     }
 }

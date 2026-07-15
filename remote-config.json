@@ -1,5 +1,5 @@
 {
-  "version": 15,
+  "version": 16,
   "updatedAt": "2026-07-15",
   "minAppVersion": "4.0",
   "message": {
@@ -78,19 +78,21 @@
     "onboarding": true,
     "settings": true
   },
-  "latestVersion": "4.4.0",
+  "latestVersion": "4.4.1",
   "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
   "changelog": [
+    "Fix build APK: illegal unicode escape di MainActivity",
     "Struktur JS dimodularisasi (core/search/home/detail/player/library/app)",
     "Halaman Privasi & Disclaimer di Setelan",
     "Label platform dibersihkan (tanpa angka marketing palsu)",
     "Lanjutan stabilitas: rating asli, search dedupe, native progress sync"
   ],
   "update": {
-    "latestVersion": "4.4.0",
+    "latestVersion": "4.4.1",
     "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
     "force": false,
     "changelog": [
+      "Fix build APK: illegal unicode escape di MainActivity",
       "Struktur JS dimodularisasi (core/search/home/detail/player/library/app)",
       "Halaman Privasi & Disclaimer di Setelan",
       "Label platform dibersihkan (tanpa angka marketing palsu)",
