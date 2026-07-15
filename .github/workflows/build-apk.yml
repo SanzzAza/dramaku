@@ -152,8 +152,9 @@ jobs:
             Build type: ${{ env.APK_KIND }}
 
             ### Highlights
-            - API fetch timeout + offline cache fallback lebih andal
-            - WebView security harden + release minify (R8)
+            - Kotlin + Jetpack Compose native MVP
+            - Native home/search/detail/library/settings
+            - Native ExoPlayer playback
             - Versioning terpusat (`version.properties`)
             - Release GitHub hanya dari tag `v*` / manual dispatch
 

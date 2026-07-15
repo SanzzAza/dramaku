@@ -35,7 +35,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class MainActivity extends AppCompatActivity {
+public class LegacyWebViewActivity extends AppCompatActivity {
     private static final String HOME_URL = "file:///android_asset/index.html";
 
     private FrameLayout root;
@@ -406,7 +406,7 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void toast(String message) {
-            runOnUiThread(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show());
+            runOnUiThread(() -> Toast.makeText(LegacyWebViewActivity.this, message, Toast.LENGTH_SHORT).show());
         }
 
         @JavascriptInterface
@@ -449,7 +449,7 @@ public class MainActivity extends AppCompatActivity {
                     send.putExtra(Intent.EXTRA_TEXT, body);
                     startActivity(Intent.createChooser(send, title == null ? "Bagikan" : title));
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Tidak ada aplikasi untuk berbagi", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LegacyWebViewActivity.this, "Tidak ada aplikasi untuk berbagi", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -458,14 +458,14 @@ public class MainActivity extends AppCompatActivity {
         public void openUrl(String url) {
             runOnUiThread(() -> {
                 if (!isSafeExternalUrl(url)) {
-                    Toast.makeText(MainActivity.this, "Link tidak diizinkan", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LegacyWebViewActivity.this, "Link tidak diizinkan", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 try {
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url.trim()));
                     startActivity(intent);
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Tidak bisa membuka link", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LegacyWebViewActivity.this, "Tidak bisa membuka link", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -478,7 +478,7 @@ public class MainActivity extends AppCompatActivity {
                         webView.clearCache(true);
                         webView.clearHistory();
                     }
-                    Toast.makeText(MainActivity.this, "Cache WebView dibersihkan", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LegacyWebViewActivity.this, "Cache WebView dibersihkan", Toast.LENGTH_SHORT).show();
                 } catch (Exception ignored) {}
             });
         }
@@ -500,11 +500,11 @@ public class MainActivity extends AppCompatActivity {
             final long safeStart = Math.max(0L, (long) startPosMs);
             runOnUiThread(() -> {
                 if (!isSafeMediaUrl(url)) {
-                    Toast.makeText(MainActivity.this, "URL video tidak valid", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LegacyWebViewActivity.this, "URL video tidak valid", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 try {
-                    Intent i = new Intent(MainActivity.this, PlayerActivity.class);
+                    Intent i = new Intent(LegacyWebViewActivity.this, PlayerActivity.class);
                     i.putExtra(PlayerActivity.EXTRA_URL, url);
                     i.putExtra(PlayerActivity.EXTRA_SUBTITLE, safeSub);
                     i.putExtra(PlayerActivity.EXTRA_TITLE, safeTitle);
@@ -514,7 +514,7 @@ public class MainActivity extends AppCompatActivity {
                     i.putExtra(PlayerActivity.EXTRA_START_POS, safeStart);
                     startActivityForResult(i, PLAYER_REQUEST);
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Gagal membuka native player", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LegacyWebViewActivity.this, "Gagal membuka native player", Toast.LENGTH_SHORT).show();
                 }
             });
         }
