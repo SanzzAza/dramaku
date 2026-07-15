@@ -137,7 +137,7 @@ async function loadTab(t){
       const hr=new Date().getHours();const greet=hr<11?'Selamat pagi':hr<15?'Selamat siang':hr<18?'Selamat sore':'Selamat malam';
       h+=spotlightHtml(spotlightPool);
       if(pop.length)h+=top10Html(pop,'Top 10 Hari Ini');
-      h+=moodHtml();
+      h+=discoverHtml();
       h+=continueWatchingHtml(getHistory(),greet);
       h+=forYouHtml(spotlightPool);
       h+=platformStatusHtml();
@@ -237,9 +237,46 @@ function continueWatchingHtml(history,greet='Lanjut nonton?'){
   return`<section class="continue-sec"><div class="sec-hd" style="padding:0 16px;margin-bottom:10px"><h2 class="sec-tt">Lanjutkan Tontonan</h2><div class="sec-more" onclick="go('history')">Semua</div></div><div class="cw-row">${list.map((d,idx)=>{const thumb=fixImg(d.thumb||''),ep=parseInt(d.ep)||1,pct=Math.max(0,Math.min(100,parseInt(d.pct||0)||0));return`<article class="cw-item" onclick="resumeWatch('${jsStr(d.id)}','${jsStr(thumb)}','${jsStr(d.plat)}',${ep})"><div class="cw-item-poster"><img src="${esc(thumb)}" alt="${esc(d.name)}" loading="lazy" decoding="async" onerror="this.style.display='none'"/><div class="cw-item-badge">Ep ${ep}</div>${pct?`<div class="cw-item-progress"><span style="width:${pct}%"></span></div>`:''}${pct?progressRingHtml(pct,32):''}</div><div class="cw-item-copy"><b>${esc(d.name||'Tanpa Judul')}</b><span>${idx===0?esc(greet):'Lanjut'}${pct?` · ${pct}%`:''}</span></div></article>`}).join('')}</div></section>`
 }
 function moodHtml(){
-  const moods=[['🔥','Balas Dendam','Revenge vibes','Balas Dendam','rgba(239,68,68,.20)'],['💘','Romantis','Baper malam ini','Romantis','rgba(236,72,153,.20)'],['👑','CEO','Billionaire drama','CEO','rgba(245,158,11,.22)'],['😂','Komedi','Ringan & lucu','Comedy','rgba(59,130,246,.20)'],['😭','Sedih','Siap nangis','Sedih','rgba(99,102,241,.20)'],['⚔️','Action','Tegang terus','Action','rgba(239,68,68,.16)'],['🇰🇷','Korea','Drakor terbaru','Korea','rgba(16,185,129,.22)'],['🇨🇳','China','CDrama pilihan','China','rgba(245,158,11,.18)']];
-  const shown=isPerformanceMode()?moods.slice(0,4):moods;
-  return`<div class="mood-wrap mood-premium"><div class="mood-head"><div><span>Mood Picker</span><b>Mau nonton apa malam ini?</b></div><button onclick="openSearch()">Cari bebas</button></div><div class="mood-row premium">${shown.map(m=>`<button class="mood-card" style="--mood:${m[4]}" onclick="quickSearch('${jsStr(m[3])}')"><span class="mood-ico">${m[0]}</span><span class="mood-title">${esc(m[1])}</span><span class="mood-sub">${esc(m[2])}</span></button>`).join('')}</div></div>`;
+  // Replaces old mood grid with a more useful "Discover" strip:
+  // quick actions + viral chips (search shortcuts).
+  return discoverHtml();
+}
+function discoverHtml(){
+  const actions=[
+    ['🎲','Acak','Temukan drama','randomPick()','rgba(16,245,166,.16)'],
+    ['▶','Cuplikan','Trailer cepat',"go('clips')",'rgba(251,113,133,.14)'],
+    ['⏱','Riwayat','Lanjut nonton',"go('history')",'rgba(96,165,250,.14)'],
+    ['♥','Favorit','Koleksi kamu',"go('fav')",'rgba(244,114,182,.14)']
+  ];
+  // Mix static viral + recent searches for personal feel
+  let viral=['CEO','Balas Dendam','Romantis','Korea','China','Isekai','Cinta Kontrak','Action','Comedy','Drakor'];
+  try{
+    const rec=(typeof getRecentSearches==='function'?getRecentSearches():[]).slice(0,4);
+    if(rec.length){
+      const merged=[];
+      rec.forEach(q=>{if(q&&!merged.some(x=>x.toLowerCase()===String(q).toLowerCase()))merged.push(String(q))});
+      viral.forEach(v=>{if(!merged.some(x=>x.toLowerCase()===v.toLowerCase()))merged.push(v)});
+      viral=merged.slice(0,10);
+    }
+  }catch(e){}
+  const act=actions.map(([icon,title,sub,fn,bg])=>
+    `<button type="button" class="disc-action" style="--da:${bg}" onclick="${fn};bumpEl(this);haptic('light')">
+      <span class="da-ico">${icon}</span>
+      <span class="da-copy"><b>${title}</b><small>${sub}</small></span>
+    </button>`
+  ).join('');
+  const chips=viral.map((q,i)=>
+    `<button type="button" class="viral-chip ${i===0?'hot':''}" onclick="quickSearch('${jsStr(q)}');haptic('light')">${i===0?'🔥 ':''}${esc(q)}</button>`
+  ).join('');
+  return `<section class="discover-sec">
+    <div class="sec-hd" style="padding:0 16px;margin-bottom:10px">
+      <h2 class="sec-tt">Jelajah Cepat</h2>
+      <div class="sec-more" onclick="openSearch()">Cari</div>
+    </div>
+    <div class="disc-actions">${act}</div>
+    <div class="viral-head"><span>Lagi viral</span><span class="viral-hint">tap untuk cari</span></div>
+    <div class="viral-row">${chips}</div>
+  </section>`;
 }
 function cardHtml(d){
   const img=fixImg(d.thumb_url||''),nm=d.drama_name||'',ep=d.episode_count||'',id=String(d.drama_id||''),vw=d.watch_value||'',isFree=d.free===true;

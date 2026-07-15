@@ -1,5 +1,5 @@
 {
-  "version": 18,
+  "version": 19,
   "updatedAt": "2026-07-15",
   "minAppVersion": "4.0",
   "message": {
@@ -78,23 +78,23 @@
     "onboarding": true,
     "settings": true
   },
-  "latestVersion": "4.5.1",
+  "latestVersion": "4.5.2",
   "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
   "changelog": [
-    "Paket Gacor A: Buat Kamu dari riwayat tontonan",
-    "Progress ring + bar di poster (lanjut nonton)",
-    "Badge LANJUT / BARU di card",
-    "Pull-to-refresh di beranda + micro-animasi tab"
+    "Mood Picker diganti Jelajah Cepat (aksi + chip viral)",
+    "Shortcut: Acak, Cuplikan, Riwayat, Favorit",
+    "Chip Lagi Viral + recent search kamu",
+    "Paket Gacor A tetap: Buat Kamu, progress, pull-refresh"
   ],
   "update": {
-    "latestVersion": "4.5.1",
+    "latestVersion": "4.5.2",
     "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
     "force": false,
     "changelog": [
-      "Paket Gacor A: Buat Kamu dari riwayat tontonan",
-      "Progress ring + bar di poster (lanjut nonton)",
-      "Badge LANJUT / BARU di card",
-      "Pull-to-refresh di beranda + micro-animasi tab"
+      "Mood Picker diganti Jelajah Cepat (aksi + chip viral)",
+      "Shortcut: Acak, Cuplikan, Riwayat, Favorit",
+      "Chip Lagi Viral + recent search kamu",
+      "Paket Gacor A tetap: Buat Kamu, progress, pull-refresh"
     ]
   },
   "support": {

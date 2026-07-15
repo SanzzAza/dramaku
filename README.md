@@ -2,7 +2,7 @@
 
 Nonton drama & film dari 10 platform sekaligus dalam 1 website / APK WebView.
 
-**Versi saat ini: 4.5.1**
+**Versi saat ini: 4.5.2**
 
 ## Platform
 - Melolo, FreeReels, FlickReels, DramaNova, ReelShort
@@ -33,6 +33,7 @@ Nonton drama & film dari 10 platform sekaligus dalam 1 website / APK WebView.
 - Native ExoPlayer progress sync ke history/web
 - Visual v4.5: cinematic glass UI, card depth, premium splash/nav
 - Paket Gacor: Buat Kamu, progress poster, badge LANJUT/BARU, pull-to-refresh
+- Jelajah Cepat: shortcut aksi + chip Lagi Viral (ganti Mood Picker)
 
 ## Branding
 - Brand kit tersedia di folder `branding/`
@@ -53,7 +54,7 @@ Nonton drama & film dari 10 platform sekaligus dalam 1 website / APK WebView.
 Sumber versi terpusat: [`version.properties`](version.properties)
 
 ```
-VERSION_NAME=4.5.1
+VERSION_NAME=4.5.2
 VERSION_CODE=39
 ```
 
