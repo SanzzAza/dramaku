@@ -1,6 +1,6 @@
 {
-  "version": 12,
-  "updatedAt": "2026-07-11",
+  "version": 15,
+  "updatedAt": "2026-07-15",
   "minAppVersion": "4.0",
   "message": {
     "enabled": false,
@@ -78,21 +78,23 @@
     "onboarding": true,
     "settings": true
   },
-  "latestVersion": "4.2.1",
+  "latestVersion": "4.4.0",
   "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
   "changelog": [
-    "Cuplikan kini hanya memutar Episode 1 sebagai preview",
-    "Tombol Tonton Semua Episode ditambahkan di player cuplikan",
-    "Tombol play di card Cuplikan diberi label Ep1"
+    "Struktur JS dimodularisasi (core/search/home/detail/player/library/app)",
+    "Halaman Privasi & Disclaimer di Setelan",
+    "Label platform dibersihkan (tanpa angka marketing palsu)",
+    "Lanjutan stabilitas: rating asli, search dedupe, native progress sync"
   ],
   "update": {
-    "latestVersion": "4.2.1",
+    "latestVersion": "4.4.0",
     "downloadUrl": "https://github.com/SanzzAza/dramaku/releases/latest",
     "force": false,
     "changelog": [
-      "Cuplikan kini hanya memutar Episode 1 sebagai preview",
-      "Tombol Tonton Semua Episode ditambahkan di player cuplikan",
-      "Tombol play di card Cuplikan diberi label Ep1"
+      "Struktur JS dimodularisasi (core/search/home/detail/player/library/app)",
+      "Halaman Privasi & Disclaimer di Setelan",
+      "Label platform dibersihkan (tanpa angka marketing palsu)",
+      "Lanjutan stabilitas: rating asli, search dedupe, native progress sync"
     ]
   },
   "support": {

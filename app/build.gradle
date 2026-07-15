@@ -2,6 +2,26 @@ plugins {
     id 'com.android.application'
 }
 
+def versionPropsFile = rootProject.file('version.properties')
+def versionProps = new Properties()
+if (versionPropsFile.exists()) {
+    versionPropsFile.withInputStream { versionProps.load(it) }
+}
+def appVersionName = versionProps.getProperty('VERSION_NAME', '4.3.0')
+def appVersionCode = (versionProps.getProperty('VERSION_CODE', '37') as Integer)
+
+// Prefer VERSION_CODE from CI (tag/build number) when provided.
+def ciVersionCode = System.getenv('DRAMAKU_VERSION_CODE')
+if (ciVersionCode) {
+    try {
+        appVersionCode = ciVersionCode as Integer
+    } catch (Exception ignored) {}
+}
+def ciVersionName = System.getenv('DRAMAKU_VERSION_NAME')
+if (ciVersionName) {
+    appVersionName = ciVersionName
+}
+
 def hasReleaseSigning = System.getenv("ANDROID_KEYSTORE_PATH") &&
         System.getenv("ANDROID_KEYSTORE_PASSWORD") &&
         System.getenv("ANDROID_KEY_ALIAS")
@@ -14,8 +34,8 @@ android {
         applicationId "com.dramaku.app"
         minSdk 24
         targetSdk 34
-        versionCode 18
-        versionName "4.2.1"
+        versionCode appVersionCode
+        versionName appVersionName
     }
 
     signingConfigs {
@@ -33,12 +53,18 @@ android {
 
     buildTypes {
         release {
+            // Keep minify off by default for WebView/bridge reliability.
+            // ProGuard rules are ready when you want to enable later.
             minifyEnabled false
             shrinkResources false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             if (hasReleaseSigning) {
                 signingConfig signingConfigs.release
             }
+        }
+        debug {
+            minifyEnabled false
+            shrinkResources false
         }
     }
 
@@ -56,11 +82,11 @@ dependencies {
     implementation 'androidx.media3:media3-ui:1.3.1'
 }
 
-
-// Keep APK builds reproducible locally and in CI: always package latest root index.html.
+// Keep APK builds reproducible locally and in CI: always package latest root web assets.
 tasks.register('copyIndexHtml', Copy) {
     from(rootDir) {
         include 'index.html'
+        include 'remote-config.json'
         include 'branding/**'
         include 'assets/**'
     }

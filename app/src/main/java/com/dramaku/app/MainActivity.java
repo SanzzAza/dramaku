@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView recoveryMessage;
     private View customView;
     private WebChromeClient.CustomViewCallback customViewCallback;
+    private static final int PLAYER_REQUEST = 4401;
 
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     @Override
@@ -158,18 +159,20 @@ public class MainActivity extends AppCompatActivity {
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
         s.setDatabaseEnabled(true);
+        // Local asset shell only — do not allow file:// pages to read other file URLs.
         s.setAllowFileAccess(true);
         s.setAllowContentAccess(true);
-        s.setAllowFileAccessFromFileURLs(true);
-        s.setAllowUniversalAccessFromFileURLs(true);
+        s.setAllowFileAccessFromFileURLs(false);
+        s.setAllowUniversalAccessFromFileURLs(false);
         s.setMediaPlaybackRequiresUserGesture(false);
         s.setLoadWithOverviewMode(true);
         s.setUseWideViewPort(true);
         s.setSupportZoom(false);
         s.setCacheMode(WebSettings.LOAD_DEFAULT);
-        s.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        // Prefer HTTPS; cleartext is also blocked by networkSecurityConfig.
+        s.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            s.setSafeBrowsingEnabled(false);
+            s.setSafeBrowsingEnabled(true);
         }
 
         CookieManager.getInstance().setAcceptCookie(true);
@@ -203,6 +206,22 @@ public class MainActivity extends AppCompatActivity {
                     }
                 } catch (Exception ignored) {}
                 webView = null;
+                return true;
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                if (request == null || request.getUrl() == null) return true;
+                Uri uri = request.getUrl();
+                String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase();
+                // Keep navigation inside the local asset shell; open external links outside.
+                if ("file".equals(scheme)) return false;
+                if ("http".equals(scheme) || "https".equals(scheme) || "mailto".equals(scheme) || "tg".equals(scheme)) {
+                    try {
+                        startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                    } catch (Exception ignored) {}
+                    return true;
+                }
                 return true;
             }
         });
@@ -306,6 +325,31 @@ public class MainActivity extends AppCompatActivity {
         return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
     }
 
+    private boolean isSafeExternalUrl(@Nullable String url) {
+        if (url == null) return false;
+        String trimmed = url.trim();
+        if (trimmed.isEmpty()) return false;
+        Uri uri = Uri.parse(trimmed);
+        String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase();
+        if ("https".equals(scheme) || "mailto".equals(scheme)) return true;
+        // Telegram share links often use https://t.me — already covered.
+        // Allow intentional http only for localhost debugging, never for remote.
+        if ("http".equals(scheme)) {
+            String host = uri.getHost() == null ? "" : uri.getHost().toLowerCase();
+            return "localhost".equals(host) || "127.0.0.1".equals(host);
+        }
+        return false;
+    }
+
+    private boolean isSafeMediaUrl(@Nullable String url) {
+        if (url == null) return false;
+        String trimmed = url.trim();
+        if (trimmed.isEmpty()) return false;
+        Uri uri = Uri.parse(trimmed);
+        String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase();
+        return "https".equals(scheme) || "http".equals(scheme);
+    }
+
     @Override
     public void onBackPressed() {
         if (customView != null) {
@@ -387,9 +431,9 @@ public class MainActivity extends AppCompatActivity {
         public String getVersion() {
             try {
                 PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
-                return info.versionName == null ? "4.2.1" : info.versionName;
+                return info.versionName == null ? "4.3.0" : info.versionName;
             } catch (Exception e) {
-                return "4.2.1";
+                return "4.4.0";
             }
         }
 
@@ -400,7 +444,8 @@ public class MainActivity extends AppCompatActivity {
                     Intent send = new Intent(Intent.ACTION_SEND);
                     send.setType("text/plain");
                     send.putExtra(Intent.EXTRA_SUBJECT, title == null ? "Dramaku" : title);
-                    String body = (text == null ? "" : text) + ((url == null || url.isEmpty()) ? "" : "\n" + url);
+                    String safeUrl = (url != null && isSafeExternalUrl(url)) ? url : "";
+                    String body = (text == null ? "" : text) + (safeUrl.isEmpty() ? "" : "\n" + safeUrl);
                     send.putExtra(Intent.EXTRA_TEXT, body);
                     startActivity(Intent.createChooser(send, title == null ? "Bagikan" : title));
                 } catch (Exception e) {
@@ -412,8 +457,12 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void openUrl(String url) {
             runOnUiThread(() -> {
+                if (!isSafeExternalUrl(url)) {
+                    Toast.makeText(MainActivity.this, "Link tidak diizinkan", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url.trim()));
                     startActivity(intent);
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, "Tidak bisa membuka link", Toast.LENGTH_SHORT).show();
@@ -438,17 +487,91 @@ public class MainActivity extends AppCompatActivity {
     public class NativePlayerBridge {
         @JavascriptInterface
         public void play(String url, String subtitleUrl, String title) {
+            playFull(url, subtitleUrl, title, "", 1, "", 0);
+        }
+
+        @JavascriptInterface
+        public void playFull(String url, String subtitleUrl, String title, String dramaId, int episode, String platform, int startPosMs) {
+            final String safeSub = (subtitleUrl != null && isSafeMediaUrl(subtitleUrl)) ? subtitleUrl : "";
+            final String safeTitle = title == null ? "Dramaku" : title;
+            final String safeDramaId = dramaId == null ? "" : dramaId;
+            final String safePlatform = platform == null ? "" : platform;
+            final int safeEpisode = Math.max(1, episode);
+            final long safeStart = Math.max(0L, (long) startPosMs);
             runOnUiThread(() -> {
+                if (!isSafeMediaUrl(url)) {
+                    Toast.makeText(MainActivity.this, "URL video tidak valid", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 try {
                     Intent i = new Intent(MainActivity.this, PlayerActivity.class);
-                    i.putExtra("url", url);
-                    i.putExtra("subtitle", subtitleUrl == null ? "" : subtitleUrl);
-                    i.putExtra("title", title == null ? "Dramaku" : title);
-                    startActivity(i);
+                    i.putExtra(PlayerActivity.EXTRA_URL, url);
+                    i.putExtra(PlayerActivity.EXTRA_SUBTITLE, safeSub);
+                    i.putExtra(PlayerActivity.EXTRA_TITLE, safeTitle);
+                    i.putExtra(PlayerActivity.EXTRA_DRAMA_ID, safeDramaId);
+                    i.putExtra(PlayerActivity.EXTRA_EPISODE, safeEpisode);
+                    i.putExtra(PlayerActivity.EXTRA_PLATFORM, safePlatform);
+                    i.putExtra(PlayerActivity.EXTRA_START_POS, safeStart);
+                    startActivityForResult(i, PLAYER_REQUEST);
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, "Gagal membuka native player", Toast.LENGTH_SHORT).show();
                 }
             });
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != PLAYER_REQUEST || resultCode != RESULT_OK || data == null || webView == null) return;
+        try {
+            String dramaId = data.getStringExtra(PlayerActivity.RESULT_DRAMA_ID);
+            int episode = data.getIntExtra(PlayerActivity.RESULT_EPISODE, 1);
+            String platform = data.getStringExtra(PlayerActivity.RESULT_PLATFORM);
+            long position = data.getLongExtra(PlayerActivity.RESULT_POSITION, 0L);
+            long duration = data.getLongExtra(PlayerActivity.RESULT_DURATION, 0L);
+            boolean ended = data.getBooleanExtra(PlayerActivity.RESULT_ENDED, false);
+            double posSec = Math.max(0, position / 1000.0);
+            double durSec = Math.max(0, duration / 1000.0);
+            String js = "window.onNativePlayerResult&&window.onNativePlayerResult("
+                    + toJsString(dramaId) + ","
+                    + episode + ","
+                    + toJsString(platform) + ","
+                    + posSec + ","
+                    + durSec + ","
+                    + (ended ? "true" : "false")
+                    + ")";
+            webView.post(() -> webView.evaluateJavascript(js, null));
+        } catch (Exception ignored) {}
+    }
+
+    private String toJsString(String value) {
+        if (value == null) value = "";
+        StringBuilder sb = new StringBuilder("\"");
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            switch (c) {
+                case '\\':
+                    sb.append("\\\\");
+                    break;
+                case '"':
+                    sb.append("\\\"");
+                    break;
+                case '\n':
+                    sb.append("\n");
+                    break;
+                case '\r':
+                    sb.append("\r");
+                    break;
+                case '\t':
+                    sb.append("\t");
+                    break;
+                default:
+                    if (c < 0x20) sb.append(String.format("\u%04x", (int) c));
+                    else sb.append(c);
+            }
+        }
+        sb.append("\"");
+        return sb.toString();
     }
 }

@@ -571,3 +571,16 @@ html.perf-mode .clip-card,html.perf-mode .clips-hero,html.perf-mode .clip-mini-p
 
 /* ===== CLIP PREVIEW PATCH v4.2.1 ===== */
 .clip-full-watch{margin-top:10px;min-height:34px;padding:8px 13px;border:0;border-radius:999px;background:linear-gradient(135deg,var(--accent3),var(--accent2));color:#04150f;font-size:11px;font-weight:950;font-family:inherit;box-shadow:0 12px 26px rgba(16,185,129,.24)}.clip-play{gap:2px;flex-direction:column}.clip-play span{font-size:8px;font-weight:950;line-height:1;margin-top:-2px}.v-info .clip-full-watch:active{transform:scale(.96)}
+
+
+/* Connection banner + improved empty/error actions (v4.3) */
+.conn-banner{position:fixed;top:0;left:0;right:0;z-index:600;padding:8px 14px;text-align:center;font-size:11px;font-weight:800;letter-spacing:.2px;color:#04120c;background:linear-gradient(135deg,#34d399,#10b981);transform:translateY(-110%);opacity:0;pointer-events:none;transition:transform .25s ease,opacity .25s ease}
+.conn-banner.on{transform:translateY(0);opacity:1}
+.conn-banner.offline{color:#fff7ed;background:linear-gradient(135deg,#f59e0b,#ea580c)}
+.empty-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:4px}
+.retry-ghost{background:transparent;color:var(--text2,#9fb0c3);border:1px solid rgba(255,255,255,.12);box-shadow:none}
+.retry-ghost:active{transform:scale(.95)}
+body.has-conn-banner{padding-top:0}
+
+.stream-fail{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;text-align:center}
+.stream-fail p{color:var(--text3,#91a4ba);font-size:11px;line-height:1.45;max-width:220px}
